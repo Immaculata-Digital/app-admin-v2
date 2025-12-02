@@ -1,0 +1,218 @@
+/* TextPicker - Estilo Google */
+.text-picker-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.text-picker {
+  width: 100%;
+}
+
+.text-picker .MuiOutlinedInput-root {
+  background-color: var(--color-surface);
+  transition: all 0.2s ease;
+}
+
+.theme-dark .text-picker .MuiOutlinedInput-root {
+  background-color: var(--color-surface);
+  color: var(--color-text);
+}
+
+/* Input quando focado */
+.text-picker--focused .MuiOutlinedInput-root {
+  background-color: var(--color-surface);
+}
+
+.theme-dark .text-picker--focused .MuiOutlinedInput-root {
+  background-color: var(--color-surface);
+}
+
+/* Input quando com erro */
+.text-picker--error .MuiOutlinedInput-root {
+  background-color: var(--color-surface);
+}
+
+.theme-dark .text-picker--error .MuiOutlinedInput-root {
+  background-color: var(--color-surface);
+}
+
+/* Ícone inicial */
+.text-picker__start-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-on-secondary);
+  margin-right: 4px;
+}
+
+.text-picker__start-icon .MuiSvgIcon-root {
+  font-size: 1.25rem;
+}
+
+.theme-dark .text-picker__start-icon {
+  color: var(--color-on-secondary);
+}
+
+/* Quando focado, o ícone muda de cor */
+.text-picker--focused .text-picker__start-icon {
+  color: var(--color-primary);
+}
+
+.theme-dark .text-picker--focused .text-picker__start-icon {
+  color: var(--color-primary);
+}
+
+/* Botão de limpar */
+.text-picker__clear-btn {
+  color: var(--color-on-secondary);
+  padding: 4px;
+  transition: all 0.2s ease;
+  margin-right: -4px;
+}
+
+.text-picker__clear-btn:hover {
+  color: var(--color-text);
+  background-color: var(--color-hover);
+}
+
+.text-picker__clear-btn:disabled {
+  color: var(--color-on-secondary);
+  opacity: 0.5;
+}
+
+.theme-dark .text-picker__clear-btn {
+  color: var(--color-on-secondary);
+}
+
+.theme-dark .text-picker__clear-btn:hover {
+  color: var(--color-text);
+  background-color: var(--color-hover);
+}
+
+.text-picker__clear-btn .MuiSvgIcon-root {
+  font-size: 1.125rem;
+}
+
+/* Placeholder animado */
+.text-picker .MuiInputBase-input::placeholder {
+  color: var(--color-on-secondary);
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+}
+
+.theme-dark .text-picker .MuiInputBase-input::placeholder {
+  color: var(--color-on-secondary);
+  opacity: 0.6;
+}
+
+.text-picker--focused .MuiInputBase-input::placeholder {
+  opacity: 0.4;
+}
+
+/* Label */
+.text-picker .MuiInputLabel-root {
+  color: var(--color-on-secondary);
+}
+
+.theme-dark .text-picker .MuiInputLabel-root {
+  color: var(--color-on-secondary);
+}
+
+.text-picker--focused .MuiInputLabel-root {
+  color: var(--color-primary);
+}
+
+.theme-dark .text-picker--focused .MuiInputLabel-root {
+  color: var(--color-primary);
+}
+
+/* Helper text */
+.text-picker .MuiFormHelperText-root {
+  margin-top: 4px;
+  font-size: 0.75rem;
+  color: var(--color-on-secondary);
+}
+
+.theme-dark .text-picker .MuiFormHelperText-root {
+  color: var(--color-on-secondary);
+}
+
+.text-picker--error .MuiFormHelperText-root {
+  color: var(--color-error, #f44336);
+}
+
+.theme-dark .text-picker--error .MuiFormHelperText-root {
+  color: var(--color-error, #ef5350);
+}
+
+/* Input desabilitado */
+.text-picker .MuiOutlinedInput-root.Mui-disabled {
+  background-color: var(--color-surface);
+  cursor: not-allowed;
+}
+
+.theme-dark .text-picker .MuiOutlinedInput-root.Mui-disabled {
+  background-color: var(--color-surface);
+}
+
+.text-picker .MuiOutlinedInput-root.Mui-disabled .text-picker__start-icon {
+  opacity: 0.5;
+}
+
+/* Multiline específico */
+.text-picker .MuiInputBase-inputMultiline {
+  padding: 12px 14px;
+  line-height: 1.5;
+}
+
+.theme-dark .text-picker .MuiInputBase-inputMultiline {
+  color: var(--color-text);
+}
+
+/* Animação de foco */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.text-picker__clear-btn {
+  animation: fadeIn 0.2s ease-out;
+}
+
+/* Contador de caracteres no helper text */
+.text-picker .MuiFormHelperText-root {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Ajustes para campo de busca */
+.text-picker input[type="text"] {
+  font-size: 0.9375rem;
+}
+
+.theme-dark .text-picker input {
+  color: var(--color-text);
+}
+
+.theme-dark .text-picker textarea {
+  color: var(--color-text);
+}
+
+/* Transições suaves */
+.text-picker .MuiOutlinedInput-root {
+  transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.text-picker__start-icon,
+.text-picker__clear-btn {
+  transition: color 0.2s ease, background-color 0.2s ease;
+}
+

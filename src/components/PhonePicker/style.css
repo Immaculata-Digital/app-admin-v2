@@ -1,0 +1,279 @@
+/* PhonePicker - Estilo Google Contacts */
+.phone-picker {
+  width: 100%;
+}
+
+.phone-picker .MuiOutlinedInput-root {
+  background-color: var(--color-surface);
+}
+
+/* Placeholder */
+.phone-picker .MuiInputBase-input::placeholder {
+  color: var(--color-on-secondary);
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+}
+
+.theme-dark .phone-picker .MuiInputBase-input::placeholder {
+  color: var(--color-on-secondary);
+  opacity: 0.6;
+}
+
+.phone-picker .MuiOutlinedInput-root.Mui-focused .MuiInputBase-input::placeholder {
+  opacity: 0.4;
+}
+
+.theme-dark .phone-picker .MuiOutlinedInput-root {
+  background-color: var(--color-surface);
+  color: var(--color-text);
+}
+
+/* Seletor de país */
+.phone-picker__country-selector {
+  display: flex;
+  align-items: center;
+  margin-right: 8px;
+}
+
+.phone-picker__country-btn {
+  padding: 4px 8px;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.phone-picker__country-btn:hover {
+  background-color: var(--color-hover);
+}
+
+.theme-dark .phone-picker__country-btn {
+  color: var(--color-text);
+}
+
+.theme-dark .phone-picker__country-btn:hover {
+  background-color: var(--color-hover);
+}
+
+.phone-picker__flag {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.phone-picker__dial-code {
+  font-weight: 500;
+  color: var(--color-text);
+  font-size: 0.875rem;
+  margin: 0 2px;
+}
+
+.theme-dark .phone-picker__dial-code {
+  color: var(--color-text);
+}
+
+.phone-picker__arrow {
+  font-size: 1rem !important;
+  color: var(--color-on-secondary);
+  transition: transform 0.2s ease;
+}
+
+.phone-picker__country-btn:hover .phone-picker__arrow {
+  color: var(--color-text);
+}
+
+.theme-dark .phone-picker__arrow {
+  color: var(--color-on-secondary);
+}
+
+.theme-dark .phone-picker__country-btn:hover .phone-picker__arrow {
+  color: var(--color-text);
+}
+
+.phone-picker__phone-icon {
+  color: var(--color-on-secondary);
+  margin-right: 8px;
+}
+
+.theme-dark .phone-picker__phone-icon {
+  color: var(--color-on-secondary);
+}
+
+/* Popover de seleção de país */
+.phone-picker-popover .MuiPaper-root {
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-lighter);
+  max-width: 320px;
+  width: 100%;
+}
+
+.theme-dark .phone-picker-popover .MuiPaper-root {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+/* Container da lista de países */
+.phone-picker__country-list {
+  display: flex;
+  flex-direction: column;
+  max-height: 400px;
+  overflow: hidden;
+}
+
+/* Campo de busca */
+.phone-picker__search-container {
+  padding: 12px;
+  border-bottom: 1px solid var(--color-border-lighter);
+  background: var(--color-surface);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.theme-dark .phone-picker__search-container {
+  border-bottom-color: var(--color-border);
+  background: var(--color-surface);
+}
+
+.phone-picker__search .MuiOutlinedInput-root {
+  background-color: var(--color-hover);
+}
+
+.theme-dark .phone-picker__search .MuiOutlinedInput-root {
+  background-color: var(--color-hover);
+  color: var(--color-text);
+}
+
+.phone-picker__search .MuiOutlinedInput-root:hover {
+  background-color: var(--color-hover-strong);
+}
+
+.theme-dark .phone-picker__search .MuiOutlinedInput-root:hover {
+  background-color: var(--color-hover-strong);
+}
+
+.phone-picker__search input {
+  padding: 8px 12px;
+  font-size: 0.875rem;
+}
+
+/* Lista de países */
+.phone-picker__countries {
+  max-height: 320px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.phone-picker__countries::-webkit-scrollbar {
+  width: 8px;
+}
+
+.phone-picker__countries::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.phone-picker__countries::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 4px;
+}
+
+.theme-dark .phone-picker__countries::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+}
+
+.phone-picker__countries::-webkit-scrollbar-thumb:hover {
+  background: var(--color-border-light);
+}
+
+.theme-dark .phone-picker__countries::-webkit-scrollbar-thumb:hover {
+  background: var(--color-border-light);
+}
+
+/* Item de país */
+.phone-picker__country-item {
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: background-color 0.2s ease;
+}
+
+.phone-picker__country-item:hover {
+  background-color: var(--color-hover);
+}
+
+.phone-picker__country-item.Mui-selected {
+  background-color: var(--color-primary) !important;
+  color: var(--color-on-primary) !important;
+}
+
+.phone-picker__country-item.Mui-selected:hover {
+  background-color: var(--color-primary-dark) !important;
+}
+
+.theme-dark .phone-picker__country-item {
+  color: var(--color-text);
+}
+
+.theme-dark .phone-picker__country-item:hover {
+  background-color: var(--color-hover);
+}
+
+.theme-dark .phone-picker__country-item.Mui-selected {
+  background-color: var(--color-primary) !important;
+  color: var(--color-on-primary) !important;
+}
+
+.theme-dark .phone-picker__country-item.Mui-selected:hover {
+  background-color: var(--color-primary-dark) !important;
+}
+
+.phone-picker__item-flag {
+  font-size: 1.5rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.phone-picker__country-text {
+  flex: 1;
+  margin: 0;
+}
+
+.phone-picker__country-text .MuiListItemText-primary {
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: var(--color-text);
+}
+
+.phone-picker__country-text .MuiListItemText-secondary {
+  font-size: 0.75rem;
+  color: var(--color-on-secondary);
+}
+
+.theme-dark .phone-picker__country-text .MuiListItemText-primary {
+  color: var(--color-text);
+}
+
+.theme-dark .phone-picker__country-text .MuiListItemText-secondary {
+  color: var(--color-on-secondary);
+}
+
+.phone-picker__country-item.Mui-selected .phone-picker__country-text .MuiListItemText-primary,
+.phone-picker__country-item.Mui-selected .phone-picker__country-text .MuiListItemText-secondary {
+  color: var(--color-on-primary) !important;
+}
+
+/* Mensagem de sem resultados */
+.phone-picker__no-results {
+  padding: 24px 16px;
+  text-align: center;
+}
+
+.theme-dark .phone-picker__no-results .MuiTypography-root {
+  color: var(--color-on-secondary);
+}
+

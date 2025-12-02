@@ -1,0 +1,204 @@
+/* MailPicker - Estilo Google Contacts */
+.mail-picker {
+  width: 100%;
+}
+
+.mail-picker .MuiOutlinedInput-root {
+  background-color: var(--color-surface);
+}
+
+/* Placeholder */
+.mail-picker .MuiInputBase-input::placeholder {
+  color: var(--color-on-secondary);
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+}
+
+.theme-dark .mail-picker .MuiInputBase-input::placeholder {
+  color: var(--color-on-secondary);
+  opacity: 0.6;
+}
+
+.mail-picker .MuiOutlinedInput-root.Mui-focused .MuiInputBase-input::placeholder {
+  opacity: 0.4;
+}
+
+.theme-dark .mail-picker .MuiOutlinedInput-root {
+  background-color: var(--color-surface);
+  color: var(--color-text);
+}
+
+.mail-picker__email-icon {
+  color: var(--color-on-secondary);
+  margin-right: 8px;
+}
+
+.theme-dark .mail-picker__email-icon {
+  color: var(--color-on-secondary);
+}
+
+.mail-picker__valid-icon {
+  color: var(--color-success, #4caf50);
+  margin-right: 8px;
+}
+
+.theme-dark .mail-picker__valid-icon {
+  color: var(--color-success, #66bb6a);
+}
+
+/* Popover de sugestões */
+.mail-picker-popover .MuiPaper-root {
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-lighter);
+  max-width: 320px;
+  width: 100%;
+  margin-top: 4px;
+}
+
+.theme-dark .mail-picker-popover .MuiPaper-root {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+/* Container de sugestões */
+.mail-picker__suggestions {
+  display: flex;
+  flex-direction: column;
+  max-height: 280px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 4px 0;
+}
+
+.mail-picker__suggestions::-webkit-scrollbar {
+  width: 8px;
+}
+
+.mail-picker__suggestions::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.mail-picker__suggestions::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 4px;
+}
+
+.theme-dark .mail-picker__suggestions::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+}
+
+.mail-picker__suggestions::-webkit-scrollbar-thumb:hover {
+  background: var(--color-border-light);
+}
+
+.theme-dark .mail-picker__suggestions::-webkit-scrollbar-thumb:hover {
+  background: var(--color-border-light);
+}
+
+/* Título das sugestões */
+.mail-picker__suggestions-title {
+  padding: 8px 16px 4px;
+  font-weight: 600;
+  color: var(--color-on-secondary);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.theme-dark .mail-picker__suggestions-title {
+  color: var(--color-on-secondary);
+}
+
+/* Item de sugestão */
+.mail-picker__suggestion-item {
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  transition: background-color 0.2s ease;
+  min-height: 48px;
+}
+
+.mail-picker__suggestion-item:hover {
+  background-color: var(--color-hover);
+}
+
+.mail-picker__suggestion-item.Mui-selected {
+  background-color: var(--color-primary) !important;
+  color: var(--color-on-primary) !important;
+}
+
+.mail-picker__suggestion-item.Mui-selected:hover {
+  background-color: var(--color-primary-dark) !important;
+}
+
+.theme-dark .mail-picker__suggestion-item {
+  color: var(--color-text);
+}
+
+.theme-dark .mail-picker__suggestion-item:hover {
+  background-color: var(--color-hover);
+}
+
+.theme-dark .mail-picker__suggestion-item.Mui-selected {
+  background-color: var(--color-primary) !important;
+  color: var(--color-on-primary) !important;
+}
+
+.theme-dark .mail-picker__suggestion-item.Mui-selected:hover {
+  background-color: var(--color-primary-dark) !important;
+}
+
+/* Conteúdo da sugestão */
+.mail-picker__suggestion-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.mail-picker__suggestion-name {
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: var(--color-text);
+  line-height: 1.4;
+}
+
+.mail-picker__suggestion-domain {
+  font-size: 0.75rem;
+  color: var(--color-on-secondary);
+  line-height: 1.4;
+}
+
+.theme-dark .mail-picker__suggestion-name {
+  color: var(--color-text);
+}
+
+.theme-dark .mail-picker__suggestion-domain {
+  color: var(--color-on-secondary);
+}
+
+.mail-picker__suggestion-item.Mui-selected .mail-picker__suggestion-name,
+.mail-picker__suggestion-item.Mui-selected .mail-picker__suggestion-domain {
+  color: var(--color-on-primary) !important;
+}
+
+/* Animação de entrada */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mail-picker-popover .MuiPaper-root {
+  animation: slideIn 0.2s ease-out;
+}
+

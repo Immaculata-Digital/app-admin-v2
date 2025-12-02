@@ -1,0 +1,161 @@
+/* PasswordPicker - Estilo Google */
+.password-picker-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.password-picker {
+  width: 100%;
+}
+
+.password-picker .MuiOutlinedInput-root {
+  background-color: var(--color-surface);
+}
+
+/* Placeholder */
+.password-picker .MuiInputBase-input::placeholder {
+  color: var(--color-on-secondary);
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+}
+
+.theme-dark .password-picker .MuiInputBase-input::placeholder {
+  color: var(--color-on-secondary);
+  opacity: 0.6;
+}
+
+.password-picker .MuiOutlinedInput-root.Mui-focused .MuiInputBase-input::placeholder {
+  opacity: 0.4;
+}
+
+.theme-dark .password-picker .MuiOutlinedInput-root {
+  background-color: var(--color-surface);
+  color: var(--color-text);
+}
+
+/* Ícone de cadeado */
+.password-picker__lock-icon {
+  color: var(--color-on-secondary);
+  margin-left: 4px;
+}
+
+.theme-dark .password-picker__lock-icon {
+  color: var(--color-on-secondary);
+}
+
+/* Botão de toggle de visibilidade */
+.password-picker__toggle-btn {
+  color: var(--color-on-secondary);
+  padding: 4px;
+  transition: color 0.2s ease;
+}
+
+.password-picker__toggle-btn:hover {
+  color: var(--color-text);
+  background-color: var(--color-hover);
+}
+
+.password-picker__toggle-btn:disabled {
+  color: var(--color-on-secondary);
+  opacity: 0.5;
+}
+
+.theme-dark .password-picker__toggle-btn {
+  color: var(--color-on-secondary);
+}
+
+.theme-dark .password-picker__toggle-btn:hover {
+  color: var(--color-text);
+  background-color: var(--color-hover);
+}
+
+.password-picker__visibility-icon {
+  font-size: 1.25rem !important;
+}
+
+/* Indicador de força da senha */
+.password-picker__strength-indicator {
+  width: 100%;
+  padding: 0 4px;
+}
+
+.password-picker__strength-bar {
+  width: 100%;
+  height: 4px;
+  border-radius: 2px;
+  background-color: var(--color-hover);
+  overflow: hidden;
+}
+
+.theme-dark .password-picker__strength-bar {
+  background-color: var(--color-hover);
+}
+
+/* Cores da barra de força */
+.password-picker__strength-bar--very-weak .MuiLinearProgress-bar {
+  background-color: #f44336 !important;
+}
+
+.password-picker__strength-bar--weak .MuiLinearProgress-bar {
+  background-color: #ff9800 !important;
+}
+
+.password-picker__strength-bar--fair .MuiLinearProgress-bar {
+  background-color: #ffc107 !important;
+}
+
+.password-picker__strength-bar--good .MuiLinearProgress-bar {
+  background-color: #4caf50 !important;
+}
+
+.password-picker__strength-bar--strong .MuiLinearProgress-bar {
+  background-color: #2e7d32 !important;
+}
+
+/* Animação suave */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.password-picker__strength-indicator {
+  animation: slideIn 0.2s ease-out;
+}
+
+/* Ajustes de espaçamento */
+.password-picker .MuiFormHelperText-root {
+  margin-top: 4px;
+  font-size: 0.75rem;
+}
+
+.theme-dark .password-picker .MuiFormHelperText-root {
+  color: var(--color-on-secondary);
+}
+
+/* Estilo do input quando focado */
+.password-picker .MuiOutlinedInput-root.Mui-focused {
+  background-color: var(--color-surface);
+}
+
+.theme-dark .password-picker .MuiOutlinedInput-root.Mui-focused {
+  background-color: var(--color-surface);
+}
+
+/* Estilo do input quando desabilitado */
+.password-picker .MuiOutlinedInput-root.Mui-disabled {
+  background-color: var(--color-hover);
+  opacity: 0.6;
+}
+
+.theme-dark .password-picker .MuiOutlinedInput-root.Mui-disabled {
+  background-color: var(--color-hover);
+}
+

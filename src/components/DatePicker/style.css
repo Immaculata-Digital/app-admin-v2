@@ -1,0 +1,241 @@
+/* DatePicker - Estilo Google Calendar */
+.date-picker {
+  width: 100%;
+}
+
+.date-picker .MuiOutlinedInput-root {
+  background-color: var(--color-surface);
+}
+
+/* Placeholder */
+.date-picker .MuiInputBase-input::placeholder {
+  color: var(--color-on-secondary);
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+}
+
+.theme-dark .date-picker .MuiInputBase-input::placeholder {
+  color: var(--color-on-secondary);
+  opacity: 0.6;
+}
+
+.date-picker .MuiOutlinedInput-root.Mui-focused .MuiInputBase-input::placeholder {
+  opacity: 0.4;
+}
+
+.theme-dark .date-picker .MuiOutlinedInput-root {
+  background-color: var(--color-surface);
+  color: var(--color-text);
+}
+
+/* Ocultar o ícone nativo do calendário do input date */
+.date-picker input[type="date"]::-webkit-calendar-picker-indicator {
+  display: none;
+  -webkit-appearance: none;
+  appearance: none;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  cursor: pointer;
+}
+
+.date-picker input[type="date"]::-webkit-inner-spin-button,
+.date-picker input[type="date"]::-webkit-clear-button {
+  display: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* Para Firefox */
+.date-picker input[type="date"] {
+  position: relative;
+}
+
+.date-picker input[type="date"]::-moz-calendar-picker-indicator {
+  display: none;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* Popover do calendário */
+.date-picker-popover .MuiPaper-root {
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  padding: 16px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-lighter);
+}
+
+.theme-dark .date-picker-popover .MuiPaper-root {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+/* Container do calendário */
+.date-picker-calendar {
+  min-width: 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Cabeçalho do calendário */
+.date-picker-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 4px;
+}
+
+.date-picker-header .MuiTypography-root {
+  color: var(--color-text);
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.theme-dark .date-picker-header .MuiTypography-root {
+  color: var(--color-text);
+}
+
+.date-picker-nav-btn {
+  color: var(--color-text);
+  padding: 4px;
+  min-width: 32px;
+  height: 32px;
+}
+
+.date-picker-nav-btn:hover {
+  background-color: var(--color-hover);
+}
+
+.theme-dark .date-picker-nav-btn {
+  color: var(--color-text);
+}
+
+.theme-dark .date-picker-nav-btn:hover {
+  background-color: var(--color-hover);
+  color: var(--color-primary);
+}
+
+/* Dias da semana */
+.date-picker-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin-bottom: 4px;
+}
+
+.date-picker-weekday {
+  text-align: center;
+  font-weight: 500;
+  color: var(--color-on-secondary);
+  font-size: 0.75rem;
+  padding: 8px 0;
+}
+
+.theme-dark .date-picker-weekday {
+  color: var(--color-on-secondary);
+}
+
+/* Grid de dias */
+.date-picker-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.date-picker-day-empty {
+  aspect-ratio: 1;
+}
+
+/* Botão de dia */
+.date-picker-day {
+  min-width: 36px;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  font-size: 0.8125rem;
+  color: var(--color-text);
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  font-weight: 400;
+}
+
+.date-picker-day:hover {
+  background-color: var(--color-hover);
+}
+
+.date-picker-day--today {
+  border: 1px solid var(--color-primary);
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.date-picker-day--selected {
+  background-color: var(--color-primary) !important;
+  color: var(--color-on-primary) !important;
+  font-weight: 600;
+}
+
+.date-picker-day--selected:hover {
+  background-color: var(--color-primary-dark) !important;
+}
+
+.theme-dark .date-picker-day {
+  color: var(--color-text);
+}
+
+.theme-dark .date-picker-day:hover {
+  background-color: var(--color-hover);
+  color: var(--color-text);
+}
+
+.theme-dark .date-picker-day--today {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.theme-dark .date-picker-day--selected {
+  background-color: var(--color-primary) !important;
+  color: var(--color-on-primary) !important;
+}
+
+.theme-dark .date-picker-day--selected:hover {
+  background-color: var(--color-primary-dark) !important;
+}
+
+/* Rodapé do calendário */
+.date-picker-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 8px;
+  border-top: 1px solid var(--color-border-lighter);
+}
+
+.theme-dark .date-picker-footer {
+  border-top-color: var(--color-border);
+}
+
+.date-picker-today-btn {
+  color: var(--color-primary);
+  font-weight: 500;
+  text-transform: none;
+  font-size: 0.8125rem;
+  padding: 4px 12px;
+}
+
+.date-picker-today-btn:hover {
+  background-color: var(--color-hover);
+}
+
+.theme-dark .date-picker-today-btn {
+  color: var(--color-primary);
+}
+
+.theme-dark .date-picker-today-btn:hover {
+  background-color: var(--color-hover);
+}
+

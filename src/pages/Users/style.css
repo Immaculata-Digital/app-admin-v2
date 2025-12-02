@@ -1,0 +1,29 @@
+.users-page {
+  width: 100%;
+  padding: 0;
+  background-color: var(--color-background);
+}
+
+.users-page__loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 320px;
+}
+
+@media (max-width: 768px) {
+  .users-page {
+    padding: 0;
+  }
+}
+
+
+.theme-dark .users-page__empty-text {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+.theme-dark .users-page__label {
+  color: #ffffff !important;
+}

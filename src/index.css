@@ -1,0 +1,292 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@500;600;700&display=swap');
+
+:root {
+  /* Cores Concordia - baseadas no app-admin atual */
+  --color-primary: hsl(220 70% 28%);
+  --color-primary-dark: hsl(220 75% 18%);
+  --color-primary-light: hsl(220 65% 45%);
+  --color-primary-rgb: 51, 85, 153;
+  --color-secondary: hsl(220 15% 92%);
+  --color-text: hsl(220 70% 12%);
+  --color-accent: hsl(200 80% 50%);
+  --color-background: hsl(220 25% 97%);
+  --color-surface: hsl(0 0% 100%);
+  --color-on-primary: hsl(0 0% 100%);
+  --color-on-primary-muted: hsla(0, 0%, 100%, 0.8);
+  --color-on-primary-soft: hsla(0, 0%, 100%, 0.2);
+  --color-on-secondary: hsla(220, 70%, 12%, 0.6);
+  --color-sidebar-bg: hsl(220 70% 12%);
+  --color-border: hsla(220, 20%, 88%, 1);
+  --color-border-light: hsla(220, 20%, 88%, 0.5);
+  --color-border-lighter: hsla(220, 20%, 88%, 0.2);
+  --color-hover: hsla(220, 70%, 28%, 0.08);
+  --color-hover-strong: hsla(220, 70%, 28%, 0.16);
+  --color-shadow: hsla(220, 70%, 28%, 0.1);
+  --color-shadow-strong: hsla(220, 70%, 28%, 0.2);
+  --font-title: 'Poppins', sans-serif;
+  --font-body: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  min-height: 100vh;
+  font-family: var(--font-body);
+  background-color: var(--color-background);
+  color: var(--color-text);
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+}
+
+.MuiButton-containedPrimary {
+  background-color: var(--color-primary) !important;
+  color: var(--color-on-primary) !important;
+}
+
+.MuiButton-containedPrimary:hover {
+  background-color: var(--color-primary-dark) !important;
+}
+
+.MuiButton-outlinedPrimary {
+  border-color: var(--color-primary) !important;
+  color: var(--color-primary) !important;
+}
+
+.MuiButton-outlinedPrimary:hover {
+  border-color: var(--color-primary-dark) !important;
+  color: var(--color-primary-dark) !important;
+  background-color: var(--color-hover) !important;
+}
+
+.theme-dark .MuiButton-outlinedPrimary:hover {
+  background-color: hsla(var(--color-primary-rgb), 0.12) !important;
+}
+
+.MuiCheckbox-root.Mui-checked,
+.MuiCheckbox-root.MuiCheckbox-indeterminate {
+  color: var(--color-primary) !important;
+}
+
+.MuiIconButton-colorPrimary {
+  color: var(--color-primary) !important;
+}
+
+.MuiIconButton-colorPrimary:hover {
+  background-color: var(--color-hover-strong) !important;
+}
+
+.theme-dark {
+  /* Cores primárias - mantém a identidade Concordia */
+  --color-primary: hsl(220 65% 55%);
+  --color-primary-dark: hsl(220 70% 40%);
+  --color-primary-light: hsl(220 60% 65%);
+  --color-primary-rgb: 102, 136, 204;
+
+  /* Cores de texto */
+  --color-secondary: hsl(220 15% 95%);
+  --color-text: hsl(220 15% 95%);
+  --color-accent: hsl(200 80% 60%);
+
+  /* Cores de fundo */
+  --color-background: hsl(220 70% 8%);
+  --color-surface: hsl(220 65% 12%);
+  --color-sidebar-bg: hsl(220 70% 10%);
+
+  /* Cores on-primary - texto claro sobre fundo escuro do sidebar */
+  --color-on-primary: hsl(0 0% 100%);
+  --color-on-primary-muted: hsla(0, 0%, 100%, 0.8);
+  --color-on-primary-soft: hsla(0, 0%, 100%, 0.3);
+
+  /* Cores on-secondary */
+  --color-on-secondary: hsla(220, 15%, 95%, 0.7);
+
+  /* Bordas e divisores */
+  --color-border: hsla(255, 255, 255, 0.12);
+  --color-border-light: hsla(255, 255, 255, 0.08);
+  --color-border-lighter: hsla(255, 255, 255, 0.05);
+
+  /* Estados hover */
+  --color-hover: hsla(255, 255, 255, 0.1);
+  --color-hover-strong: hsla(255, 255, 255, 0.16);
+
+  /* Sombras */
+  --color-shadow: hsla(0, 0%, 0%, 0.3);
+  --color-shadow-strong: hsla(0, 0%, 0%, 0.5);
+}
+
+/* Estilos globais para Material-UI no modo escuro */
+.theme-dark .MuiPaper-root {
+  background-color: var(--color-surface) !important;
+  color: var(--color-text) !important;
+}
+
+/* Sidebar sempre com fundo escuro e texto branco */
+.sidebar-paper,
+.theme-dark .sidebar-paper {
+  background-color: var(--color-sidebar-bg) !important;
+  color: var(--color-on-primary) !important;
+}
+
+.sidebar-paper .MuiListItemButton-root,
+.sidebar-paper .MuiListItemText-primary,
+.sidebar-paper .MuiListItemIcon-root,
+.sidebar-paper .MuiTypography-root {
+  color: var(--color-on-primary) !important;
+}
+
+.theme-dark .sidebar-paper .MuiListItemButton-root,
+.theme-dark .sidebar-paper .MuiListItemText-primary,
+.theme-dark .sidebar-paper .MuiListItemIcon-root,
+.theme-dark .sidebar-paper .MuiTypography-root {
+  color: var(--color-on-primary) !important;
+}
+
+.theme-dark .MuiCard-root {
+  background-color: var(--color-surface) !important;
+  color: var(--color-text) !important;
+}
+
+.theme-dark .MuiTextField-root .MuiOutlinedInput-root {
+  background-color: transparent;
+}
+
+.theme-dark .MuiTextField-root .MuiOutlinedInput-notchedOutline {
+  border-color: var(--color-border) !important;
+}
+
+.theme-dark .MuiTextField-root .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
+  border-color: var(--color-border-light) !important;
+}
+
+.theme-dark .MuiTextField-root .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: var(--color-primary) !important;
+}
+
+.theme-dark .MuiInputLabel-root {
+  color: var(--color-text) !important;
+}
+
+.theme-dark .MuiInputBase-input {
+  color: var(--color-text) !important;
+}
+
+.theme-dark .MuiInputBase-input.Mui-disabled {
+  color: hsla(255, 255, 255, 0.5) !important;
+  -webkit-text-fill-color: hsla(255, 255, 255, 0.5) !important;
+}
+
+.theme-dark .MuiTableCell-root {
+  border-bottom-color: var(--color-border-lighter) !important;
+  color: var(--color-text) !important;
+}
+
+.theme-dark .MuiTableHead-root .MuiTableCell-root {
+  color: var(--color-on-secondary) !important;
+  font-weight: 600;
+}
+
+.theme-dark .MuiChip-root {
+  background-color: var(--color-hover) !important;
+  color: var(--color-text) !important;
+}
+
+.theme-dark .MuiDivider-root {
+  border-color: var(--color-border-lighter) !important;
+}
+
+.theme-dark .MuiMenu-paper {
+  background-color: var(--color-surface) !important;
+  border: 1px solid var(--color-border) !important;
+}
+
+.theme-dark .MuiMenuItem-root {
+  color: var(--color-text) !important;
+}
+
+.theme-dark .MuiMenuItem-root:hover {
+  background-color: var(--color-hover) !important;
+}
+
+.theme-dark .MuiMenuItem-root.Mui-disabled {
+  opacity: 0.5 !important;
+  color: var(--color-on-secondary) !important;
+  pointer-events: none !important;
+}
+
+.theme-dark .MuiDialog-paper {
+  background-color: var(--color-surface) !important;
+  color: var(--color-text) !important;
+}
+
+.theme-dark .MuiDialogTitle-root {
+  color: var(--color-text) !important;
+}
+
+.theme-dark .MuiDialogContent-root {
+  color: var(--color-text) !important;
+}
+
+.theme-dark .MuiTypography-colorTextSecondary {
+  color: var(--color-on-secondary) !important;
+}
+
+.theme-dark .MuiSvgIcon-root {
+  color: inherit;
+}
+
+.theme-dark .MuiIconButton-root .MuiSvgIcon-root {
+  color: var(--color-text);
+}
+
+.theme-dark .MuiIconButton-root:hover .MuiSvgIcon-root {
+  color: var(--color-primary);
+}
+
+.theme-dark input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+}
+
+/* Botão Cancelar Global */
+.button-cancel {
+  color: hsl(220 70% 12%) !important;
+}
+
+.theme-dark .button-cancel {
+  color: hsl(220 15% 95%) !important;
+}
+
+.theme-dark .button-cancel:hover {
+  background-color: var(--color-hover-strong) !important;
+}
+
+.theme-dark .MuiIconButton-root:hover {
+  background-color: var(--color-hover-strong) !important;
+}
+
+.theme-dark .MuiButton-contained.Mui-disabled {
+  background-color: hsla(255, 255, 255, 0.12) !important;
+  color: hsla(255, 255, 255, 0.3) !important;
+}
+
+.theme-dark .access-denied-text {
+  color: hsl(220 15% 95%) !important;
+}
+
