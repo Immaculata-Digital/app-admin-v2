@@ -1,0 +1,192 @@
+/* NumberPicker - Estilo Google */
+.number-picker-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.number-picker {
+  width: 100%;
+}
+
+.number-picker .MuiOutlinedInput-root {
+  background-color: #ffffff !important;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.theme-dark .number-picker .MuiOutlinedInput-root {
+  background-color: var(--color-surface) !important;
+  color: var(--color-text);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.number-picker--focused .MuiOutlinedInput-root {
+  background-color: #ffffff !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+}
+
+.theme-dark .number-picker--focused .MuiOutlinedInput-root {
+  background-color: var(--color-surface) !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.number-picker--error .MuiOutlinedInput-root {
+  background-color: #ffffff !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.theme-dark .number-picker--error .MuiOutlinedInput-root {
+  background-color: var(--color-surface) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.number-picker__start-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-on-secondary);
+  margin-right: 4px;
+}
+
+.number-picker__start-icon .MuiSvgIcon-root {
+  font-size: 1rem;
+}
+
+.number-picker__prefix,
+.number-picker__suffix {
+  color: var(--color-on-secondary);
+  font-size: 0.875rem;
+}
+
+.theme-dark .number-picker__start-icon {
+  color: var(--color-on-secondary);
+}
+
+.number-picker--focused .number-picker__start-icon {
+  color: var(--color-primary);
+}
+
+.theme-dark .number-picker--focused .number-picker__start-icon {
+  color: var(--color-primary);
+}
+
+.number-picker__clear-btn {
+  color: var(--color-on-secondary);
+  padding: 4px;
+  transition: all 0.2s ease;
+  margin-right: -4px;
+}
+
+.number-picker__clear-btn:hover {
+  color: var(--color-text);
+  background-color: var(--color-hover);
+}
+
+.number-picker__clear-btn:disabled {
+  color: var(--color-on-secondary);
+  opacity: 0.5;
+}
+
+.theme-dark .number-picker__clear-btn {
+  color: var(--color-on-secondary);
+}
+
+.theme-dark .number-picker__clear-btn:hover {
+  color: var(--color-text);
+  background-color: var(--color-hover);
+}
+
+.number-picker__clear-btn .MuiSvgIcon-root {
+  font-size: 1rem;
+}
+
+.number-picker .MuiInputBase-input::placeholder {
+  color: var(--color-on-secondary);
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+}
+
+.theme-dark .number-picker .MuiInputBase-input::placeholder {
+  color: var(--color-on-secondary);
+  opacity: 0.6;
+}
+
+.number-picker--focused .MuiInputBase-input::placeholder {
+  opacity: 0.4;
+}
+
+.number-picker .MuiInputLabel-root {
+  color: var(--color-on-secondary);
+}
+
+.theme-dark .number-picker .MuiInputLabel-root {
+  color: var(--color-on-secondary);
+}
+
+.number-picker--focused .MuiInputLabel-root {
+  color: var(--color-primary);
+}
+
+.theme-dark .number-picker--focused .MuiInputLabel-root {
+  color: var(--color-primary);
+}
+
+.number-picker .MuiFormHelperText-root {
+  margin-top: 4px;
+  font-size: 0.75rem;
+  color: var(--color-on-secondary);
+}
+
+.theme-dark .number-picker .MuiFormHelperText-root {
+  color: var(--color-on-secondary);
+}
+
+.number-picker--error .MuiFormHelperText-root {
+  color: var(--color-error, #f44336);
+}
+
+.theme-dark .number-picker--error .MuiFormHelperText-root {
+  color: var(--color-error, #ef5350);
+}
+
+.number-picker .MuiOutlinedInput-root.Mui-disabled {
+  background-color: var(--color-surface);
+  cursor: not-allowed;
+}
+
+.theme-dark .number-picker .MuiOutlinedInput-root.Mui-disabled {
+  background-color: var(--color-surface);
+}
+
+.number-picker .MuiOutlinedInput-root.Mui-disabled .number-picker__start-icon {
+  opacity: 0.5;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.number-picker__clear-btn {
+  animation: fadeIn 0.2s ease-out;
+}
+
+.number-picker .MuiOutlinedInput-root {
+  transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.number-picker__start-icon,
+.number-picker__clear-btn {
+  transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.theme-dark .number-picker input {
+  color: var(--color-text);
+}
+

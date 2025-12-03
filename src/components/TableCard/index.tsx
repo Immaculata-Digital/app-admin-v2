@@ -624,12 +624,21 @@ const TableCard = <T extends TableCardRow>({
         )}
       </Menu>
 
-      <Dialog open={dialog.open} onClose={closeDialog} fullWidth maxWidth="sm">
-        <DialogTitle>
+      <Dialog 
+        open={dialog.open} 
+        onClose={closeDialog} 
+        fullWidth 
+        maxWidth="sm"
+        className="table-card__form-dialog"
+        PaperProps={{
+          className: 'table-card__dialog-paper'
+        }}
+      >
+        <DialogTitle className="table-card__dialog-title">
           {dialog.mode === 'add' ? 'Adicionar registro' : 'Editar registro'}
         </DialogTitle>
-        <DialogContent dividers>
-          <Stack spacing={2}>
+        <DialogContent dividers className="table-card__dialog-content">
+          <Stack spacing={2} className="table-card__form-fields">
             {formSchema.map((field) => renderFormField(field))}
           </Stack>
         </DialogContent>

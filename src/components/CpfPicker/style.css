@@ -1,0 +1,186 @@
+/* CpfPicker - Estilo Google */
+.cpf-picker-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cpf-picker {
+  width: 100%;
+}
+
+.cpf-picker .MuiOutlinedInput-root {
+  background-color: #ffffff !important;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.theme-dark .cpf-picker .MuiOutlinedInput-root {
+  background-color: var(--color-surface) !important;
+  color: var(--color-text);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.cpf-picker--focused .MuiOutlinedInput-root {
+  background-color: #ffffff !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+}
+
+.theme-dark .cpf-picker--focused .MuiOutlinedInput-root {
+  background-color: var(--color-surface) !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.cpf-picker--error .MuiOutlinedInput-root {
+  background-color: #ffffff !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.theme-dark .cpf-picker--error .MuiOutlinedInput-root {
+  background-color: var(--color-surface) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.cpf-picker__start-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-on-secondary);
+  margin-right: 4px;
+}
+
+.cpf-picker__start-icon .MuiSvgIcon-root {
+  font-size: 1rem;
+}
+
+.theme-dark .cpf-picker__start-icon {
+  color: var(--color-on-secondary);
+}
+
+.cpf-picker--focused .cpf-picker__start-icon {
+  color: var(--color-primary);
+}
+
+.theme-dark .cpf-picker--focused .cpf-picker__start-icon {
+  color: var(--color-primary);
+}
+
+.cpf-picker__clear-btn {
+  color: var(--color-on-secondary);
+  padding: 4px;
+  transition: all 0.2s ease;
+  margin-right: -4px;
+}
+
+.cpf-picker__clear-btn:hover {
+  color: var(--color-text);
+  background-color: var(--color-hover);
+}
+
+.cpf-picker__clear-btn:disabled {
+  color: var(--color-on-secondary);
+  opacity: 0.5;
+}
+
+.theme-dark .cpf-picker__clear-btn {
+  color: var(--color-on-secondary);
+}
+
+.theme-dark .cpf-picker__clear-btn:hover {
+  color: var(--color-text);
+  background-color: var(--color-hover);
+}
+
+.cpf-picker__clear-btn .MuiSvgIcon-root {
+  font-size: 1rem;
+}
+
+.cpf-picker .MuiInputBase-input::placeholder {
+  color: var(--color-on-secondary);
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+}
+
+.theme-dark .cpf-picker .MuiInputBase-input::placeholder {
+  color: var(--color-on-secondary);
+  opacity: 0.6;
+}
+
+.cpf-picker--focused .MuiInputBase-input::placeholder {
+  opacity: 0.4;
+}
+
+.cpf-picker .MuiInputLabel-root {
+  color: var(--color-on-secondary);
+}
+
+.theme-dark .cpf-picker .MuiInputLabel-root {
+  color: var(--color-on-secondary);
+}
+
+.cpf-picker--focused .MuiInputLabel-root {
+  color: var(--color-primary);
+}
+
+.theme-dark .cpf-picker--focused .MuiInputLabel-root {
+  color: var(--color-primary);
+}
+
+.cpf-picker .MuiFormHelperText-root {
+  margin-top: 4px;
+  font-size: 0.75rem;
+  color: var(--color-on-secondary);
+}
+
+.theme-dark .cpf-picker .MuiFormHelperText-root {
+  color: var(--color-on-secondary);
+}
+
+.cpf-picker--error .MuiFormHelperText-root {
+  color: var(--color-error, #f44336);
+}
+
+.theme-dark .cpf-picker--error .MuiFormHelperText-root {
+  color: var(--color-error, #ef5350);
+}
+
+.cpf-picker .MuiOutlinedInput-root.Mui-disabled {
+  background-color: var(--color-surface);
+  cursor: not-allowed;
+}
+
+.theme-dark .cpf-picker .MuiOutlinedInput-root.Mui-disabled {
+  background-color: var(--color-surface);
+}
+
+.cpf-picker .MuiOutlinedInput-root.Mui-disabled .cpf-picker__start-icon {
+  opacity: 0.5;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.cpf-picker__clear-btn {
+  animation: fadeIn 0.2s ease-out;
+}
+
+.cpf-picker .MuiOutlinedInput-root {
+  transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cpf-picker__start-icon,
+.cpf-picker__clear-btn {
+  transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.theme-dark .cpf-picker input {
+  color: var(--color-text);
+}
+

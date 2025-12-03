@@ -11,31 +11,37 @@
 }
 
 .text-picker .MuiOutlinedInput-root {
-  background-color: var(--color-surface);
+  background-color: #ffffff !important;
   transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .theme-dark .text-picker .MuiOutlinedInput-root {
-  background-color: var(--color-surface);
+  background-color: var(--color-surface) !important;
   color: var(--color-text);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 /* Input quando focado */
 .text-picker--focused .MuiOutlinedInput-root {
-  background-color: var(--color-surface);
+  background-color: #ffffff !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
 }
 
 .theme-dark .text-picker--focused .MuiOutlinedInput-root {
-  background-color: var(--color-surface);
+  background-color: var(--color-surface) !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 }
 
 /* Input quando com erro */
 .text-picker--error .MuiOutlinedInput-root {
-  background-color: var(--color-surface);
+  background-color: #ffffff !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .theme-dark .text-picker--error .MuiOutlinedInput-root {
-  background-color: var(--color-surface);
+  background-color: var(--color-surface) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 /* Ícone inicial */
@@ -48,7 +54,7 @@
 }
 
 .text-picker__start-icon .MuiSvgIcon-root {
-  font-size: 1.25rem;
+  font-size: 1rem;
 }
 
 .theme-dark .text-picker__start-icon {
@@ -92,7 +98,7 @@
 }
 
 .text-picker__clear-btn .MuiSvgIcon-root {
-  font-size: 1.125rem;
+  font-size: 1rem;
 }
 
 /* Placeholder animado */

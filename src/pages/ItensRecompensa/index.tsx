@@ -13,6 +13,8 @@ import TableCard, {
 import { useSearch } from '../../context/SearchContext'
 import { useAuth } from '../../context/AuthContext'
 import TextPicker from '../../components/TextPicker'
+import NumberPicker from '../../components/NumberPicker'
+import ImagePicker from '../../components/ImagePicker'
 import { itemRecompensaService, type ItemRecompensaDTO, type CreateItemRecompensaPayload, type UpdateItemRecompensaPayload } from '../../services/itensRecompensa'
 import { getTenantSchema } from '../../utils/schema'
 import './style.css'
@@ -76,6 +78,28 @@ const ItensRecompensaPage = () => {
   const columns: TableCardColumn<ItemRecompensaRow>[] = useMemo(
     () => [
       {
+        key: 'imagem_item',
+        label: 'Imagem',
+        render: (value: string) => {
+          if (!value) return <Typography variant="body2" color="text.secondary">-</Typography>
+          return (
+            <Box
+              component="img"
+              src={value}
+              alt="Item"
+              sx={{
+                width: 60,
+                height: 60,
+                objectFit: 'cover',
+                borderRadius: 1,
+                border: '1px solid',
+                borderColor: 'divider',
+              }}
+            />
+          )
+        },
+      },
+      {
         key: 'nome_item',
         label: 'Nome do Item',
       },
@@ -134,29 +158,32 @@ const ItensRecompensaPage = () => {
         label: 'Quantidade de Pontos',
         required: true,
         renderInput: ({ value, onChange, disabled }) => (
-          <TextPicker
+          <NumberPicker
             label="Quantidade de Pontos"
-            value={typeof value === 'number' ? value.toString() : typeof value === 'string' ? value : ''}
-            onChange={(text) => onChange(Number(text) || 0)}
+            value={typeof value === 'number' ? value : typeof value === 'string' ? Number(value) || 0 : 0}
+            onChange={(val) => onChange(val)}
             fullWidth
-            type="number"
+            type="integer"
+            min={0}
             disabled={disabled}
           />
         ),
       },
       {
         key: 'imagem_item',
-        label: 'Imagem (Base64)',
+        label: 'Imagem',
         required: false,
         renderInput: ({ value, onChange, disabled }) => (
-          <TextPicker
-            label="Imagem (Base64)"
+          <ImagePicker
+            label="Imagem do Item"
             value={typeof value === 'string' ? value : ''}
-            onChange={(text) => onChange(text)}
+            onChange={(base64) => onChange(base64)}
             fullWidth
-            multiline
-            rows={4}
             disabled={disabled}
+            maxSizeMB={5}
+            maxWidth={800}
+            maxHeight={800}
+            helperText="Faça upload de uma imagem para o item de recompensa"
           />
         ),
       },

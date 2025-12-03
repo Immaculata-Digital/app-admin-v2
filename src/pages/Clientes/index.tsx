@@ -19,6 +19,9 @@ import { useSearch } from '../../context/SearchContext'
 import { useAuth } from '../../context/AuthContext'
 import TextPicker from '../../components/TextPicker'
 import SelectPicker from '../../components/SelectPicker'
+import PhonePicker from '../../components/PhonePicker'
+import CepPicker from '../../components/CepPicker'
+import MailPicker from '../../components/MailPicker'
 import { clienteService, type ClienteDTO, type CreateClientePayload, type UpdateClientePayload } from '../../services/clientes'
 import { getTenantSchema } from '../../utils/schema'
 import { lojaService } from '../../services/lojas'
@@ -147,9 +150,8 @@ const ClientesPage = () => {
         label: 'Email',
         required: true,
         renderInput: ({ value, onChange, disabled }) => (
-          <TextPicker
+          <MailPicker
             label="Email"
-            type="email"
             value={typeof value === 'string' ? value : ''}
             onChange={(text) => onChange(text)}
             fullWidth
@@ -162,11 +164,12 @@ const ClientesPage = () => {
         label: 'WhatsApp',
         required: true,
         renderInput: ({ value, onChange, disabled }) => (
-          <TextPicker
+          <PhonePicker
             label="WhatsApp"
             value={typeof value === 'string' ? value : ''}
             onChange={(text) => onChange(text)}
             fullWidth
+            placeholder="+55 (00) 0 0000-0000"
             disabled={disabled}
           />
         ),
@@ -176,7 +179,7 @@ const ClientesPage = () => {
         label: 'CEP',
         required: true,
         renderInput: ({ value, onChange, disabled }) => (
-          <TextPicker
+          <CepPicker
             label="CEP"
             value={typeof value === 'string' ? value : ''}
             onChange={(text) => onChange(text)}
@@ -214,8 +217,8 @@ const ClientesPage = () => {
           id_loja: Number(formData.id_loja),
           nome_completo: formData.nome_completo || '',
           email: formData.email || '',
-          whatsapp: formData.whatsapp || '',
-          cep: formData.cep || '',
+          whatsapp: formData.whatsapp || '', // PhonePicker retorna formato +55...
+          cep: formData.cep || '', // CepPicker retorna apenas números
           sexo: (formData.sexo as 'M' | 'F') || 'M',
           aceite_termos: true,
           senha: '123456', // Senha padrão - pode ser melhorado depois

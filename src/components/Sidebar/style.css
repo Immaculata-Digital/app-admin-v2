@@ -90,12 +90,14 @@
 
 .sidebar-section__title {
   color: var(--color-on-primary);
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: 0.05em;
   text-transform: uppercase;
   padding-left: 0.75rem;
   text-align: left;
   opacity: 0.7;
+  font-size: 0.7rem;
+  margin-bottom: 0.5rem;
 }
 
 .theme-dark .sidebar-section__title {
@@ -110,15 +112,25 @@
 }
 
 .sidebar-link {
-  border-radius: 12px;
+  border-radius: 10px;
   color: var(--color-on-primary) !important;
   margin-bottom: 0.25rem;
-  padding: 0.65rem 0.75rem;
+  padding: 0.5rem 0.625rem;
   transition: all 0.2s ease;
   justify-content: flex-start !important;
   text-align: left;
   gap: 0;
   background: transparent !important;
+  min-height: 40px;
+}
+
+.sidebar-link .MuiListItemText-primary {
+  font-size: 0.875rem !important;
+  font-weight: 500;
+}
+
+.sidebar-link__icon .MuiSvgIcon-root {
+  font-size: 1.125rem !important;
 }
 
 .sidebar-link,
@@ -149,11 +161,15 @@
 }
 
 .sidebar-link__icon {
-  min-width: 32px !important;
+  min-width: 28px !important;
   color: inherit;
   display: flex;
   align-items: left;
   justify-content: left;
+}
+
+.sidebar-link__icon .MuiSvgIcon-root {
+  font-size: 1.125rem !important;
 }
 
 .theme-dark .sidebar-link__icon {
@@ -261,14 +277,23 @@
 }
 
 .sidebar-footer__item {
-  border-radius: 12px;
+  border-radius: 10px;
   color: var(--color-on-primary);
-  padding: 0.65rem 0.75rem;
+  padding: 0.5rem 0.625rem;
   transition: all 0.2s ease;
   justify-content: flex-start !important;
   text-align: left;
   gap: 0;
   background: transparent !important;
+  min-height: 40px;
+}
+
+.sidebar-footer__item .MuiTypography-root {
+  font-size: 0.875rem !important;
+}
+
+.sidebar-footer__icon .MuiSvgIcon-root {
+  font-size: 1.125rem !important;
 }
 
 .sidebar-footer__item:hover {

@@ -26,6 +26,9 @@ import {
   EmailOutlined,
   ContactMailOutlined,
   SendOutlined,
+  StarsOutlined,
+  StoreOutlined,
+  BusinessOutlined,
 } from '@mui/icons-material'
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import React, { useEffect, useState, useMemo } from 'react'
@@ -42,6 +45,10 @@ const iconMapping: Record<string, React.ReactElement> = {
   ContactMail: <ContactMailOutlined />,
   Send: <SendOutlined />,
   Shield: <AdminPanelSettingsOutlined />,
+  Stars: <StarsOutlined />,
+  Store: <StoreOutlined />,
+  Business: <BusinessOutlined />,
+  CardGiftcard: <StarsOutlined />, // Mapeamento para compatibilidade
 }
 
 const getIcon = (iconName: string) => {

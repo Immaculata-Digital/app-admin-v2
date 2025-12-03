@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   Box,
   Button,
@@ -10,16 +11,21 @@ import {
   Snackbar,
   Typography,
 } from '@mui/material'
+import { QrCode, People, Person } from '@mui/icons-material'
 import TableCard, {
   type TableCardColumn,
   type TableCardFormField,
   type TableCardRow,
+  type TableCardRowAction,
 } from '../../components/TableCard'
 import { useSearch } from '../../context/SearchContext'
 import { useAuth } from '../../context/AuthContext'
 import TextPicker from '../../components/TextPicker'
+import PhonePicker from '../../components/PhonePicker'
+import CnpjPicker from '../../components/CnpjPicker'
 import { lojaService, type LojaDTO, type CreateLojaPayload, type UpdateLojaPayload } from '../../services/lojas'
 import { getTenantSchema } from '../../utils/schema'
+import { downloadQRCodeClienteRegistro } from '../../utils/qrcode.utils'
 import './style.css'
 
 type LojaRow = TableCardRow & LojaDTO
@@ -27,6 +33,7 @@ type LojaRow = TableCardRow & LojaDTO
 const DEFAULT_USER = 'admin'
 
 const LojasPage = () => {
+  const navigate = useNavigate()
   const [lojas, setLojas] = useState<LojaRow[]>([])
   const [loading, setLoading] = useState(true)
   const [toast, setToast] = useState<{ open: boolean; message: string }>({ open: false, message: '' })
@@ -153,11 +160,12 @@ const LojasPage = () => {
         label: 'Telefone do Responsável',
         required: true,
         renderInput: ({ value, onChange, disabled }) => (
-          <TextPicker
+          <PhonePicker
             label="Telefone do Responsável"
             value={typeof value === 'string' ? value : ''}
             onChange={(text) => onChange(text)}
             fullWidth
+            placeholder="+55 (00) 0 0000-0000"
             disabled={disabled}
           />
         ),
@@ -167,7 +175,7 @@ const LojasPage = () => {
         label: 'CNPJ',
         required: true,
         renderInput: ({ value, onChange, disabled }) => (
-          <TextPicker
+          <CnpjPicker
             label="CNPJ"
             value={typeof value === 'string' ? value : ''}
             onChange={(text) => onChange(text)}
@@ -254,6 +262,60 @@ const LojasPage = () => {
     []
   )
 
+  const handleDownloadQRCode = useCallback(
+    async (loja: LojaRow) => {
+      try {
+        if (!loja.id_loja || !loja.nome_loja) {
+          setToast({ open: true, message: 'Dados da loja incompletos' })
+          return
+        }
+        await downloadQRCodeClienteRegistro(loja.id_loja, loja.nome_loja)
+        setToast({ open: true, message: 'QR Code baixado com sucesso!' })
+      } catch (error: any) {
+        console.error('Erro ao gerar QR Code:', error)
+        setToast({ open: true, message: error?.message || 'Erro ao gerar QR Code' })
+      }
+    },
+    []
+  )
+
+  const handleVerClientes = useCallback(
+    (loja: LojaRow) => {
+      if (!loja.nome_loja) return
+      navigate(`/clientes?loja=${encodeURIComponent(loja.nome_loja)}`)
+    },
+    [navigate]
+  )
+
+  const handleVerUsuarios = useCallback(
+    (loja: LojaRow) => {
+      if (!loja.id_loja) return
+      navigate(`/usuarios?loja=${loja.id_loja}`)
+    },
+    [navigate]
+  )
+
+  const rowActions: TableCardRowAction<LojaRow>[] = useMemo(
+    () => [
+      {
+        label: 'Baixar QR Code',
+        icon: <QrCode fontSize="small" />,
+        onClick: handleDownloadQRCode,
+      },
+      {
+        label: 'Ver Clientes',
+        icon: <People fontSize="small" />,
+        onClick: handleVerClientes,
+      },
+      {
+        label: 'Ver Usuários',
+        icon: <Person fontSize="small" />,
+        onClick: handleVerUsuarios,
+      },
+    ],
+    [handleDownloadQRCode, handleVerClientes, handleVerUsuarios]
+  )
+
   if (!canList) {
     return (
       <Box className="lojas-page">
@@ -275,6 +337,7 @@ const LojasPage = () => {
         onEdit={canEdit ? handleUpdate : undefined}
         onDelete={canDelete ? handleDelete : undefined}
         disableView={!canView}
+        rowActions={rowActions}
       />
 
       <Snackbar
