@@ -8,6 +8,8 @@ import DashboardPage from '../pages/Dashboard'
 import LojasPage from '../pages/Lojas'
 import ItensRecompensaPage from '../pages/ItensRecompensa'
 import ClientesPage from '../pages/Clientes'
+import ClienteDetalhesPage from '../pages/ClienteDetalhes'
+import ResgateDetalhesPage from '../pages/ResgateDetalhes'
 import SetPasswordPage from '../pages/SetPassword'
 import MainLayout from '../components/MainLayout'
 import { ProtectedRoute } from '../components/ProtectedRoute'
@@ -58,6 +60,8 @@ const AppRoutes = () => (
         <Route path="/lojas" element={<LojasPage />} />
         <Route path="/itens-recompensa" element={<ItensRecompensaPage />} />
         <Route path="/clientes" element={<ClientesPage />} />
+        <Route path="/clientes/:id" element={<ClienteDetalhesPage />} />
+        <Route path="/resgates/:id" element={<ResgateDetalhesPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

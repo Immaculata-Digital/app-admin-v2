@@ -9,14 +9,15 @@ const getClientesApiUrl = () => {
 
 // URL da API clientes v1 (para movimentações de pontos)
 // A API v1 tem os endpoints de movimentação que a v2 ainda não tem
-// IMPORTANTE: A API v1 deve estar rodando na porta 7773 (ou configurada via env)
+// IMPORTANTE: A API v1 roda na mesma porta que a v2 (7773), mas com rotas diferentes
 const getClientesV1ApiUrl = () => {
-  // Priorizar variável específica para v1
+  // Usar a mesma URL base da v2, pois a v1 está na mesma porta
+  // A diferença está apenas nas rotas
   const envUrlV1 = import.meta.env.VITE_API_CLIENTES_URL
   if (envUrlV1) return envUrlV1
   
-  // Fallback: usar a porta padrão da API de clientes v1
-  // A API v1 roda na porta 7773 (verificar api-clientes/src/config.ts)
+  // Fallback: usar a mesma porta da API de clientes v2
+  // A API v1 e v2 compartilham a mesma base URL
   return 'http://localhost:7773/api'
 }
 
@@ -363,5 +364,141 @@ export const clienteService = {
     }>(`/clientes/${schema}/${clienteId}/pontos/${codigoUpper}`, {
       method: 'PUT',
     })
+  },
+
+  // Buscar detalhes do resgate por ID (usa API v2)
+  getDetalhesResgate: async (
+    schema: string,
+    idResgate: number
+  ): Promise<{
+    id_resgate: number
+    codigo_resgate: string
+    resgate_utilizado: boolean
+    id_cliente: number
+    id_item_recompensa: number
+    id_movimentacao: number | null
+    dt_resgate: string
+    dt_utilizado: string | null
+    cliente: {
+      id_cliente: number
+      nome: string
+      email: string
+      whatsapp: string
+      saldo: number
+    }
+    item: {
+      id_item_recompensa: number
+      nome: string
+      descricao: string | null
+      quantidade_pontos: number
+      nao_retirar_loja: boolean
+    }
+    movimentacao: {
+      pontos: number
+      saldo_resultante: number
+      observacao: string | null
+      dt_cadastro: string
+    }
+    status: 'pendente' | 'entregue'
+  }> => {
+    return request<{
+      id_resgate: number
+      codigo_resgate: string
+      resgate_utilizado: boolean
+      id_cliente: number
+      id_item_recompensa: number
+      id_movimentacao: number | null
+      dt_resgate: string
+      dt_utilizado: string | null
+      cliente: {
+        id_cliente: number
+        nome: string
+        email: string
+        whatsapp: string
+        saldo: number
+      }
+      item: {
+        id_item_recompensa: number
+        nome: string
+        descricao: string | null
+        quantidade_pontos: number
+        nao_retirar_loja: boolean
+      }
+      movimentacao: {
+        pontos: number
+        saldo_resultante: number
+        observacao: string | null
+        dt_cadastro: string
+      }
+      status: 'pendente' | 'entregue'
+    }>(`/clientes/${schema}/resgates/${idResgate}`)
+  },
+
+  // Buscar movimentações do cliente (usa API v2)
+  getMovimentacoes: async (
+    schema: string,
+    idCliente: number,
+    options: {
+      page?: number
+      limit?: number
+      order?: 'asc' | 'desc'
+      tipo?: 'CREDITO' | 'DEBITO' | 'ESTORNO'
+      origem?: string
+      dt_ini?: string
+      dt_fim?: string
+    } = {}
+  ): Promise<{
+    data: Array<{
+      id_movimentacao: number
+      id_cliente: number
+      tipo: 'CREDITO' | 'DEBITO' | 'ESTORNO'
+      pontos: number
+      saldo_resultante: number
+      origem: string
+      id_loja?: number
+      id_item_recompensa?: number | null
+      observacao?: string | null
+      dt_cadastro: string
+      usu_cadastro: number
+    }>
+    pagination: {
+      total: number
+      page: number
+      limit: number
+      totalPages: number
+    }
+  }> => {
+    const clienteId = normalizeClienteId(idCliente)
+    const params = new URLSearchParams()
+    if (options.page) params.append('page', options.page.toString())
+    if (options.limit) params.append('limit', options.limit.toString())
+    if (options.order) params.append('order', options.order)
+    if (options.tipo) params.append('tipo', options.tipo)
+    if (options.origem) params.append('origem', options.origem)
+    if (options.dt_ini) params.append('dt_ini', options.dt_ini)
+    if (options.dt_fim) params.append('dt_fim', options.dt_fim)
+
+    // Usa API v2 agora que o endpoint foi criado
+    return request<{
+      data: Array<{
+        id_movimentacao: number
+        id_cliente: number
+        tipo: 'CREDITO' | 'DEBITO' | 'ESTORNO'
+        pontos: number
+        saldo_resultante: number
+        origem: string
+        id_loja?: number
+        id_item_recompensa?: number | null
+        observacao?: string | null
+        dt_cadastro: string
+        usu_cadastro: number
+      }>
+      pagination: {
+        total: number
+        page: number
+        limit: number
+        totalPages: number
+      }
+    }>(`/clientes/${schema}/${clienteId}/pontos-movimentacoes?${params.toString()}`)
   },
 }
