@@ -152,6 +152,8 @@ const Sidebar = ({ open, onToggle, themeMode, onChangeTheme }: SidebarProps) => 
             fontWeight: 700,
             fontSize: open ? '1.25rem' : '0.875rem',
             transition: 'all 0.3s ease',
+            textAlign: open ? 'left' : 'center',
+            width: '100%',
           }}
         >
           {open ? 'Concordia ERP' : 'C'}
@@ -176,11 +178,11 @@ const Sidebar = ({ open, onToggle, themeMode, onChangeTheme }: SidebarProps) => 
         ) : (
           menuStructure.map((section) => (
             <div key={section.title} className="sidebar-section">
-              <Collapse in={open || isMobile} orientation="vertical">
+              {(open || isMobile) && (
                 <Typography variant="caption" className="sidebar-section__title">
                   {section.title}
                 </Typography>
-              </Collapse>
+              )}
               <List disablePadding>
                 {section.items.map((item) => (
                   <ListItemButton
@@ -197,9 +199,12 @@ const Sidebar = ({ open, onToggle, themeMode, onChangeTheme }: SidebarProps) => 
                       },
                       '& .MuiListItemIcon-root': {
                         color: 'var(--color-on-primary) !important',
+                        minWidth: open ? 28 : 24,
                       },
+                      justifyContent: open ? 'flex-start' : 'center',
                     }}
                     onClick={() => isMobile && onToggle()}
+                    title={!open ? item.label : ''}
                   >
                     <ListItemIcon className="sidebar-link__icon" sx={{ color: 'var(--color-on-primary) !important' }}>{item.icon}</ListItemIcon>
                     {(open || isMobile) && <ListItemText primary={item.label} sx={{ color: 'var(--color-on-primary) !important' }} />}
@@ -214,33 +219,32 @@ const Sidebar = ({ open, onToggle, themeMode, onChangeTheme }: SidebarProps) => 
       <div className="sidebar-footer">
         <Divider className="sidebar-footer__divider" />
         <Stack spacing={1} className="sidebar-footer__content">
-          <ListItemButton
-            className="sidebar-footer__item"
-            disableRipple
-            sx={{ gap: 0 }}
-          >
-            <ListItemIcon className="sidebar-footer__icon">
-              <DarkMode fontSize="small" />
-            </ListItemIcon>
-            {(open || isMobile) && (
-              <>
-                <ListItemText
-                  primary="Modo escuro"
-                  className="sidebar-footer__text"
-                />
-                <Switch
-                  size="small"
-                  checked={themeMode === 'dark'}
-                  onChange={(event) => onChangeTheme(event.target.checked ? 'dark' : 'light')}
-                  className="sidebar-footer__switch"
-                />
-              </>
-            )}
-          </ListItemButton>
+          {(open || isMobile) && (
+            <ListItemButton
+              className="sidebar-footer__item"
+              disableRipple
+              sx={{ gap: 0 }}
+            >
+              <ListItemIcon className="sidebar-footer__icon">
+                <DarkMode fontSize="small" />
+              </ListItemIcon>
+              <ListItemText
+                primary="Modo escuro"
+                className="sidebar-footer__text"
+              />
+              <Switch
+                size="small"
+                checked={themeMode === 'dark'}
+                onChange={(event) => onChangeTheme(event.target.checked ? 'dark' : 'light')}
+                className="sidebar-footer__switch"
+              />
+            </ListItemButton>
+          )}
           <ListItemButton
             className="sidebar-footer__item"
             onClick={handleLogout}
             sx={{ gap: 0 }}
+            title={!open && !isMobile ? 'Sair' : ''}
           >
             <ListItemIcon className="sidebar-footer__icon">
               <Logout fontSize="small" />
