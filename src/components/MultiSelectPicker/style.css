@@ -60,6 +60,12 @@
 	max-width: 100%;
 }
 
+/* Quando chipDisplay é 'block', não permite quebra de linha */
+.multi-select-picker__chips-container:not(.multi-select-picker__chips-container--inline) {
+	flex-wrap: nowrap;
+	overflow: hidden;
+}
+
 .multi-select-picker .MuiInputAdornment-positionStart {
 	width: 100%;
 	max-width: 100%;
@@ -79,6 +85,13 @@
 	scrollbar-width: thin;
 	padding-top: 4px;
 	padding-right: 0;
+}
+
+.multi-select-picker__chips-container--block {
+	flex-wrap: nowrap;
+	gap: 4px;
+	max-width: 100%;
+	overflow: hidden;
 }
 
 .multi-select-picker__chips-container--inline::-webkit-scrollbar {

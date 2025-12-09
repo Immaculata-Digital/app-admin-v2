@@ -164,12 +164,19 @@ const MultiSelectPicker = ({
   }
 
   const selectedLabels = getSelectedLabels()
-  const showAllChips = chipDisplay === 'inline' || chipDisplay === 'block'
-  const displayChips = showAllChips ? selectedLabels : selectedLabels.slice(0, maxDisplayChips)
-  const remainingCount = showAllChips ? 0 : Math.max(0, selectedLabels.length - maxDisplayChips)
+  // Limitar chips visíveis no campo
+  // Com 'inline', sempre mostra todos os chips
+  // Com 'block', sempre mostra apenas o primeiro chip + "+ quantidade restante"
+  // Com 'summary', nunca mostra chips (só o contador)
+  const showAllChips = chipDisplay === 'inline'
+  // Com 'block', sempre mostra apenas 1 chip (o primeiro) + "+ X" se houver mais
+  const displayChips = showAllChips ? selectedLabels : (chipDisplay === 'block' ? selectedLabels.slice(0, 1) : selectedLabels.slice(0, maxDisplayChips))
+  // Quando há mais chips do que o máximo, mostra a quantidade restante no "+"
+  const remainingCount = showAllChips ? 0 : (chipDisplay === 'block' && selectedLabels.length > 1 ? selectedLabels.length - 1 : Math.max(0, selectedLabels.length - maxDisplayChips))
 
   // Valor de exibição para o TextField (similar ao SelectPicker)
-  const displayValue = value.length > 0 && !showAllChips
+  // Com 'block', não mostra texto no campo, apenas os chips
+  const displayValue = value.length > 0 && !showAllChips && chipDisplay !== 'block'
     ? `${value.length} selecionado(s)`
     : ''
 
@@ -314,10 +321,11 @@ const MultiSelectPicker = ({
           startAdornment: value.length > 0 ? (
             <InputAdornment position="start">
               <Box
-                className={`multi-select-picker__chips-container ${chipDisplay === 'inline' ? 'multi-select-picker__chips-container--inline' : ''
+                className={`multi-select-picker__chips-container ${chipDisplay === 'inline' ? 'multi-select-picker__chips-container--inline' : 'multi-select-picker__chips-container--block'
                   }`}
               >
-                {displayChips.map((item) => (
+                {/* Sempre mostra o primeiro chip quando houver seleções */}
+                {displayChips.length > 0 && displayChips.map((item) => (
                   <Chip
                     key={item.value}
                     label={item.label}
@@ -328,6 +336,7 @@ const MultiSelectPicker = ({
                     disabled={disabled}
                   />
                 ))}
+                {/* Mostra "+ quantidade restante" quando houver mais de maxDisplayChips */}
                 {remainingCount > 0 && (
                   <Chip
                     label={`+${remainingCount}`}
@@ -501,14 +510,6 @@ const MultiSelectPicker = ({
             )}
           </Box>
 
-          {/* Contador de seleções */}
-          {value.length > 0 && (
-            <Box className="multi-select-picker__footer">
-              <Typography variant="caption" className="multi-select-picker__counter">
-                {value.length} {value.length === 1 ? 'item selecionado' : 'itens selecionados'}
-              </Typography>
-            </Box>
-          )}
         </Paper>
       </Popover>
     </>

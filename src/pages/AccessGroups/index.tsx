@@ -244,6 +244,7 @@ const AccessGroupsPage = () => {
             fullWidth
             showSelectAll
             chipDisplay="block"
+            maxDisplayChips={1}
             disabled={disabled}
           />
         ),
