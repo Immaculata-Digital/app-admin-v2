@@ -69,7 +69,7 @@ const compressImage = (file: File, maxWidth: number = 800, maxHeight: number = 8
         // Se for PNG com transparência ou WebP, manter PNG
         if (originalType === 'image/png' || originalType === 'image/webp') {
           mimeType = 'image/png'
-          quality = undefined
+          quality = 1
         }
         
         const compressedBase64 = canvas.toDataURL(mimeType, quality)

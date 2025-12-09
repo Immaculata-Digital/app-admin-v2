@@ -130,7 +130,6 @@ const ForgotPasswordPage = () => {
                       fullWidth
                       placeholder="Digite seu e-mail"
                       disabled={loading}
-                      required
                       error={!!error}
                     />
                   </Box>

@@ -5,7 +5,7 @@ import {
   IconButton,
   InputAdornment,
 } from '@mui/material'
-import { Close, Search } from '@mui/icons-material'
+import { Close, Search, Visibility, VisibilityOff } from '@mui/icons-material'
 import './style.css'
 
 type TextPickerProps = {
@@ -24,7 +24,7 @@ type TextPickerProps = {
   maxLength?: number
   showClearButton?: boolean
   startIcon?: React.ReactNode
-  type?: 'text' | 'search' | 'textarea'
+  type?: 'text' | 'search' | 'textarea' | 'password' | 'number' | 'email'
   autoFocus?: boolean
 }
 
@@ -49,6 +49,7 @@ const TextPicker = ({
 }: TextPickerProps) => {
   const [focused, setFocused] = useState(false)
   const [characterCount, setCharacterCount] = useState(value?.length || 0)
+  const [showPassword, setShowPassword] = useState(false)
   const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null)
 
   // Atualizar contador de caracteres
@@ -98,6 +99,10 @@ const TextPicker = ({
   // Determinar se deve mostrar botão de limpar
   const shouldShowClearButton = showClearButton && !disabled && value && value.length > 0
 
+  // Determinar se deve mostrar botão de mostrar/ocultar senha
+  const isPasswordType = type === 'password'
+  const shouldShowPasswordToggle = isPasswordType && !disabled
+
   // Helper text com contador de caracteres
   const displayHelperText =
     helperText ||
@@ -105,7 +110,14 @@ const TextPicker = ({
       ? `${characterCount}/${maxLength} caracteres`
       : '')
 
-  const inputType = multiline ? undefined : (type === 'search' ? 'text' : type)
+  // Determinar o tipo de input (password ou text quando mostrar senha)
+  const inputType = multiline 
+    ? undefined 
+    : (type === 'search' 
+      ? 'text' 
+      : (isPasswordType && showPassword 
+        ? 'text' 
+        : type))
 
   return (
     <Box className="text-picker-container">
@@ -125,9 +137,13 @@ const TextPicker = ({
         multiline={multiline}
         rows={rows}
         maxRows={maxRows}
+        InputLabelProps={{
+          shrink: value ? true : false,
+        }}
         inputProps={{
           maxLength: maxLength,
           type: inputType,
+          placeholder: placeholder,
         }}
         InputProps={{
           startAdornment: displayStartIcon ? (
@@ -135,18 +151,32 @@ const TextPicker = ({
               <Box className="text-picker__start-icon">{displayStartIcon}</Box>
             </InputAdornment>
           ) : undefined,
-          endAdornment: shouldShowClearButton ? (
+          endAdornment: (shouldShowClearButton || shouldShowPasswordToggle) ? (
             <InputAdornment position="end">
-              <IconButton
-                aria-label="limpar texto"
-                onClick={handleClear}
-                edge="end"
-                size="small"
-                disabled={disabled}
-                className="text-picker__clear-btn"
-              >
-                <Close fontSize="small" />
-              </IconButton>
+              {shouldShowPasswordToggle && (
+                <IconButton
+                  aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+                  onClick={() => setShowPassword(!showPassword)}
+                  edge="end"
+                  size="small"
+                  disabled={disabled}
+                  className="text-picker__password-toggle"
+                >
+                  {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                </IconButton>
+              )}
+              {shouldShowClearButton && (
+                <IconButton
+                  aria-label="limpar texto"
+                  onClick={handleClear}
+                  edge="end"
+                  size="small"
+                  disabled={disabled}
+                  className="text-picker__clear-btn"
+                >
+                  <Close fontSize="small" />
+                </IconButton>
+              )}
             </InputAdornment>
           ) : undefined,
         }}

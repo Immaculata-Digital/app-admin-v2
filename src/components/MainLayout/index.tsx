@@ -20,7 +20,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
     window.matchMedia('(prefers-color-scheme: dark)').matches
 
   const [sidebarOpen, setSidebarOpen] = useState(true)
-  const [themeMode, setThemeMode] = useState<'light' | 'dark'>(() => {
+  const [themeMode] = useState<'light' | 'dark'>(() => {
     if (typeof window === 'undefined') return 'light'
     const stored = window.localStorage.getItem('concordia-theme-mode') as 'light' | 'dark' | null
     return stored ?? (prefersDark ? 'dark' : 'light')

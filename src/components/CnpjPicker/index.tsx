@@ -91,7 +91,7 @@ const CnpjPicker = ({
         fullWidth={fullWidth}
         placeholder={placeholder}
         disabled={disabled}
-        error={showError}
+        error={!!showError}
         helperText={showError && cleanValue && !isValid 
           ? 'CNPJ inválido' 
           : helperText || ''}

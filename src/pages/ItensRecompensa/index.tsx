@@ -217,7 +217,7 @@ const ItensRecompensaPage = () => {
           descricao: (formData.descricao as string) ?? '',
           quantidade_pontos: Number(formData.quantidade_pontos) || 0,
           imagem_item: (formData.imagem_item as string | null) || null,
-          nao_retirar_loja: formData.nao_retirar_loja === true || formData.nao_retirar_loja === 'true',
+          nao_retirar_loja: formData.nao_retirar_loja === true || (typeof formData.nao_retirar_loja === 'string' && formData.nao_retirar_loja === 'true'),
         }
         await itemRecompensaService.create(getTenantSchema(), payload)
         setToast({ open: true, message: 'Item de recompensa criado com sucesso!' })
@@ -238,7 +238,7 @@ const ItensRecompensaPage = () => {
           descricao: formData.descricao as string | undefined,
           quantidade_pontos: formData.quantidade_pontos ? Number(formData.quantidade_pontos) : undefined,
           imagem_item: formData.imagem_item !== undefined ? (formData.imagem_item as string | null) : undefined,
-          nao_retirar_loja: formData.nao_retirar_loja !== undefined ? (formData.nao_retirar_loja === true || formData.nao_retirar_loja === 'true') : undefined,
+          nao_retirar_loja: formData.nao_retirar_loja !== undefined ? (formData.nao_retirar_loja === true || (typeof formData.nao_retirar_loja === 'string' && formData.nao_retirar_loja === 'true')) : undefined,
         }
         await itemRecompensaService.update(getTenantSchema(), Number(id), payload)
         setToast({ open: true, message: 'Item de recompensa atualizado com sucesso!' })

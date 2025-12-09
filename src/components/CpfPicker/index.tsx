@@ -92,7 +92,7 @@ const CpfPicker = ({
         fullWidth={fullWidth}
         placeholder={placeholder}
         disabled={disabled}
-        error={showError}
+        error={!!showError}
         helperText={showError && cleanValue && !isValid 
           ? 'CPF inválido' 
           : helperText || ''}

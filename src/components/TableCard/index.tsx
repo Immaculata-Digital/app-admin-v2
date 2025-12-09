@@ -180,13 +180,20 @@ const TableCard = <T extends TableCardRow>({
       return {} as Partial<T>
     }
 
-    const initialValues = formSchema.reduce((acc, field) => {
+    // Sempre incluir o ID se estiver editando
+    const baseValues: Partial<T> = row?.id ? { id: row.id } as Partial<T> : {}
+
+    const formValues = formSchema.reduce((acc, field) => {
       // Type assertion to access properties that might not exist on TableCardColumn
       const formField = field as TableCardFormField<T>
       const isMultiSelect = formField.inputType === 'multiselect'
 
       if (row) {
         const existingValue = row[field.key]
+        // Se o campo for de senha (type password), não preencher na edição
+        const isPasswordField = formField.inputType === 'password' || 
+          (formField.renderInput && String(field.key).toLowerCase().includes('senha'))
+        
         if (isMultiSelect) {
           acc[field.key] = (Array.isArray(existingValue)
             ? existingValue
@@ -194,10 +201,15 @@ const TableCard = <T extends TableCardRow>({
               ? [existingValue]
               : []) as any
         } else {
-          acc[field.key] =
-            existingValue !== undefined && existingValue !== null
-              ? existingValue
-              : formField.defaultValue ?? ''
+          // Se for campo de senha na edição, usar defaultValue vazio ou string vazia
+          if (isPasswordField) {
+            acc[field.key] = formField.defaultValue ?? ''
+          } else {
+            acc[field.key] =
+              existingValue !== undefined && existingValue !== null
+                ? existingValue
+                : formField.defaultValue ?? ''
+          }
         }
       } else {
         acc[field.key] = (isMultiSelect
@@ -207,9 +219,9 @@ const TableCard = <T extends TableCardRow>({
           : formField.defaultValue ?? '') as any
       }
       return acc
-    }, {} as Partial<T>)
+    }, baseValues as Partial<T>)
 
-    return initialValues
+    return formValues
   }
 
   const openDialog = (mode: 'add' | 'edit', row?: T) => {

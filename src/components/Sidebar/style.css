@@ -184,8 +184,8 @@
 }
 
 .sidebar-link:hover {
-  background: rgba(255, 255, 255, 0.1) !important;
-  transform: translateX(4px);
+  background: transparent !important;
+  transform: none;
 }
 
 .sidebar-link:hover .MuiListItemIcon-root,
@@ -208,7 +208,7 @@
 
 .sidebar-paper--closed .sidebar-link:hover {
   transform: none !important;
-  background: rgba(255, 255, 255, 0.15) !important;
+  background: transparent !important;
 }
 
 .sidebar-link__icon .MuiSvgIcon-root {
@@ -237,13 +237,13 @@
 }
 
 .theme-dark .sidebar-link:hover {
-  background: rgba(255, 255, 255, 0.1) !important;
-  transform: translateX(4px);
+  background: transparent !important;
+  transform: none;
 }
 
 .theme-dark .sidebar-paper--closed .sidebar-link:hover {
   transform: none !important;
-  background: rgba(255, 255, 255, 0.15) !important;
+  background: transparent !important;
 }
 
 .theme-dark .sidebar-link.active {
@@ -252,7 +252,7 @@
 }
 
 .theme-dark .sidebar-link.active:hover {
-  background: rgba(255, 255, 255, 0.2) !important;
+  background: rgba(255, 255, 255, 0.15) !important;
 }
 
 .theme-dark .sidebar-link .MuiListItemText-root {
@@ -298,7 +298,7 @@
 }
 
 .sidebar-link.active:hover {
-  background: rgba(255, 255, 255, 0.2) !important;
+  background: rgba(255, 255, 255, 0.15) !important;
 }
 
 .sidebar-paper--mobile {
@@ -363,8 +363,8 @@
 }
 
 .sidebar-footer__item:hover {
-  background: rgba(255, 255, 255, 0.1) !important;
-  transform: translateX(4px);
+  background: transparent !important;
+  transform: none;
 }
 
 .theme-dark .sidebar-footer__item {
@@ -372,8 +372,8 @@
 }
 
 .theme-dark .sidebar-footer__item:hover {
-  background: rgba(255, 255, 255, 0.1) !important;
-  transform: translateX(4px);
+  background: transparent !important;
+  transform: none;
 }
 
 .sidebar-footer__item.active {
@@ -382,7 +382,7 @@
 }
 
 .sidebar-footer__item.active:hover {
-  background: rgba(255, 255, 255, 0.2) !important;
+  background: rgba(255, 255, 255, 0.15) !important;
 }
 
 .theme-dark .sidebar-footer__item.active {
@@ -390,7 +390,7 @@
 }
 
 .theme-dark .sidebar-footer__item.active:hover {
-  background: rgba(255, 255, 255, 0.2) !important;
+  background: rgba(255, 255, 255, 0.15) !important;
 }
 
 .sidebar-footer__icon {

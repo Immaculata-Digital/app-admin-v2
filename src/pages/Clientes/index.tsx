@@ -64,7 +64,7 @@ const ClientesPage = () => {
     const loadLojas = async () => {
       try {
         const response = await lojaService.list(schema, { limit: 200, offset: 0 })
-        setLojas(response.itens.map((loja) => ({ id: loja.id_loja, label: loja.nome_loja })))
+        setLojas(response.itens.map((loja) => ({ id: loja.id_loja ?? 0, label: loja.nome_loja })))
       } catch (err) {
         console.error('Erro ao carregar lojas:', err)
       }

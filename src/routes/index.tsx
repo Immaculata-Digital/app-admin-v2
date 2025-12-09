@@ -12,6 +12,8 @@ import ClienteDetalhesPage from '../pages/ClienteDetalhes'
 import ResgateDetalhesPage from '../pages/ResgateDetalhes'
 import SetPasswordPage from '../pages/SetPassword'
 import ConfiguracoesPage from '../pages/Configuracoes'
+import RemetentesSmtpPage from '../pages/RemetentesSmtp'
+import CampanhasDisparoPage from '../pages/CampanhasDisparo'
 import MainLayout from '../components/MainLayout'
 import { ProtectedRoute } from '../components/ProtectedRoute'
 import { useAuth } from '../context/AuthContext'
@@ -64,6 +66,8 @@ const AppRoutes = () => (
         <Route path="/clientes/:id" element={<ClienteDetalhesPage />} />
         <Route path="/resgates/:id" element={<ResgateDetalhesPage />} />
         <Route path="/configuracoes" element={<ConfiguracoesPage />} />
+        <Route path="/remetentes-smtp" element={<RemetentesSmtpPage />} />
+        <Route path="/campanhas-disparo" element={<CampanhasDisparoPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
