@@ -43,7 +43,7 @@ export type CampanhaDisparoDTO = {
   assunto: string
   html: string
   remetente_id: string
-  tipo_envio: 'imediato' | 'agendado'
+  tipo_envio: 'manual' | 'agendado'
   data_agendamento: string | null
   status: 'rascunho' | 'agendada' | 'enviando' | 'concluida' | 'cancelada'
   total_enviados: number
@@ -51,6 +51,9 @@ export type CampanhaDisparoDTO = {
   total_abertos: number
   total_cliques: number
   chave: string
+  tipo_destinatario: 'todos' | 'lojas_especificas' | 'clientes_especificos'
+  lojas_ids: string | null
+  clientes_ids: string | null
   dt_cadastro: string
   usu_cadastro: number
   dt_altera: string | null
@@ -63,9 +66,12 @@ export type CreateCampanhaDisparoPayload = {
   assunto: string
   html: string
   remetente_id: string
-  tipo_envio: 'imediato' | 'agendado'
+  tipo_envio: 'manual' | 'agendado'
   data_agendamento?: string | null
   chave?: string
+  tipo_destinatario?: 'todos' | 'lojas_especificas' | 'clientes_especificos'
+  lojas_ids?: string | null
+  clientes_ids?: string | null
   usu_cadastro: number
 }
 
@@ -77,6 +83,9 @@ export type UpdateCampanhaDisparoPayload = {
   tipo_envio?: 'imediato' | 'agendado'
   data_agendamento?: string | null
   status?: 'rascunho' | 'agendada' | 'enviando' | 'concluida' | 'cancelada'
+  tipo_destinatario?: 'todos' | 'lojas_especificas' | 'clientes_especificos'
+  lojas_ids?: string | null
+  clientes_ids?: string | null
   usu_altera: number
 }
 
@@ -168,6 +177,11 @@ const updateCampanhaDisparo = (schema: string, id: string, payload: UpdateCampan
   })
 const deleteCampanhaDisparo = (schema: string, id: string) => 
   comunicacoesRequest<void>(`/${schema}/campanhas-disparo/${id}`, { method: 'DELETE' })
+const enviarCampanhaDisparo = (schema: string, id: string, payload?: { anexos?: Array<{ nome: string; conteudo: string; tipo: string }> }) =>
+  comunicacoesRequest<{ message: string; total_enviados: number }>(`/${schema}/campanhas-disparo/${id}/enviar`, {
+    method: 'POST',
+    body: JSON.stringify(payload || {}),
+  })
 
 export const comunicacoesService = {
   remetentesSmtp: {
@@ -183,6 +197,7 @@ export const comunicacoesService = {
     create: createCampanhaDisparo,
     update: updateCampanhaDisparo,
     delete: deleteCampanhaDisparo,
+    enviar: enviarCampanhaDisparo,
   },
 }
 

@@ -20,6 +20,7 @@ import {
   Title,
   Link,
   HorizontalRule,
+  Add,
 } from '@mui/icons-material'
 import {
   DndContext,
@@ -41,6 +42,17 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import './style.css'
+
+// Variáveis disponíveis do objeto cliente
+const CLIENTE_VARIABLES = [
+  { label: 'Nome Completo', value: '{{cliente.nome_completo}}' },
+  { label: 'Email', value: '{{cliente.email}}' },
+  { label: 'WhatsApp', value: '{{cliente.whatsapp}}' },
+  { label: 'Saldo de Pontos', value: '{{cliente.saldo}}' },
+  { label: 'CEP', value: '{{cliente.cep}}' },
+  { label: 'ID do Cliente', value: '{{cliente.id_cliente}}' },
+  { label: 'ID da Loja', value: '{{cliente.id_loja}}' },
+]
 
 export type EmailElement = 
   | { type: 'text'; id: string; content: string; styles?: { fontSize?: string; color?: string; fontWeight?: string } }
@@ -199,6 +211,7 @@ const ElementEditor = ({
   onSave: (element: EmailElement) => void
 }) => {
   const [editedElement, setEditedElement] = useState<EmailElement | null>(null)
+  const [textFieldRef, setTextFieldRef] = useState<HTMLTextAreaElement | null>(null)
 
   useEffect(() => {
     if (element) {
@@ -218,6 +231,25 @@ const ElementEditor = ({
     }
   }
 
+  const insertVariable = (variable: string) => {
+    if (!editedElement || editedElement.type !== 'text' || !textFieldRef) return
+    
+    const textarea = textFieldRef
+    const start = textarea.selectionStart
+    const end = textarea.selectionEnd
+    const currentContent = editedElement.content
+    const newContent = currentContent.substring(0, start) + variable + currentContent.substring(end)
+    
+    setEditedElement({ ...editedElement, content: newContent } as EmailElement)
+    
+    // Restaurar o foco e posição do cursor após a variável inserida
+    setTimeout(() => {
+      textarea.focus()
+      const newPosition = start + variable.length
+      textarea.setSelectionRange(newPosition, newPosition)
+    }, 0)
+  }
+
   if (!element || !editedElement) return null
 
   return (
@@ -228,6 +260,25 @@ const ElementEditor = ({
       <DialogContent>
         {element.type === 'text' && editedElement.type === 'text' && (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
+            <Box>
+              <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                Variáveis do Cliente
+              </Typography>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
+                {CLIENTE_VARIABLES.map((variable) => (
+                  <Button
+                    key={variable.value}
+                    size="small"
+                    variant="outlined"
+                    startIcon={<Add />}
+                    onClick={() => insertVariable(variable.value)}
+                    sx={{ fontSize: '0.75rem' }}
+                  >
+                    {variable.label}
+                  </Button>
+                ))}
+              </Box>
+            </Box>
             <TextField
               label="Conteúdo"
               multiline
@@ -237,6 +288,8 @@ const ElementEditor = ({
               onChange={(e) =>
                 setEditedElement({ ...editedElement, content: e.target.value } as EmailElement)
               }
+              inputRef={setTextFieldRef}
+              helperText="Use os botões acima para inserir variáveis do cliente (ex: {{cliente.nome_completo}})"
             />
             <TextField
               label="Tamanho da fonte (ex: 16px, 1.2em)"

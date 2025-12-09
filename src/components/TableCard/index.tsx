@@ -72,7 +72,7 @@ export type TableCardRowAction<T extends TableCardRow> = {
   label: string
   icon?: ReactNode
   onClick: (row: T) => void
-  disabled?: boolean
+  disabled?: boolean | ((row: T) => boolean)
 }
 
 export type TableCardBulkAction<T extends TableCardRow> = {
@@ -91,7 +91,7 @@ type TableCardProps<T extends TableCardRow> = {
   onDelete?: (id: T['id']) => void
   onBulkDelete?: (ids: T['id'][]) => void
   formFields?: TableCardFormField<T>[]
-  rowActions?: TableCardRowAction<T>[]
+  rowActions?: TableCardRowAction<T>[] | ((row: T) => TableCardRowAction<T>[])
   bulkActions?: TableCardBulkAction<T>[]
   disableDelete?: boolean
   disableEdit?: boolean
@@ -611,23 +611,32 @@ const TableCard = <T extends TableCardRow>({
       </Stack>
 
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleCloseMenu}>
-        {rowActions?.map((action) => (
-          <MenuItem
-            key={action.label}
-            onClick={() => {
-              if (menuRow) {
-                action.onClick(menuRow)
-              }
-              handleCloseMenu()
-            }}
-            disabled={action.disabled}
-          >
-            {action.icon && (
-              <span style={{ display: 'inline-flex', marginRight: 8 }}>{action.icon}</span>
-            )}
-            {action.label}
-          </MenuItem>
-        ))}
+        {menuRow && (() => {
+          const actions = typeof rowActions === 'function' ? rowActions(menuRow) : rowActions || []
+          return actions.map((action) => {
+            const isDisabled = typeof action.disabled === 'function' 
+              ? action.disabled(menuRow)
+              : action.disabled || false
+            
+            return (
+              <MenuItem
+                key={action.label}
+                onClick={() => {
+                  if (!isDisabled) {
+                    action.onClick(menuRow)
+                  }
+                  handleCloseMenu()
+                }}
+                disabled={isDisabled}
+              >
+                {action.icon && (
+                  <span style={{ display: 'inline-flex', marginRight: 8 }}>{action.icon}</span>
+                )}
+                {action.label}
+              </MenuItem>
+            )
+          })
+        })()}
         {onDelete && (
           <MenuItem onClick={handleDeleteRow} disabled={disableDelete}>
             <DeleteOutline fontSize="small" style={{ marginRight: 8 }} />

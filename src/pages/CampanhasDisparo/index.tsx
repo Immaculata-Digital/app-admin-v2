@@ -10,7 +10,7 @@ import {
   InputLabel,
   Button,
 } from '@mui/material'
-import { Email } from '@mui/icons-material'
+import { Email, Send } from '@mui/icons-material'
 import TableCard, {
   type TableCardColumn,
   type TableCardFormField,
@@ -22,6 +22,9 @@ import TextPicker from '../../components/TextPicker'
 import { EmailEditor } from '../../components/EmailEditor'
 import { comunicacoesService, type CampanhaDisparoDTO, type CreateCampanhaDisparoPayload, type UpdateCampanhaDisparoPayload, type RemetenteSmtpDTO } from '../../services/comunicacoes'
 import { getTenantSchema } from '../../utils/schema'
+import { lojaService } from '../../services/lojas'
+import { clienteService } from '../../services/clientes'
+import MultiSelectPicker from '../../components/MultiSelectPicker'
 import './style.css'
 
 type CampanhaDisparoRow = TableCardRow & CampanhaDisparoDTO
@@ -31,6 +34,8 @@ const DEFAULT_USER_ID = 1
 const CampanhasDisparoPage = () => {
   const [campanhas, setCampanhas] = useState<CampanhaDisparoRow[]>([])
   const [remetentes, setRemetentes] = useState<RemetenteSmtpDTO[]>([])
+  const [lojas, setLojas] = useState<Array<{ id: number; label: string }>>([])
+  const [clientes, setClientes] = useState<Array<{ id: number; label: string }>>([])
   const [loading, setLoading] = useState(true)
   const [toast, setToast] = useState<{ open: boolean; message: string }>({ open: false, message: '' })
   const [error, setError] = useState<string | null>(null)
@@ -89,10 +94,32 @@ const CampanhasDisparoPage = () => {
     }
   }
 
+  const loadLojas = async () => {
+    try {
+      const schema = getTenantSchema()
+      const response = await lojaService.list(schema, { limit: 200, offset: 0 })
+      setLojas(response.itens.map((loja) => ({ id: loja.id_loja ?? 0, label: loja.nome_loja })))
+    } catch (err: any) {
+      console.error('Erro ao carregar lojas:', err)
+    }
+  }
+
+  const loadClientes = async () => {
+    try {
+      const schema = getTenantSchema()
+      const response = await clienteService.list(schema, { limit: 500, offset: 0 })
+      setClientes(response.data.map((cliente) => ({ id: cliente.id_cliente, label: cliente.nome_completo })))
+    } catch (err: any) {
+      console.error('Erro ao carregar clientes:', err)
+    }
+  }
+
   useEffect(() => {
     if (canList) {
       loadRemetentes()
       loadCampanhas()
+      loadLojas()
+      loadClientes()
     }
   }, [canList])
 
@@ -114,7 +141,7 @@ const CampanhasDisparoPage = () => {
       {
         key: 'tipo_envio',
         label: 'Tipo de Envio',
-        render: (value) => value === 'imediato' ? 'Imediato' : 'Agendado',
+        render: (value) => value === 'manual' ? 'Manual' : 'Agendado',
       },
       {
         key: 'status',
@@ -223,7 +250,7 @@ const CampanhasDisparoPage = () => {
         label: 'Tipo de Envio',
         required: true,
         renderInput: ({ value, onChange, disabled }) => {
-          const tipoEnvio = value || 'imediato'
+          const tipoEnvio = value || 'manual'
           return (
             <FormControl fullWidth disabled={disabled}>
               <InputLabel>Tipo de Envio</InputLabel>
@@ -232,7 +259,7 @@ const CampanhasDisparoPage = () => {
                 onChange={(e) => onChange(e.target.value)}
                 label="Tipo de Envio"
               >
-                <MenuItem value="imediato">Imediato</MenuItem>
+                <MenuItem value="manual">Manual</MenuItem>
                 <MenuItem value="agendado">Agendado</MenuItem>
               </Select>
             </FormControl>
@@ -244,7 +271,7 @@ const CampanhasDisparoPage = () => {
         label: 'Data de Agendamento',
         required: false,
         renderInput: ({ value, onChange, disabled, formValues }) => {
-          const tipoEnvio = formValues?.tipo_envio || 'imediato'
+          const tipoEnvio = formValues?.tipo_envio || 'manual'
           // Só mostrar o campo se o tipo de envio for agendado
           if (tipoEnvio !== 'agendado') {
             return null
@@ -276,14 +303,82 @@ const CampanhasDisparoPage = () => {
           )
         },
       },
+      {
+        key: 'tipo_destinatario',
+        label: 'Destinatários',
+        required: true,
+        renderInput: ({ value, onChange, disabled, formValues, setFieldValue }) => {
+          const tipoDestinatario = value || 'todos'
+          return (
+            <Box>
+              <FormControl fullWidth disabled={disabled}>
+                <InputLabel>Destinatários</InputLabel>
+                <Select
+                  value={tipoDestinatario}
+                  onChange={(e) => {
+                    onChange(e.target.value)
+                    // Limpar seleções quando mudar o tipo
+                    if (e.target.value !== 'lojas_especificas') {
+                      setFieldValue('lojas_ids', null)
+                    }
+                    if (e.target.value !== 'clientes_especificos') {
+                      setFieldValue('clientes_ids', null)
+                    }
+                  }}
+                  label="Destinatários"
+                >
+                  <MenuItem value="todos">Todos os clientes</MenuItem>
+                  <MenuItem value="lojas_especificas">Clientes de lojas específicas</MenuItem>
+                  <MenuItem value="clientes_especificos">Clientes específicos</MenuItem>
+                </Select>
+              </FormControl>
+              
+              {tipoDestinatario === 'lojas_especificas' && (
+                <Box sx={{ mt: 2 }}>
+                  <MultiSelectPicker
+                    label="Selecione as Lojas"
+                    value={formValues?.lojas_ids ? (typeof formValues.lojas_ids === 'string' ? formValues.lojas_ids.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id)) : []) : []}
+                    onChange={(selectedIds) => {
+                      const idsString = selectedIds.length > 0 ? selectedIds.join(',') : null
+                      setFieldValue('lojas_ids', idsString)
+                    }}
+                    options={lojas.map(loja => ({ value: loja.id, label: loja.label }))}
+                    fullWidth
+                    disabled={disabled}
+                    placeholder="Selecione as lojas"
+                  />
+                </Box>
+              )}
+              
+              {tipoDestinatario === 'clientes_especificos' && (
+                <Box sx={{ mt: 2 }}>
+                  <MultiSelectPicker
+                    label="Selecione os Clientes"
+                    value={formValues?.clientes_ids ? (typeof formValues.clientes_ids === 'string' ? formValues.clientes_ids.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id)) : []) : []}
+                    onChange={(selectedIds) => {
+                      const idsString = selectedIds.length > 0 ? selectedIds.join(',') : null
+                      setFieldValue('clientes_ids', idsString)
+                    }}
+                    options={clientes.map(cliente => ({ value: cliente.id, label: cliente.label }))}
+                    fullWidth
+                    disabled={disabled}
+                    placeholder="Selecione os clientes"
+                    searchable
+                  />
+                </Box>
+              )}
+            </Box>
+          )
+        },
+      },
     ],
-    [remetentes]
+    [remetentes, lojas, clientes]
   )
 
   const handleCreate = useCallback(
     async (formData: Partial<CampanhaDisparoRow>) => {
       try {
-        const tipoEnvio = (formData.tipo_envio as 'imediato' | 'agendado') ?? 'imediato'
+        const tipoEnvio = (formData.tipo_envio as 'manual' | 'agendado') ?? 'manual'
         const payload: CreateCampanhaDisparoPayload = {
           tipo: 'email',
           descricao: (formData.descricao as string) ?? '',
@@ -294,6 +389,9 @@ const CampanhasDisparoPage = () => {
           data_agendamento: tipoEnvio === 'agendado' && formData.data_agendamento 
             ? (formData.data_agendamento as string)
             : null,
+          tipo_destinatario: (formData.tipo_destinatario as 'todos' | 'lojas_especificas' | 'clientes_especificos') || 'todos',
+          lojas_ids: formData.tipo_destinatario === 'lojas_especificas' ? (formData.lojas_ids as string | null) || null : null,
+          clientes_ids: formData.tipo_destinatario === 'clientes_especificos' ? (formData.clientes_ids as string | null) || null : null,
           usu_cadastro: user?.id ? parseInt(user.id) : DEFAULT_USER_ID,
         }
         await comunicacoesService.campanhasDisparo.create(getTenantSchema(), payload)
@@ -310,7 +408,8 @@ const CampanhasDisparoPage = () => {
   const handleUpdate = useCallback(
     async (id: CampanhaDisparoRow['id'], formData: Partial<CampanhaDisparoRow>) => {
       try {
-        const tipoEnvio = formData.tipo_envio as 'imediato' | 'agendado' | undefined
+        const tipoEnvio = formData.tipo_envio as 'manual' | 'agendado' | undefined
+        const tipoDestinatario = formData.tipo_destinatario as 'todos' | 'lojas_especificas' | 'clientes_especificos' | undefined
         const payload: UpdateCampanhaDisparoPayload = {
           descricao: formData.descricao as string | undefined,
           assunto: formData.assunto as string | undefined,
@@ -319,8 +418,11 @@ const CampanhasDisparoPage = () => {
           tipo_envio: tipoEnvio,
           data_agendamento: tipoEnvio === 'agendado' && formData.data_agendamento
             ? (formData.data_agendamento as string)
-            : (tipoEnvio === 'imediato' ? null : formData.data_agendamento as string | null | undefined),
+            : (tipoEnvio === 'manual' ? null : formData.data_agendamento as string | null | undefined),
           status: formData.status as any,
+          tipo_destinatario: tipoDestinatario,
+          lojas_ids: tipoDestinatario === 'lojas_especificas' ? (formData.lojas_ids as string | null) || null : (tipoDestinatario !== 'lojas_especificas' ? null : undefined),
+          clientes_ids: tipoDestinatario === 'clientes_especificos' ? (formData.clientes_ids as string | null) || null : (tipoDestinatario !== 'clientes_especificos' ? null : undefined),
           usu_altera: user?.id ? parseInt(user.id) : DEFAULT_USER_ID,
         }
         await comunicacoesService.campanhasDisparo.update(getTenantSchema(), String(id), payload)
@@ -347,6 +449,29 @@ const CampanhasDisparoPage = () => {
     },
     []
   )
+
+  const handleEnviar = useCallback(
+    async (row: CampanhaDisparoRow) => {
+      try {
+        await comunicacoesService.campanhasDisparo.enviar(getTenantSchema(), String(row.id_campanha))
+        setToast({ open: true, message: 'Campanha enviada com sucesso!' })
+        await loadCampanhas()
+      } catch (err: any) {
+        setToast({ open: true, message: err.message || 'Erro ao enviar campanha' })
+      }
+    },
+    []
+  )
+
+  const rowActions = useMemo(() => {
+    return campanhas
+      .filter((row) => row.tipo_envio === 'manual')
+      .map((row) => ({
+        label: 'Enviar',
+        icon: <Send />,
+        onClick: () => handleEnviar(row),
+      }))
+  }, [campanhas, handleEnviar])
 
   if (!canList) {
     return (
@@ -384,6 +509,18 @@ const CampanhasDisparoPage = () => {
         onEdit={canEdit ? handleUpdate : undefined}
         onDelete={canDelete ? handleDelete : undefined}
         disableView={!canView}
+        rowActions={(row: CampanhaDisparoRow) => {
+          if (row.tipo_envio === 'manual') {
+            return [
+              {
+                label: 'Enviar',
+                icon: <Send />,
+                onClick: () => handleEnviar(row),
+              },
+            ]
+          }
+          return []
+        }}
       />
 
       <Snackbar
