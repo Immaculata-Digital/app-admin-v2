@@ -1,0 +1,85 @@
+import { adminApi } from './admin-api'
+
+export type ConfiguracaoGlobal = {
+  id_config_global: number
+  logo_base64?: string
+  cor_fundo?: string
+  cor_card?: string
+  cor_texto_card?: string
+  cor_valor_card?: string
+  cor_botao?: string
+  cor_texto_botao?: string
+  fonte_titulos?: string
+  fonte_textos?: string
+  dt_cadastro: string
+  usu_cadastro: number
+  dt_altera?: string | null
+  usu_altera?: number | null
+}
+
+export type ConfiguracaoUpdate = {
+  logo_base64?: string
+  cor_fundo?: string
+  cor_card?: string
+  cor_texto_card?: string
+  cor_valor_card?: string
+  cor_botao?: string
+  cor_texto_botao?: string
+  fonte_titulos?: string
+  fonte_textos?: string
+}
+
+export type ConfiguracaoCreate = {
+  logo_base64?: string
+  cor_fundo?: string
+  cor_card?: string
+  cor_texto_card?: string
+  cor_valor_card?: string
+  cor_botao?: string
+  cor_texto_botao?: string
+  fonte_titulos?: string
+  fonte_textos?: string
+  usu_cadastro: number
+}
+
+export type ListConfiguracoesResponse = {
+  total: number
+  itens: ConfiguracaoGlobal[]
+}
+
+const list = (schema: string, filters?: { limit?: number; offset?: number }) => {
+  const params = new URLSearchParams()
+  if (filters?.limit) params.append('limit', filters.limit.toString())
+  if (filters?.offset) params.append('offset', filters.offset.toString())
+  const query = params.toString()
+  return adminApi.get<ListConfiguracoesResponse>(
+    `/${schema}/configuracoes-globais${query ? `?${query}` : ''}`
+  )
+}
+
+const getById = (schema: string, id: number) =>
+  adminApi.get<ConfiguracaoGlobal>(`/${schema}/configuracoes-globais/${id}`)
+
+const getFirst = async (schema: string): Promise<ConfiguracaoGlobal | null> => {
+  const response = await list(schema, { limit: 1, offset: 0 })
+  return response.itens.length > 0 ? response.itens[0] : null
+}
+
+const create = (schema: string, payload: ConfiguracaoCreate) =>
+  adminApi.post<ConfiguracaoGlobal>(`/${schema}/configuracoes-globais`, payload)
+
+const update = (schema: string, id: number, payload: ConfiguracaoUpdate) =>
+  adminApi.put<ConfiguracaoGlobal>(`/${schema}/configuracoes-globais/${id}`, payload)
+
+const remove = (schema: string, id: number) =>
+  adminApi.delete<void>(`/${schema}/configuracoes-globais/${id}`)
+
+export const configuracoesService = {
+  list,
+  getById,
+  getFirst,
+  create,
+  update,
+  remove,
+}
+

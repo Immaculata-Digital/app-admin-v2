@@ -22,8 +22,8 @@
   box-sizing: border-box;
   border: none;
   padding: 1.5rem 0.75rem 0.75rem;
-  background: var(--color-sidebar-bg) !important;
-  color: var(--color-on-primary) !important;
+  background: #ffffff !important;
+  color: #335599 !important;
   transition: width 0.3s ease;
   display: flex;
   flex-direction: column;
@@ -31,8 +31,8 @@
 }
 
 .theme-dark .sidebar-paper {
-  background: var(--color-sidebar-bg) !important;
-  color: var(--color-on-primary) !important;
+  background: #ffffff !important;
+  color: #335599 !important;
 }
 
 .sidebar-paper--closed {
@@ -55,7 +55,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 0 0.75rem 1rem;
-  color: var(--color-on-primary);
+  color: #335599 !important;
 }
 
 .sidebar-paper--closed .sidebar-header {
@@ -76,16 +76,16 @@
 }
 
 .sidebar-close {
-  color: var(--color-on-primary);
+  color: #335599 !important;
 }
 
 .theme-dark .sidebar-close {
-  color: var(--color-on-primary);
+  color: #335599 !important;
 }
 
 .theme-dark .sidebar-close:hover {
   background: var(--color-hover);
-  color: var(--color-on-primary);
+  color: #335599 !important;
 }
 
 .sidebar-title {
@@ -102,20 +102,34 @@
 }
 
 .sidebar-section__title {
-  color: var(--color-on-primary);
+  color: #335599 !important;
   font-weight: 600;
   letter-spacing: 0.05em;
   text-transform: uppercase;
   padding-left: 0.75rem;
   text-align: left;
-  opacity: 0.7;
+  opacity: 1 !important;
   font-size: 0.7rem;
   margin-bottom: 0.5rem;
 }
 
+.sidebar-section__title,
+.sidebar-section__title *,
+.sidebar-section__title.MuiTypography-root,
+.sidebar-section__title.MuiTypography-caption {
+  color: #335599 !important;
+}
+
 .theme-dark .sidebar-section__title {
-  color: var(--color-on-primary);
-  opacity: 0.7;
+  color: #335599 !important;
+  opacity: 1 !important;
+}
+
+.theme-dark .sidebar-section__title,
+.theme-dark .sidebar-section__title *,
+.theme-dark .sidebar-section__title.MuiTypography-root,
+.theme-dark .sidebar-section__title.MuiTypography-caption {
+  color: #335599 !important;
 }
 
 .sidebar-section {
@@ -126,7 +140,7 @@
 
 .sidebar-link {
   border-radius: 10px;
-  color: var(--color-on-primary) !important;
+  color: #335599 !important;
   margin-bottom: 0.25rem;
   padding: 0.5rem 0.625rem;
   transition: all 0.2s ease;
@@ -149,23 +163,24 @@
 
 .sidebar-link__icon .MuiSvgIcon-root {
   font-size: 1.125rem !important;
+  color: var(--sidebar-icon-color, var(--color-on-primary)) !important;
 }
 
 .sidebar-link,
 .sidebar-link * {
-  color: var(--color-on-primary) !important;
+  color: #335599 !important;
 }
 
 .sidebar-link .MuiListItemText-primary {
-  color: var(--color-on-primary) !important;
+  color: #335599 !important;
 }
 
 .sidebar-link .MuiListItemText-root {
-  color: var(--color-on-primary) !important;
+  color: #335599 !important;
 }
 
 .sidebar-link .MuiListItemIcon-root {
-  color: var(--color-on-primary) !important;
+  color: #335599 !important;
 }
 
 .sidebar-link:hover {
@@ -175,7 +190,7 @@
 
 .sidebar-link:hover .MuiListItemIcon-root,
 .sidebar-link:hover .MuiListItemText-primary {
-  color: var(--color-on-primary) !important;
+  color: #335599 !important;
 }
 
 .sidebar-link__icon {
@@ -198,18 +213,19 @@
 
 .sidebar-link__icon .MuiSvgIcon-root {
   font-size: 1.125rem !important;
+  color: #335599 !important;
 }
 
 .theme-dark .sidebar-link__icon {
-  color: var(--color-on-primary) !important;
+  color: #335599 !important;
 }
 
 .theme-dark .sidebar-link.active .sidebar-link__icon {
-  color: var(--color-on-primary) !important;
+  color: #335599 !important;
 }
 
 .theme-dark .sidebar-link:hover .sidebar-link__icon {
-  color: var(--color-on-primary) !important;
+  color: #335599 !important;
 }
 
 .sidebar-link .MuiListItemText-root {
@@ -217,7 +233,7 @@
 }
 
 .theme-dark .sidebar-link {
-  color: var(--color-on-primary) !important;
+  color: #335599 !important;
 }
 
 .theme-dark .sidebar-link:hover {
@@ -240,40 +256,40 @@
 }
 
 .theme-dark .sidebar-link .MuiListItemText-root {
-  color: var(--color-on-primary) !important;
+  color: #335599 !important;
 }
 
 .theme-dark .sidebar-link .MuiListItemText-primary {
-  color: var(--color-on-primary) !important;
+  color: #335599 !important;
 }
 
 .theme-dark .sidebar-link.active .MuiListItemText-root {
-  color: var(--color-on-primary) !important;
+  color: #335599 !important;
 }
 
 .theme-dark .sidebar-link.active .MuiListItemText-primary {
-  color: var(--color-on-primary) !important;
+  color: #335599 !important;
 }
 
 .theme-dark .sidebar-link:hover .MuiListItemText-root {
-  color: var(--color-on-primary) !important;
+  color: #335599 !important;
 }
 
 .theme-dark .sidebar-link:hover .MuiListItemText-primary {
-  color: var(--color-on-primary) !important;
+  color: #335599 !important;
 }
 
 .theme-dark .sidebar-link .MuiListItemIcon-root {
-  color: var(--color-on-primary) !important;
+  color: #335599 !important;
   min-width: 32px;
 }
 
 .theme-dark .sidebar-link.active .MuiListItemIcon-root {
-  color: var(--color-on-primary) !important;
+  color: #335599 !important;
 }
 
 .theme-dark .sidebar-link:hover .MuiListItemIcon-root {
-  color: var(--color-on-primary) !important;
+  color: #335599 !important;
 }
 
 .sidebar-link.active {
@@ -323,7 +339,7 @@
 
 .sidebar-footer__item {
   border-radius: 10px;
-  color: var(--color-on-primary);
+  color: #335599 !important;
   padding: 0.5rem 0.625rem;
   transition: all 0.2s ease;
   justify-content: flex-start !important;
@@ -352,7 +368,7 @@
 }
 
 .theme-dark .sidebar-footer__item {
-  color: var(--color-on-primary);
+  color: #335599 !important;
 }
 
 .theme-dark .sidebar-footer__item:hover {
@@ -386,24 +402,25 @@
 }
 
 .theme-dark .sidebar-footer__icon {
-  color: var(--color-on-primary);
+  color: #335599 !important;
 }
 
 .theme-dark .sidebar-footer__item:hover .sidebar-footer__icon {
-  color: var(--color-on-primary);
+  color: #335599 !important;
 }
 
 .sidebar-footer__text {
   margin: 0;
   flex: 1;
+  color: #335599 !important;
 }
 
 .theme-dark .sidebar-footer__text {
-  color: var(--color-on-primary);
+  color: #335599 !important;
 }
 
 .theme-dark .sidebar-footer__item:hover .sidebar-footer__text {
-  color: var(--color-on-primary);
+  color: #335599 !important;
 }
 
 .sidebar-footer__switch {

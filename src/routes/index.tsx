@@ -11,6 +11,7 @@ import ClientesPage from '../pages/Clientes'
 import ClienteDetalhesPage from '../pages/ClienteDetalhes'
 import ResgateDetalhesPage from '../pages/ResgateDetalhes'
 import SetPasswordPage from '../pages/SetPassword'
+import ConfiguracoesPage from '../pages/Configuracoes'
 import MainLayout from '../components/MainLayout'
 import { ProtectedRoute } from '../components/ProtectedRoute'
 import { useAuth } from '../context/AuthContext'
@@ -62,6 +63,7 @@ const AppRoutes = () => (
         <Route path="/clientes" element={<ClientesPage />} />
         <Route path="/clientes/:id" element={<ClienteDetalhesPage />} />
         <Route path="/resgates/:id" element={<ResgateDetalhesPage />} />
+        <Route path="/configuracoes" element={<ConfiguracoesPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

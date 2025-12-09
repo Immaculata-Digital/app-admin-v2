@@ -6,8 +6,6 @@ import {
   ListItemIcon,
   ListItemText,
   Typography,
-  Collapse,
-  Switch,
   Stack,
   Divider,
   useMediaQuery,
@@ -20,7 +18,6 @@ import {
   AdminPanelSettingsOutlined,
   Groups2Outlined,
   ChevronLeft,
-  DarkMode,
   Logout,
   MailOutlined,
   EmailOutlined,
@@ -29,10 +26,13 @@ import {
   StarsOutlined,
   StoreOutlined,
   BusinessOutlined,
+  Settings,
 } from '@mui/icons-material'
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import React, { useEffect, useState, useMemo } from 'react'
 import { useAuth } from '../../context/AuthContext'
+import { configuracoesService } from '../../services/configuracoes'
+import { getTenantSchema } from '../../utils/schema'
 import './style.css'
 
 const iconMapping: Record<string, React.ReactElement> = {
@@ -49,6 +49,7 @@ const iconMapping: Record<string, React.ReactElement> = {
   Store: <StoreOutlined />,
   Business: <BusinessOutlined />,
   CardGiftcard: <StarsOutlined />, // Mapeamento para compatibilidade
+  Settings: <Settings />,
 }
 
 const getIcon = (iconName: string) => {
@@ -58,18 +59,31 @@ const getIcon = (iconName: string) => {
 type SidebarProps = {
   open: boolean
   onToggle: () => void
-  themeMode: 'light' | 'dark'
-  onChangeTheme: (mode: 'light' | 'dark') => void
 }
 
-const Sidebar = ({ open, onToggle, themeMode, onChangeTheme }: SidebarProps) => {
+const Sidebar = ({ open, onToggle }: SidebarProps) => {
   const location = useLocation()
   const navigate = useNavigate()
   const { logout, permissions } = useAuth()
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down('md'))
+  const [logoBase64, setLogoBase64] = useState<string | null>(null)
   const withState = (base: string, closedModifier: string) =>
     open ? base : `${base} ${closedModifier}`
+
+  useEffect(() => {
+    const loadConfig = async () => {
+      try {
+        const config = await configuracoesService.getFirst(getTenantSchema())
+        if (config?.logo_base64) {
+          setLogoBase64(config.logo_base64)
+        }
+      } catch (error) {
+        console.error('Erro ao carregar configurações:', error)
+      }
+    }
+    loadConfig()
+  }, [])
 
   const { menus: allMenus } = useAuth()
 
@@ -142,24 +156,54 @@ const Sidebar = ({ open, onToggle, themeMode, onChangeTheme }: SidebarProps) => 
   const drawerContent = (
     <>
       <div className="sidebar-header">
-        <Typography
-          variant="h6"
-          className={withState('sidebar-logo', 'sidebar-logo--compact')}
-          onClick={() => navigate('/dashboard')}
-          sx={{ 
-            cursor: 'pointer', 
-            color: 'var(--color-on-primary)',
-            fontWeight: 700,
-            fontSize: open ? '1.25rem' : '0.875rem',
-            transition: 'all 0.3s ease',
-            textAlign: open ? 'left' : 'center',
-            width: '100%',
-          }}
-        >
-          {open ? 'Concordia ERP' : 'C'}
-        </Typography>
+        {logoBase64 ? (
+          <Box
+            onClick={() => navigate('/dashboard')}
+            sx={{
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: open ? 'flex-start' : 'center',
+              width: '100%',
+              height: open ? '48px' : '40px',
+              transition: 'all 0.3s ease',
+            }}
+          >
+            <img
+              src={logoBase64}
+              alt="Logo"
+              style={{
+                maxHeight: open ? '48px' : '32px',
+                maxWidth: open ? '100%' : '32px',
+                objectFit: 'contain',
+              }}
+            />
+          </Box>
+        ) : (
+          <Typography
+            variant="h6"
+            className={withState('sidebar-logo', 'sidebar-logo--compact')}
+            onClick={() => navigate('/dashboard')}
+            sx={{ 
+              cursor: 'pointer', 
+              color: '#335599',
+              fontWeight: 700,
+              fontSize: open ? '1.25rem' : '0.875rem',
+              transition: 'all 0.3s ease',
+              textAlign: open ? 'left' : 'center',
+              width: '100%',
+            }}
+          >
+            {open ? 'Concordia ERP' : 'C'}
+          </Typography>
+        )}
         {isMobile && (
-          <IconButton onClick={onToggle} size="small" className="sidebar-close">
+          <IconButton 
+            onClick={onToggle} 
+            size="small" 
+            className="sidebar-close"
+            sx={{ color: '#335599 !important' }}
+          >
             <ChevronLeft />
           </IconButton>
         )}
@@ -167,7 +211,7 @@ const Sidebar = ({ open, onToggle, themeMode, onChangeTheme }: SidebarProps) => 
 
       <nav className="sidebar-content">
         {menuStructure.length === 0 ? (
-          <Box sx={{ p: 2, color: 'var(--color-on-primary)' }}>
+          <Box sx={{ p: 2, color: '#335599' }}>
             <Typography variant="body2">
               Nenhum menu disponível. Verifique suas permissões.
             </Typography>
@@ -179,7 +223,21 @@ const Sidebar = ({ open, onToggle, themeMode, onChangeTheme }: SidebarProps) => 
           menuStructure.map((section) => (
             <div key={section.title} className="sidebar-section">
               {(open || isMobile) && (
-                <Typography variant="caption" className="sidebar-section__title">
+                <Typography 
+                  variant="caption" 
+                  className="sidebar-section__title" 
+                  style={{
+                    color: '#335599',
+                    opacity: 1,
+                  }}
+                  sx={{ 
+                    color: '#335599 !important',
+                    opacity: '1 !important',
+                    '&.MuiTypography-root': {
+                      color: '#335599 !important',
+                    },
+                  }}
+                >
                   {section.title}
                 </Typography>
               )}
@@ -193,21 +251,50 @@ const Sidebar = ({ open, onToggle, themeMode, onChangeTheme }: SidebarProps) => 
                       }`}
                     sx={{ 
                       gap: 0,
-                      color: 'var(--color-on-primary) !important',
+                      color: '#335599 !important',
                       '& .MuiListItemText-primary': {
-                        color: 'var(--color-on-primary) !important',
+                        color: '#335599 !important',
                       },
                       '& .MuiListItemIcon-root': {
-                        color: 'var(--color-on-primary) !important',
+                        color: '#335599 !important',
                         minWidth: open ? 28 : 24,
+                      },
+                      '& .MuiSvgIcon-root': {
+                        color: '#335599 !important',
+                      },
+                      '&:hover .MuiListItemIcon-root': {
+                        color: '#335599 !important',
+                      },
+                      '&:hover .MuiSvgIcon-root': {
+                        color: '#335599 !important',
+                      },
+                      '&.active .MuiListItemIcon-root': {
+                        color: '#335599 !important',
+                      },
+                      '&.active .MuiSvgIcon-root': {
+                        color: '#335599 !important',
                       },
                       justifyContent: open ? 'flex-start' : 'center',
                     }}
                     onClick={() => isMobile && onToggle()}
                     title={!open ? item.label : ''}
                   >
-                    <ListItemIcon className="sidebar-link__icon" sx={{ color: 'var(--color-on-primary) !important' }}>{item.icon}</ListItemIcon>
-                    {(open || isMobile) && <ListItemText primary={item.label} sx={{ color: 'var(--color-on-primary) !important' }} />}
+                    <ListItemIcon 
+                      className="sidebar-link__icon" 
+                      sx={{ 
+                        color: '#335599 !important',
+                        '& .MuiSvgIcon-root': {
+                          color: '#335599 !important',
+                        },
+                        '& svg': {
+                          color: '#335599 !important',
+                          fill: '#335599 !important',
+                        },
+                      }}
+                    >
+                      {item.icon}
+                    </ListItemIcon>
+                    {(open || isMobile) && <ListItemText primary={item.label} sx={{ color: '#335599 !important' }} />}
                   </ListItemButton>
                 ))}
               </List>
@@ -219,40 +306,29 @@ const Sidebar = ({ open, onToggle, themeMode, onChangeTheme }: SidebarProps) => 
       <div className="sidebar-footer">
         <Divider className="sidebar-footer__divider" />
         <Stack spacing={1} className="sidebar-footer__content">
-          {(open || isMobile) && (
-            <ListItemButton
-              className="sidebar-footer__item"
-              disableRipple
-              sx={{ gap: 0 }}
-            >
-              <ListItemIcon className="sidebar-footer__icon">
-                <DarkMode fontSize="small" />
-              </ListItemIcon>
-              <ListItemText
-                primary="Modo escuro"
-                className="sidebar-footer__text"
-              />
-              <Switch
-                size="small"
-                checked={themeMode === 'dark'}
-                onChange={(event) => onChangeTheme(event.target.checked ? 'dark' : 'light')}
-                className="sidebar-footer__switch"
-              />
-            </ListItemButton>
-          )}
           <ListItemButton
             className="sidebar-footer__item"
             onClick={handleLogout}
-            sx={{ gap: 0 }}
+            sx={{ 
+              gap: 0,
+              color: '#335599 !important',
+              '& .MuiListItemText-primary': {
+                color: '#335599 !important',
+              },
+              '& .MuiListItemIcon-root': {
+                color: '#335599 !important',
+              },
+            }}
             title={!open && !isMobile ? 'Sair' : ''}
           >
-            <ListItemIcon className="sidebar-footer__icon">
+            <ListItemIcon className="sidebar-footer__icon" sx={{ color: '#335599 !important' }}>
               <Logout fontSize="small" />
             </ListItemIcon>
             {(open || isMobile) && (
               <ListItemText
                 primary="Sair"
                 className="sidebar-footer__text"
+                sx={{ color: '#335599 !important' }}
               />
             )}
           </ListItemButton>
@@ -270,8 +346,8 @@ const Sidebar = ({ open, onToggle, themeMode, onChangeTheme }: SidebarProps) => 
         classes={{ paper: 'sidebar-paper sidebar-paper--mobile' }}
         PaperProps={{
           sx: {
-            backgroundColor: 'var(--color-sidebar-bg) !important',
-            color: 'var(--color-on-primary) !important',
+            backgroundColor: '#ffffff !important',
+            color: '#335599 !important',
           },
         }}
       >
@@ -289,8 +365,8 @@ const Sidebar = ({ open, onToggle, themeMode, onChangeTheme }: SidebarProps) => 
         classes={{ paper: withState('sidebar-paper', 'sidebar-paper--closed') }}
         PaperProps={{
           sx: {
-            backgroundColor: 'var(--color-sidebar-bg) !important',
-            color: 'var(--color-on-primary) !important',
+            backgroundColor: '#ffffff !important',
+            color: '#335599 !important',
           },
         }}
       >

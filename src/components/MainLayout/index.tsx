@@ -70,8 +70,6 @@ const MainLayout = ({ children }: MainLayoutProps) => {
         <Sidebar
           open={sidebarOpen}
           onToggle={() => setSidebarOpen((prev) => !prev)}
-          themeMode={themeMode}
-          onChangeTheme={setThemeMode}
         />
         <Box component="section" className="main-layout__content">
           <Topbar
