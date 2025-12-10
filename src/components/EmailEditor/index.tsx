@@ -701,18 +701,17 @@ export const EmailEditor = ({ open, onClose, onSave, initialHtml }: EmailEditorP
 
   return (
     <>
-      <Dialog open={open} onClose={handleClose} maxWidth="lg" fullWidth>
-        <DialogTitle>Editor de Email</DialogTitle>
-        <DialogContent sx={{ minHeight: '600px' }}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
+      <Dialog open={open} onClose={handleClose} fullScreen>
+        <DialogContent sx={{ minHeight: 'calc(100vh - 80px)', display: 'flex', flexDirection: 'column', pt: 2 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <ElementPalette onAdd={handleAddElement} />
             
-            <Box sx={{ display: 'flex', gap: 2 }}>
-              <Box sx={{ flex: 1 }}>
+            <Box sx={{ display: 'flex', gap: 2, flex: 1, minHeight: 0 }}>
+              <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
                 <Typography variant="h6" gutterBottom>
                   Elementos do Email
                 </Typography>
-                <Paper sx={{ p: 2, minHeight: '400px', bgcolor: '#f5f5f5', maxHeight: '500px', overflow: 'auto' }}>
+                <Paper sx={{ p: 2, flex: 1, bgcolor: '#f5f5f5', overflow: 'auto', minHeight: 0 }}>
                   {elements.length === 0 ? (
                     <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', mt: 4 }}>
                       Clique nos botões acima para adicionar elementos ao email
@@ -749,18 +748,18 @@ export const EmailEditor = ({ open, onClose, onSave, initialHtml }: EmailEditorP
                 </Paper>
               </Box>
 
-              <Box sx={{ flex: 1 }}>
+              <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
                 <Typography variant="h6" gutterBottom>
                   Pré-visualização
                 </Typography>
                 <Paper 
                   sx={{ 
                     p: 2, 
-                    minHeight: '400px', 
+                    flex: 1,
                     bgcolor: '#ffffff',
                     border: '1px solid #e0e0e0',
-                    maxHeight: '500px',
                     overflow: 'auto',
+                    minHeight: 0,
                   }}
                 >
                   {elements.length === 0 ? (

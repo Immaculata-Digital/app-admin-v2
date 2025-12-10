@@ -11,6 +11,10 @@ import {
   Button,
 } from '@mui/material'
 import { Email, Send } from '@mui/icons-material'
+import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker'
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
+import { ptBR } from 'date-fns/locale'
 import TableCard, {
   type TableCardColumn,
   type TableCardFormField,
@@ -141,7 +145,17 @@ const CampanhasDisparoPage = () => {
       {
         key: 'tipo_envio',
         label: 'Tipo de Envio',
-        render: (value) => value === 'manual' ? 'Manual' : 'Agendado',
+        render: (value) => {
+          const tipoMap: Record<string, string> = {
+            manual: 'Manual',
+            agendado: 'Agendado',
+            boas_vindas: 'Boas Vindas',
+            atualizacao_pontos: 'Atualização de Pontos',
+            resgate: 'Resgate',
+            reset_senha: 'Reset de Senha',
+          }
+          return tipoMap[value as string] || value
+        },
       },
       {
         key: 'status',
@@ -249,18 +263,33 @@ const CampanhasDisparoPage = () => {
         key: 'tipo_envio',
         label: 'Tipo de Envio',
         required: true,
-        renderInput: ({ value, onChange, disabled }) => {
+        renderInput: ({ value, onChange, disabled, formValues, setFieldValue }) => {
           const tipoEnvio = value || 'manual'
+          const tiposAutomaticos = ['boas_vindas', 'atualizacao_pontos', 'resgate', 'reset_senha']
           return (
             <FormControl fullWidth disabled={disabled}>
               <InputLabel>Tipo de Envio</InputLabel>
               <Select
                 value={tipoEnvio}
-                onChange={(e) => onChange(e.target.value)}
+                onChange={(e) => {
+                  onChange(e.target.value)
+                  const novoTipo = e.target.value
+                  // Se mudou para tipo automático, limpar data de agendamento e destinatários
+                  if (tiposAutomaticos.includes(novoTipo)) {
+                    setFieldValue('data_agendamento', null)
+                    setFieldValue('tipo_destinatario', 'todos')
+                    setFieldValue('lojas_ids', null)
+                    setFieldValue('clientes_ids', null)
+                  }
+                }}
                 label="Tipo de Envio"
               >
                 <MenuItem value="manual">Manual</MenuItem>
                 <MenuItem value="agendado">Agendado</MenuItem>
+                <MenuItem value="boas_vindas">Boas Vindas</MenuItem>
+                <MenuItem value="atualizacao_pontos">Atualização de Pontos</MenuItem>
+                <MenuItem value="resgate">Resgate</MenuItem>
+                <MenuItem value="reset_senha">Reset de Senha</MenuItem>
               </Select>
             </FormControl>
           )
@@ -272,34 +301,48 @@ const CampanhasDisparoPage = () => {
         required: false,
         renderInput: ({ value, onChange, disabled, formValues }) => {
           const tipoEnvio = formValues?.tipo_envio || 'manual'
-          // Só mostrar o campo se o tipo de envio for agendado
-          if (tipoEnvio !== 'agendado') {
+          // Só mostrar o campo se o tipo de envio for agendado (não mostrar para tipos automáticos)
+          const tiposAutomaticos = ['boas_vindas', 'atualizacao_pontos', 'resgate', 'reset_senha']
+          if (tipoEnvio !== 'agendado' || tiposAutomaticos.includes(tipoEnvio as string)) {
             return null
           }
-          
-          // Converter data para formato de input (YYYY-MM-DDTHH:mm)
-          let dateValue = ''
+
+          // Converter valor para Date object ou null
+          let dateValue: Date | null = null
           if (value) {
             if (typeof value === 'string') {
-              // Se já está no formato correto ou precisa converter
-              dateValue = value.includes('T') 
-                ? value.substring(0, 16) 
-                : new Date(value).toISOString().substring(0, 16)
-            } else {
-              dateValue = new Date(value).toISOString().substring(0, 16)
+              dateValue = new Date(value)
+              if (isNaN(dateValue.getTime())) {
+                dateValue = null
+              }
+            } else if (value instanceof Date) {
+              dateValue = value
             }
           }
           
           return (
-            <TextPicker
-              label="Data de Agendamento"
-              value={dateValue}
-              onChange={(text) => onChange(text)}
-              fullWidth
-              type="text"
-              disabled={disabled}
-              placeholder="YYYY-MM-DDTHH:mm"
-            />
+            <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
+              <DateTimePicker
+                label="Data de Agendamento"
+                value={dateValue}
+                onChange={(newValue) => {
+                  if (newValue) {
+                    // Converter para ISO string
+                    onChange(newValue.toISOString())
+                  } else {
+                    onChange(null)
+                  }
+                }}
+                disabled={disabled}
+                slotProps={{
+                  textField: {
+                    fullWidth: true,
+                    variant: 'outlined',
+                  },
+                }}
+                format="dd/MM/yyyy HH:mm"
+              />
+            </LocalizationProvider>
           )
         },
       },
@@ -308,6 +351,13 @@ const CampanhasDisparoPage = () => {
         label: 'Destinatários',
         required: true,
         renderInput: ({ value, onChange, disabled, formValues, setFieldValue }) => {
+          const tipoEnvio = formValues?.tipo_envio || 'manual'
+          // Não mostrar destinatários para tipos automáticos
+          const tiposAutomaticos = ['boas_vindas', 'atualizacao_pontos', 'resgate', 'reset_senha']
+          if (tiposAutomaticos.includes(tipoEnvio as string)) {
+            return null
+          }
+          
           const tipoDestinatario = value || 'todos'
           return (
             <Box>
@@ -378,7 +428,10 @@ const CampanhasDisparoPage = () => {
   const handleCreate = useCallback(
     async (formData: Partial<CampanhaDisparoRow>) => {
       try {
-        const tipoEnvio = (formData.tipo_envio as 'manual' | 'agendado') ?? 'manual'
+        const tipoEnvio = (formData.tipo_envio as 'manual' | 'agendado' | 'boas_vindas' | 'atualizacao_pontos' | 'resgate' | 'reset_senha') ?? 'manual'
+        const tiposAutomaticos = ['boas_vindas', 'atualizacao_pontos', 'resgate', 'reset_senha']
+        const isTipoAutomatico = tiposAutomaticos.includes(tipoEnvio)
+        
         const payload: CreateCampanhaDisparoPayload = {
           tipo: 'email',
           descricao: (formData.descricao as string) ?? '',
@@ -386,12 +439,12 @@ const CampanhasDisparoPage = () => {
           html: (formData.html as string) ?? '',
           remetente_id: (formData.remetente_id as string) ?? '',
           tipo_envio: tipoEnvio,
-          data_agendamento: tipoEnvio === 'agendado' && formData.data_agendamento 
+          data_agendamento: (tipoEnvio === 'agendado' && formData.data_agendamento && !isTipoAutomatico)
             ? (formData.data_agendamento as string)
             : null,
-          tipo_destinatario: (formData.tipo_destinatario as 'todos' | 'lojas_especificas' | 'clientes_especificos') || 'todos',
-          lojas_ids: formData.tipo_destinatario === 'lojas_especificas' ? (formData.lojas_ids as string | null) || null : null,
-          clientes_ids: formData.tipo_destinatario === 'clientes_especificos' ? (formData.clientes_ids as string | null) || null : null,
+          tipo_destinatario: isTipoAutomatico ? 'todos' : ((formData.tipo_destinatario as 'todos' | 'lojas_especificas' | 'clientes_especificos') || 'todos'),
+          lojas_ids: isTipoAutomatico ? null : (formData.tipo_destinatario === 'lojas_especificas' ? (formData.lojas_ids as string | null) || null : null),
+          clientes_ids: isTipoAutomatico ? null : (formData.tipo_destinatario === 'clientes_especificos' ? (formData.clientes_ids as string | null) || null : null),
           usu_cadastro: user?.id ? parseInt(user.id) : DEFAULT_USER_ID,
         }
         await comunicacoesService.campanhasDisparo.create(getTenantSchema(), payload)
@@ -408,8 +461,11 @@ const CampanhasDisparoPage = () => {
   const handleUpdate = useCallback(
     async (id: CampanhaDisparoRow['id'], formData: Partial<CampanhaDisparoRow>) => {
       try {
-        const tipoEnvio = formData.tipo_envio as 'manual' | 'agendado' | undefined
+        const tipoEnvio = formData.tipo_envio as 'manual' | 'agendado' | 'boas_vindas' | 'atualizacao_pontos' | 'resgate' | 'reset_senha' | undefined
+        const tiposAutomaticos = ['boas_vindas', 'atualizacao_pontos', 'resgate', 'reset_senha']
+        const isTipoAutomatico = tipoEnvio && tiposAutomaticos.includes(tipoEnvio)
         const tipoDestinatario = formData.tipo_destinatario as 'todos' | 'lojas_especificas' | 'clientes_especificos' | undefined
+        
         const payload: UpdateCampanhaDisparoPayload = {
           descricao: formData.descricao as string | undefined,
           assunto: formData.assunto as string | undefined,
@@ -420,9 +476,9 @@ const CampanhasDisparoPage = () => {
             ? (formData.data_agendamento as string)
             : (tipoEnvio === 'manual' ? null : formData.data_agendamento as string | null | undefined),
           status: formData.status as any,
-          tipo_destinatario: tipoDestinatario,
-          lojas_ids: tipoDestinatario === 'lojas_especificas' ? (formData.lojas_ids as string | null) || null : (tipoDestinatario !== 'lojas_especificas' ? null : undefined),
-          clientes_ids: tipoDestinatario === 'clientes_especificos' ? (formData.clientes_ids as string | null) || null : (tipoDestinatario !== 'clientes_especificos' ? null : undefined),
+          tipo_destinatario: isTipoAutomatico ? 'todos' : tipoDestinatario,
+          lojas_ids: isTipoAutomatico ? null : (tipoDestinatario === 'lojas_especificas' ? (formData.lojas_ids as string | null) || null : (tipoDestinatario !== 'lojas_especificas' ? null : undefined)),
+          clientes_ids: isTipoAutomatico ? null : (tipoDestinatario === 'clientes_especificos' ? (formData.clientes_ids as string | null) || null : (tipoDestinatario !== 'clientes_especificos' ? null : undefined)),
           usu_altera: user?.id ? parseInt(user.id) : DEFAULT_USER_ID,
         }
         await comunicacoesService.campanhasDisparo.update(getTenantSchema(), String(id), payload)
@@ -465,7 +521,7 @@ const CampanhasDisparoPage = () => {
 
   const rowActions = useMemo(() => {
     return campanhas
-      .filter((row) => row.tipo_envio === 'manual')
+      .filter((row) => row.tipo_envio === 'manual' || row.tipo_envio === 'agendado')
       .map((row) => ({
         label: 'Enviar',
         icon: <Send />,
@@ -510,7 +566,7 @@ const CampanhasDisparoPage = () => {
         onDelete={canDelete ? handleDelete : undefined}
         disableView={!canView}
         rowActions={(row: CampanhaDisparoRow) => {
-          if (row.tipo_envio === 'manual') {
+          if (row.tipo_envio === 'manual' || row.tipo_envio === 'agendado') {
             return [
               {
                 label: 'Enviar',

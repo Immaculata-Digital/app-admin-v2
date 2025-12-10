@@ -43,7 +43,7 @@ export type CampanhaDisparoDTO = {
   assunto: string
   html: string
   remetente_id: string
-  tipo_envio: 'manual' | 'agendado'
+  tipo_envio: 'manual' | 'agendado' | 'boas_vindas' | 'atualizacao_pontos' | 'resgate' | 'reset_senha'
   data_agendamento: string | null
   status: 'rascunho' | 'agendada' | 'enviando' | 'concluida' | 'cancelada'
   total_enviados: number
@@ -66,7 +66,7 @@ export type CreateCampanhaDisparoPayload = {
   assunto: string
   html: string
   remetente_id: string
-  tipo_envio: 'manual' | 'agendado'
+  tipo_envio: 'manual' | 'agendado' | 'boas_vindas' | 'atualizacao_pontos' | 'resgate' | 'reset_senha'
   data_agendamento?: string | null
   chave?: string
   tipo_destinatario?: 'todos' | 'lojas_especificas' | 'clientes_especificos'
@@ -80,7 +80,7 @@ export type UpdateCampanhaDisparoPayload = {
   assunto?: string
   html?: string
   remetente_id?: string
-  tipo_envio?: 'imediato' | 'agendado'
+  tipo_envio?: 'manual' | 'agendado' | 'boas_vindas' | 'atualizacao_pontos' | 'resgate' | 'reset_senha'
   data_agendamento?: string | null
   status?: 'rascunho' | 'agendada' | 'enviando' | 'concluida' | 'cancelada'
   tipo_destinatario?: 'todos' | 'lojas_especificas' | 'clientes_especificos'
