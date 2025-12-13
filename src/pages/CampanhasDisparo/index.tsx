@@ -295,7 +295,7 @@ const CampanhasDisparoPage = () => {
         required: true,
         renderInput: ({ value, onChange, disabled, formValues, setFieldValue, isEditMode }) => {
           const tipoEnvio = value || 'manual'
-          const tiposAutomaticos = ['boas_vindas', 'atualizacao_pontos', 'resgate', 'reset_senha']
+          const tiposAutomaticos = ['boas_vindas', 'atualizacao_pontos', 'resgate', 'reset_senha', 'resgate_nao_retirar_loja']
           // Buscar a campanha original pelo ID se estiver editando
           const campanhaOriginal = formValues?.id ? getCampanhaById(formValues.id) : null
           const isEspecial = isCampanhaEspecial(campanhaOriginal || formValues as CampanhaDisparoRow | null)
@@ -352,7 +352,7 @@ const CampanhasDisparoPage = () => {
         renderInput: ({ value, onChange, disabled, formValues }) => {
           const tipoEnvio = formValues?.tipo_envio || 'manual'
           // Só mostrar o campo se o tipo de envio for agendado (não mostrar para tipos automáticos)
-          const tiposAutomaticos = ['boas_vindas', 'atualizacao_pontos', 'resgate', 'reset_senha']
+          const tiposAutomaticos = ['boas_vindas', 'atualizacao_pontos', 'resgate', 'reset_senha', 'resgate_nao_retirar_loja']
           if (tipoEnvio !== 'agendado' || tiposAutomaticos.includes(tipoEnvio as string)) {
             return null
           }
@@ -403,7 +403,7 @@ const CampanhasDisparoPage = () => {
         renderInput: ({ value, onChange, disabled, formValues, setFieldValue }) => {
           const tipoEnvio = formValues?.tipo_envio || 'manual'
           // Não mostrar destinatários para tipos automáticos
-          const tiposAutomaticos = ['boas_vindas', 'atualizacao_pontos', 'resgate', 'reset_senha']
+          const tiposAutomaticos = ['boas_vindas', 'atualizacao_pontos', 'resgate', 'reset_senha', 'resgate_nao_retirar_loja']
           if (tiposAutomaticos.includes(tipoEnvio as string)) {
             return null
           }
@@ -478,8 +478,8 @@ const CampanhasDisparoPage = () => {
   const handleCreate = useCallback(
     async (formData: Partial<CampanhaDisparoRow>) => {
       try {
-        const tipoEnvio = (formData.tipo_envio as 'manual' | 'agendado' | 'boas_vindas' | 'atualizacao_pontos' | 'resgate' | 'reset_senha') ?? 'manual'
-        const tiposAutomaticos = ['boas_vindas', 'atualizacao_pontos', 'resgate', 'reset_senha']
+        const tipoEnvio = (formData.tipo_envio as 'manual' | 'agendado' | 'boas_vindas' | 'atualizacao_pontos' | 'resgate' | 'reset_senha' | 'resgate_nao_retirar_loja') ?? 'manual'
+        const tiposAutomaticos = ['boas_vindas', 'atualizacao_pontos', 'resgate', 'reset_senha', 'resgate_nao_retirar_loja']
         const isTipoAutomatico = tiposAutomaticos.includes(tipoEnvio)
         
         const payload: CreateCampanhaDisparoPayload = {
@@ -527,8 +527,8 @@ const CampanhasDisparoPage = () => {
           }
         }
         
-        const tipoEnvio = formData.tipo_envio as 'manual' | 'agendado' | 'boas_vindas' | 'atualizacao_pontos' | 'resgate' | 'reset_senha' | undefined
-        const tiposAutomaticos = ['boas_vindas', 'atualizacao_pontos', 'resgate', 'reset_senha']
+        const tipoEnvio = formData.tipo_envio as 'manual' | 'agendado' | 'boas_vindas' | 'atualizacao_pontos' | 'resgate' | 'reset_senha' | 'resgate_nao_retirar_loja' | undefined
+        const tiposAutomaticos = ['boas_vindas', 'atualizacao_pontos', 'resgate', 'reset_senha', 'resgate_nao_retirar_loja']
         const isTipoAutomatico = tipoEnvio && tiposAutomaticos.includes(tipoEnvio)
         const tipoDestinatario = formData.tipo_destinatario as 'todos' | 'lojas_especificas' | 'clientes_especificos' | undefined
         

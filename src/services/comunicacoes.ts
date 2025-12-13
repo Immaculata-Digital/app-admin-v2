@@ -43,7 +43,7 @@ export type CampanhaDisparoDTO = {
   assunto: string
   html: string
   remetente_id: string
-  tipo_envio: 'manual' | 'agendado' | 'boas_vindas' | 'atualizacao_pontos' | 'resgate' | 'reset_senha'
+  tipo_envio: 'manual' | 'agendado' | 'boas_vindas' | 'atualizacao_pontos' | 'resgate' | 'reset_senha' | 'resgate_nao_retirar_loja'
   data_agendamento: string | null
   status: 'rascunho' | 'agendada' | 'enviando' | 'concluida' | 'cancelada'
   total_enviados: number
@@ -51,7 +51,7 @@ export type CampanhaDisparoDTO = {
   total_abertos: number
   total_cliques: number
   chave: string
-  tipo_destinatario: 'todos' | 'lojas_especificas' | 'clientes_especificos'
+  tipo_destinatario: 'todos' | 'lojas_especificas' | 'clientes_especificos' | 'grupo_acesso'
   lojas_ids: string | null
   clientes_ids: string | null
   cliente_pode_excluir: boolean
@@ -67,10 +67,10 @@ export type CreateCampanhaDisparoPayload = {
   assunto: string
   html: string
   remetente_id: string
-  tipo_envio: 'manual' | 'agendado' | 'boas_vindas' | 'atualizacao_pontos' | 'resgate' | 'reset_senha'
+  tipo_envio: 'manual' | 'agendado' | 'boas_vindas' | 'atualizacao_pontos' | 'resgate' | 'reset_senha' | 'resgate_nao_retirar_loja'
   data_agendamento?: string | null
   chave?: string
-  tipo_destinatario?: 'todos' | 'lojas_especificas' | 'clientes_especificos'
+  tipo_destinatario?: 'todos' | 'lojas_especificas' | 'clientes_especificos' | 'grupo_acesso'
   lojas_ids?: string | null
   clientes_ids?: string | null
   cliente_pode_excluir?: boolean
@@ -82,10 +82,10 @@ export type UpdateCampanhaDisparoPayload = {
   assunto?: string
   html?: string
   remetente_id?: string
-  tipo_envio?: 'manual' | 'agendado' | 'boas_vindas' | 'atualizacao_pontos' | 'resgate' | 'reset_senha'
+  tipo_envio?: 'manual' | 'agendado' | 'boas_vindas' | 'atualizacao_pontos' | 'resgate' | 'reset_senha' | 'resgate_nao_retirar_loja'
   data_agendamento?: string | null
   status?: 'rascunho' | 'agendada' | 'enviando' | 'concluida' | 'cancelada'
-  tipo_destinatario?: 'todos' | 'lojas_especificas' | 'clientes_especificos'
+  tipo_destinatario?: 'todos' | 'lojas_especificas' | 'clientes_especificos' | 'grupo_acesso'
   lojas_ids?: string | null
   clientes_ids?: string | null
   cliente_pode_excluir?: boolean
