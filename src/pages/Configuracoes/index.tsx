@@ -199,7 +199,7 @@ const ConfiguracoesPage = () => {
     <Box className="configuracoes-page">
       <Box sx={{ mb: 4 }}>
         <Typography variant="h4" component="h1" gutterBottom>
-          Configurações Globais
+          Área do Cliente
         </Typography>
         <Typography variant="body2" color="text.secondary">
           Personalize a aparência e identidade visual da sua loja

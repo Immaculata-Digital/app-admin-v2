@@ -35,6 +35,24 @@ import { configuracoesService } from '../../services/configuracoes'
 import { getTenantSchema } from '../../utils/schema'
 import './style.css'
 
+// Ícone customizado que combina Mail e Settings
+const SettingsMailIcon = () => (
+  <Box sx={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+    <MailOutlined sx={{ fontSize: 'inherit' }} />
+    <Settings 
+      sx={{ 
+        fontSize: '0.7em', 
+        position: 'absolute', 
+        bottom: '-2px', 
+        right: '-2px',
+        backgroundColor: 'white',
+        borderRadius: '50%',
+        padding: '1px'
+      }} 
+    />
+  </Box>
+)
+
 const iconMapping: Record<string, React.ReactElement> = {
   People: <PeopleAltOutlined />,
   Groups: <Groups2Outlined />,
@@ -50,6 +68,7 @@ const iconMapping: Record<string, React.ReactElement> = {
   Business: <BusinessOutlined />,
   CardGiftcard: <StarsOutlined />, // Mapeamento para compatibilidade
   Settings: <Settings />,
+  SettingsMail: <SettingsMailIcon />,
 }
 
 const getIcon = (iconName: string) => {
