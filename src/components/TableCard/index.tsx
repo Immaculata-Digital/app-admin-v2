@@ -43,6 +43,7 @@ export type TableCardFieldRenderProps<T extends TableCardRow> = {
   formValues: Partial<T>
   setFieldValue: (key: keyof T, value: any) => void
   disabled: boolean
+  isEditMode?: boolean
 }
 
 export type TableCardFormField<T extends TableCardRow> = TableCardColumn<T> & {
@@ -94,6 +95,7 @@ type TableCardProps<T extends TableCardRow> = {
   rowActions?: TableCardRowAction<T>[] | ((row: T) => TableCardRowAction<T>[])
   bulkActions?: TableCardBulkAction<T>[]
   disableDelete?: boolean
+  canDeleteRow?: (row: T) => boolean
   disableEdit?: boolean
   disableView?: boolean
 }
@@ -115,6 +117,7 @@ const TableCard = <T extends TableCardRow>({
   rowActions,
   bulkActions,
   disableDelete = false,
+  canDeleteRow,
   disableEdit = false,
   disableView = false,
 }: TableCardProps<T>) => {
@@ -299,6 +302,7 @@ const TableCard = <T extends TableCardRow>({
             formValues,
             setFieldValue: (key, newValue) => handleFieldChange(key, newValue),
             disabled: ('disabled' in field ? field.disabled : false) || (dialog.mode === 'edit' && disableEdit),
+            isEditMode: dialog.mode === 'edit',
           })}
         </Box>
       )
@@ -638,7 +642,10 @@ const TableCard = <T extends TableCardRow>({
           })
         })()}
         {onDelete && (
-          <MenuItem onClick={handleDeleteRow} disabled={disableDelete}>
+          <MenuItem 
+            onClick={handleDeleteRow} 
+            disabled={disableDelete || (menuRow && canDeleteRow ? !canDeleteRow(menuRow) : false)}
+          >
             <DeleteOutline fontSize="small" style={{ marginRight: 8 }} />
             Excluir
           </MenuItem>

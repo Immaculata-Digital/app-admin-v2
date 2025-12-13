@@ -54,6 +54,7 @@ export type CampanhaDisparoDTO = {
   tipo_destinatario: 'todos' | 'lojas_especificas' | 'clientes_especificos'
   lojas_ids: string | null
   clientes_ids: string | null
+  cliente_pode_excluir: boolean
   dt_cadastro: string
   usu_cadastro: number
   dt_altera: string | null
@@ -72,6 +73,7 @@ export type CreateCampanhaDisparoPayload = {
   tipo_destinatario?: 'todos' | 'lojas_especificas' | 'clientes_especificos'
   lojas_ids?: string | null
   clientes_ids?: string | null
+  cliente_pode_excluir?: boolean
   usu_cadastro: number
 }
 
@@ -86,6 +88,7 @@ export type UpdateCampanhaDisparoPayload = {
   tipo_destinatario?: 'todos' | 'lojas_especificas' | 'clientes_especificos'
   lojas_ids?: string | null
   clientes_ids?: string | null
+  cliente_pode_excluir?: boolean
   usu_altera: number
 }
 

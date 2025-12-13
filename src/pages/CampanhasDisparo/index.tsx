@@ -54,6 +54,24 @@ const CampanhasDisparoPage = () => {
   const canCreate = permissions.includes('erp:campanhas-disparo:criar')
   const canView = permissions.includes('erp:campanhas-disparo:visualizar')
   const canList = permissions.includes('erp:campanhas-disparo:listar')
+  
+  // Função auxiliar para verificar se a campanha pode ser excluída
+  const canDeleteCampanha = (campanha: CampanhaDisparoRow) => {
+    return canDelete && campanha.cliente_pode_excluir !== false
+  }
+  
+  // Função auxiliar para verificar se é uma campanha especial (padrão do sistema)
+  const isCampanhaEspecial = (campanha: CampanhaDisparoRow | null | undefined) => {
+    if (!campanha) return false
+    // Verificar se tem o campo cliente_pode_excluir e se é false
+    return campanha.cliente_pode_excluir === false
+  }
+  
+  // Função auxiliar para buscar campanha por ID
+  const getCampanhaById = (id: CampanhaDisparoRow['id'] | null | undefined): CampanhaDisparoRow | null => {
+    if (!id) return null
+    return campanhas.find(c => c.id === id) || null
+  }
 
   useEffect(() => {
     setPlaceholder('Buscar campanhas por descrição ou assunto...')
@@ -185,15 +203,21 @@ const CampanhasDisparoPage = () => {
         key: 'descricao',
         label: 'Descrição',
         required: true,
-        renderInput: ({ value, onChange, disabled }) => (
-          <TextPicker
-            label="Descrição"
-            value={typeof value === 'string' ? value : ''}
-            onChange={(text) => onChange(text)}
-            fullWidth
-            disabled={disabled}
-          />
-        ),
+        renderInput: ({ value, onChange, disabled, formValues }) => {
+          // Buscar a campanha original pelo ID se estiver editando
+          const campanhaOriginal = formValues?.id ? getCampanhaById(formValues.id) : null
+          const isEspecial = isCampanhaEspecial(campanhaOriginal || formValues as CampanhaDisparoRow | null)
+          return (
+            <TextPicker
+              label="Descrição"
+              value={typeof value === 'string' ? value : ''}
+              onChange={(text) => onChange(text)}
+              fullWidth
+              disabled={disabled || isEspecial}
+              helperText={isEspecial ? 'Esta campanha é padrão do sistema e não pode ser editada' : ''}
+            />
+          )
+        },
       },
       {
         key: 'assunto',
@@ -243,12 +267,13 @@ const CampanhasDisparoPage = () => {
         label: 'Remetente',
         required: true,
         renderInput: ({ value, onChange, disabled }) => (
-          <FormControl fullWidth disabled={disabled}>
-            <InputLabel>Remetente</InputLabel>
+          <FormControl fullWidth disabled={disabled} required error={!value}>
+            <InputLabel required error={!value}>Remetente *</InputLabel>
             <Select
               value={value || ''}
               onChange={(e) => onChange(e.target.value)}
-              label="Remetente"
+              label="Remetente *"
+              error={!value}
             >
               {remetentes.map((remetente) => (
                 <MenuItem key={remetente.id_remetente} value={remetente.id_remetente}>
@@ -256,6 +281,11 @@ const CampanhasDisparoPage = () => {
                 </MenuItem>
               ))}
             </Select>
+            {!value && (
+              <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 1.75 }}>
+                O campo remetente é obrigatório e não pode estar vazio
+              </Typography>
+            )}
           </FormControl>
         ),
       },
@@ -263,15 +293,25 @@ const CampanhasDisparoPage = () => {
         key: 'tipo_envio',
         label: 'Tipo de Envio',
         required: true,
-        renderInput: ({ value, onChange, disabled, formValues, setFieldValue }) => {
+        renderInput: ({ value, onChange, disabled, formValues, setFieldValue, isEditMode }) => {
           const tipoEnvio = value || 'manual'
           const tiposAutomaticos = ['boas_vindas', 'atualizacao_pontos', 'resgate', 'reset_senha']
+          // Buscar a campanha original pelo ID se estiver editando
+          const campanhaOriginal = formValues?.id ? getCampanhaById(formValues.id) : null
+          const isEspecial = isCampanhaEspecial(campanhaOriginal || formValues as CampanhaDisparoRow | null)
+          // Só mostrar tipos padrão se estiver editando uma campanha que já é padrão
+          // Ao criar nova campanha, os tipos padrão não devem aparecer
+          const mostrarTiposPadrao = isEditMode && campanhaOriginal && isEspecial
           return (
-            <FormControl fullWidth disabled={disabled}>
+            <FormControl fullWidth disabled={disabled || isEspecial}>
               <InputLabel>Tipo de Envio</InputLabel>
               <Select
                 value={tipoEnvio}
                 onChange={(e) => {
+                  if (isEspecial) {
+                    // Não permitir alteração se for campanha especial
+                    return
+                  }
                   onChange(e.target.value)
                   const novoTipo = e.target.value
                   // Se mudou para tipo automático, limpar data de agendamento e destinatários
@@ -286,11 +326,21 @@ const CampanhasDisparoPage = () => {
               >
                 <MenuItem value="manual">Manual</MenuItem>
                 <MenuItem value="agendado">Agendado</MenuItem>
-                <MenuItem value="boas_vindas">Boas Vindas</MenuItem>
-                <MenuItem value="atualizacao_pontos">Atualização de Pontos</MenuItem>
-                <MenuItem value="resgate">Resgate</MenuItem>
-                <MenuItem value="reset_senha">Reset de Senha</MenuItem>
+                {/* Só mostrar tipos padrão se estiver editando uma campanha que já é padrão */}
+                {mostrarTiposPadrao && (
+                  <>
+                    <MenuItem value="boas_vindas">Boas Vindas</MenuItem>
+                    <MenuItem value="atualizacao_pontos">Atualização de Pontos</MenuItem>
+                    <MenuItem value="resgate">Resgate</MenuItem>
+                    <MenuItem value="reset_senha">Reset de Senha</MenuItem>
+                  </>
+                )}
               </Select>
+              {isEspecial && (
+                <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, ml: 1.75 }}>
+                  Esta campanha é padrão do sistema e não pode ser alterada
+                </Typography>
+              )}
             </FormControl>
           )
         },
@@ -461,49 +511,82 @@ const CampanhasDisparoPage = () => {
   const handleUpdate = useCallback(
     async (id: CampanhaDisparoRow['id'], formData: Partial<CampanhaDisparoRow>) => {
       try {
+        // Buscar a campanha original para verificar se é especial
+        const campanhaOriginal = getCampanhaById(id)
+        const isEspecial = isCampanhaEspecial(campanhaOriginal)
+        
+        if (isEspecial) {
+          // Bloquear alteração de tipo_envio e descricao para campanhas especiais
+          if (formData.tipo_envio !== undefined && formData.tipo_envio !== campanhaOriginal?.tipo_envio) {
+            setToast({ open: true, message: 'Não é possível alterar o tipo de envio de campanhas padrão do sistema' })
+            throw new Error('Não é possível alterar o tipo de envio de campanhas padrão do sistema')
+          }
+          if (formData.descricao !== undefined && formData.descricao !== campanhaOriginal?.descricao) {
+            setToast({ open: true, message: 'Não é possível alterar a descrição de campanhas padrão do sistema' })
+            throw new Error('Não é possível alterar a descrição de campanhas padrão do sistema')
+          }
+        }
+        
         const tipoEnvio = formData.tipo_envio as 'manual' | 'agendado' | 'boas_vindas' | 'atualizacao_pontos' | 'resgate' | 'reset_senha' | undefined
         const tiposAutomaticos = ['boas_vindas', 'atualizacao_pontos', 'resgate', 'reset_senha']
         const isTipoAutomatico = tipoEnvio && tiposAutomaticos.includes(tipoEnvio)
         const tipoDestinatario = formData.tipo_destinatario as 'todos' | 'lojas_especificas' | 'clientes_especificos' | undefined
         
         const payload: UpdateCampanhaDisparoPayload = {
-          descricao: formData.descricao as string | undefined,
+          // Para campanhas especiais, manter os valores originais de tipo_envio e descricao
+          // Para campanhas normais, permitir alterações
+          descricao: isEspecial ? campanhaOriginal?.descricao : (formData.descricao as string | undefined),
+          tipo_envio: isEspecial ? campanhaOriginal?.tipo_envio : tipoEnvio,
           assunto: formData.assunto as string | undefined,
           html: formData.html as string | undefined,
           remetente_id: formData.remetente_id as string | undefined,
-          tipo_envio: tipoEnvio,
           data_agendamento: tipoEnvio === 'agendado' && formData.data_agendamento
             ? (formData.data_agendamento as string)
             : (tipoEnvio === 'manual' ? null : formData.data_agendamento as string | null | undefined),
           status: formData.status as any,
           tipo_destinatario: isTipoAutomatico ? 'todos' : tipoDestinatario,
-          lojas_ids: isTipoAutomatico ? null : (tipoDestinatario === 'lojas_especificas' ? (formData.lojas_ids as string | null) || null : (tipoDestinatario !== 'lojas_especificas' ? null : undefined)),
-          clientes_ids: isTipoAutomatico ? null : (tipoDestinatario === 'clientes_especificos' ? (formData.clientes_ids as string | null) || null : (tipoDestinatario !== 'clientes_especificos' ? null : undefined)),
+          lojas_ids: isTipoAutomatico ? null : (tipoDestinatario === 'lojas_especificas' ? (formData.lojas_ids as string | null) || null : null),
+          clientes_ids: isTipoAutomatico ? null : (tipoDestinatario === 'clientes_especificos' ? (formData.clientes_ids as string | null) || null : null),
           usu_altera: user?.id ? parseInt(user.id) : DEFAULT_USER_ID,
         }
         await comunicacoesService.campanhasDisparo.update(getTenantSchema(), String(id), payload)
         setToast({ open: true, message: 'Campanha atualizada com sucesso!' })
         await loadCampanhas()
       } catch (err: any) {
-        setToast({ open: true, message: err.message || 'Erro ao atualizar campanha' })
+        if (!err.message?.includes('Não é possível')) {
+          setToast({ open: true, message: err.message || 'Erro ao atualizar campanha' })
+        }
         throw err
       }
     },
-    [user]
+    [user, campanhas]
   )
 
   const handleDelete = useCallback(
     async (id: CampanhaDisparoRow['id']) => {
       try {
+        const campanha = getCampanhaById(id)
+        if (!campanha) {
+          setToast({ open: true, message: 'Campanha não encontrada' })
+          return
+        }
+        
+        if (!canDeleteCampanha(campanha)) {
+          setToast({ open: true, message: 'Esta campanha não pode ser excluída pois é padrão do sistema' })
+          throw new Error('Esta campanha não pode ser excluída pois é padrão do sistema')
+        }
+        
         await comunicacoesService.campanhasDisparo.delete(getTenantSchema(), String(id))
         setToast({ open: true, message: 'Campanha excluída com sucesso!' })
         await loadCampanhas()
       } catch (err: any) {
-        setToast({ open: true, message: err.message || 'Erro ao excluir campanha' })
+        if (!err.message?.includes('não pode ser excluída')) {
+          setToast({ open: true, message: err.message || 'Erro ao excluir campanha' })
+        }
         throw err
       }
     },
-    []
+    [campanhas]
   )
 
   const handleEnviar = useCallback(
@@ -518,16 +601,6 @@ const CampanhasDisparoPage = () => {
     },
     []
   )
-
-  const rowActions = useMemo(() => {
-    return campanhas
-      .filter((row) => row.tipo_envio === 'manual' || row.tipo_envio === 'agendado')
-      .map((row) => ({
-        label: 'Enviar',
-        icon: <Send />,
-        onClick: () => handleEnviar(row),
-      }))
-  }, [campanhas, handleEnviar])
 
   if (!canList) {
     return (
@@ -564,6 +637,7 @@ const CampanhasDisparoPage = () => {
         onAdd={canCreate ? handleCreate : undefined}
         onEdit={canEdit ? handleUpdate : undefined}
         onDelete={canDelete ? handleDelete : undefined}
+        canDeleteRow={canDeleteCampanha}
         disableView={!canView}
         rowActions={(row: CampanhaDisparoRow) => {
           if (row.tipo_envio === 'manual' || row.tipo_envio === 'agendado') {
