@@ -1,38 +1,68 @@
-# Logs
-logs
-*.log
+# Dependências
+node_modules
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
 
-# Dependências
-node_modules
+# Build
 dist
 dist-ssr
-*.local
+build
+*.tsbuildinfo
+
+# Logs
+logs
+*.log
 
 # Ambiente
 .env
 .env.local
 .env.*.local
+.env.development
+.env.production
+.env.test
+*.env
 
-# Editor directories and files
+# Sistema
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# IDEs/Editor
 .vscode/*
 !.vscode/extensions.json
 .idea
-.DS_Store
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
 
-# Build
-build
-*.tsbuildinfo
+# Coverage / Test
+coverage
+.nyc_output
+*.lcov
+
+# Arquivos temporários
+*.tmp
+*.temp
+*.bak
+*.cache
 
 # Cache
 .cache
 .parcel-cache
+.eslintcache
+
+# Vite
+.vite
+
+# TypeScript
+*.tsbuildinfo
