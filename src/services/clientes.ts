@@ -167,7 +167,8 @@ const normalizeClienteId = (codigo: string | number): number => {
 }
 
 // Função para fazer requisições na API v1 (para movimentações)
-async function requestV1<TResponse>(path: string, options: RequestOptions = {}) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export async function requestV1<TResponse>(path: string, options: RequestOptions = {}) {
   const { parseJson = true, headers, skipAuth = false, ...rest } = options
 
   const authHeaders: Record<string, string> = {}

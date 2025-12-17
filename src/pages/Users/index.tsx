@@ -241,7 +241,7 @@ const UsersPage = () => {
         deniedFeatures: Array.isArray(data.deniedFeatures) ? (data.deniedFeatures as string[]) : [],
         createdBy: DEFAULT_USER,
       }
-      const created = await userService.create(payload)
+      await userService.create(payload)
       await loadUsers()
       setToast({ open: true, message: 'Usuário criado com sucesso' })
     } catch (err) {

@@ -1,9 +1,8 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import {
   TextField,
   Box,
   IconButton,
-  Typography,
   InputAdornment,
   LinearProgress,
 } from '@mui/material'

@@ -57,7 +57,6 @@ const CnpjPicker = ({
     // Limitar a 14 dígitos
     if (cleanInput.length > 14) return
     
-    const masked = maskCNPJ(cleanInput)
     onChange(cleanInput) // Envia valor sem máscara
   }
 

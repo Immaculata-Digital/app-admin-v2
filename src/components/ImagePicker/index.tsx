@@ -85,7 +85,6 @@ const ImagePicker = ({
   label,
   value = '',
   onChange,
-  fullWidth = false,
   disabled = false,
   error = false,
   helperText,

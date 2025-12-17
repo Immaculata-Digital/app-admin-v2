@@ -1,7 +1,6 @@
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   Box,
-  CircularProgress,
   Snackbar,
   Typography,
 } from '@mui/material'
@@ -21,13 +20,11 @@ import './style.css'
 
 type ItemRecompensaRow = TableCardRow & ItemRecompensaDTO
 
-const DEFAULT_USER = 'admin'
-
 const ItensRecompensaPage = () => {
   const [itens, setItens] = useState<ItemRecompensaRow[]>([])
-  const [loading, setLoading] = useState(true)
+  const [_loading, setLoading] = useState(true)
   const [toast, setToast] = useState<{ open: boolean; message: string }>({ open: false, message: '' })
-  const [error, setError] = useState<string | null>(null)
+  const [_error, setError] = useState<string | null>(null)
   const { setFilters, setPlaceholder, setQuery } = useSearch()
   const { permissions } = useAuth()
   const canDelete = permissions.includes('erp:itens-recompensa:excluir')

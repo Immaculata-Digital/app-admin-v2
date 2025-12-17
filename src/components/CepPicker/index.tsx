@@ -54,7 +54,6 @@ const CepPicker = ({
     // Limitar a 8 dígitos
     if (cleanInput.length > 8) return
     
-    const masked = maskCEP(cleanInput)
     onChange(cleanInput) // Envia valor sem máscara
   }
 

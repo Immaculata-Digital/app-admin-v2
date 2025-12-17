@@ -1,13 +1,7 @@
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Box,
-  Button,
-  CircularProgress,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
   Snackbar,
   Typography,
 } from '@mui/material'
@@ -30,14 +24,12 @@ import './style.css'
 
 type LojaRow = TableCardRow & LojaDTO
 
-const DEFAULT_USER = 'admin'
-
 const LojasPage = () => {
   const navigate = useNavigate()
   const [lojas, setLojas] = useState<LojaRow[]>([])
-  const [loading, setLoading] = useState(true)
+  const [_loading, setLoading] = useState(true)
   const [toast, setToast] = useState<{ open: boolean; message: string }>({ open: false, message: '' })
-  const [error, setError] = useState<string | null>(null)
+  const [_error, setError] = useState<string | null>(null)
   const { setFilters, setPlaceholder, setQuery } = useSearch()
   const { permissions } = useAuth()
   const canDelete = permissions.includes('erp:lojas:excluir')

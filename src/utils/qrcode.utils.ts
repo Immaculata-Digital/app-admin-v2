@@ -63,13 +63,10 @@ export async function downloadQRCodeClienteRegistro(
 
   const pageWidth = 210
   const pageHeight = 297
-  const margin = 20
-  const contentWidth = pageWidth - (margin * 2)
 
   // Cores do sistema (baseadas no design system)
   const primaryColor = [28, 45, 65] // hsl(220 70% 28%) aproximado em RGB
   const textColor = [30, 30, 30]
-  const lightGray = [240, 240, 240]
 
   // Header com gradiente simulado
   doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2])

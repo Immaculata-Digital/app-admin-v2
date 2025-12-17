@@ -142,16 +142,16 @@ const RemetentesSmtpPage = () => {
         key: 'senha',
         label: 'Senha',
         required: true,
-        renderInput: ({ value, onChange, disabled, isEdit }) => (
+        renderInput: ({ value, onChange, disabled, isEditMode }) => (
           <TextPicker
             label="Senha"
-            value={isEdit ? '' : (typeof value === 'string' ? value : '')}
+            value={isEditMode ? '' : (typeof value === 'string' ? value : '')}
             onChange={(text) => onChange(text)}
             fullWidth
             type="password"
             disabled={disabled}
-            placeholder={isEdit ? 'Deixe em branco para manter a senha atual' : 'Digite a senha'}
-            helperText={isEdit ? 'Deixe em branco para manter a senha atual' : undefined}
+            placeholder={isEditMode ? 'Deixe em branco para manter a senha atual' : 'Digite a senha'}
+            helperText={isEditMode ? 'Deixe em branco para manter a senha atual' : undefined}
           />
         ),
       },

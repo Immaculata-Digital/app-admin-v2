@@ -1,12 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   Box,
-  Button,
   CircularProgress,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
   Snackbar,
   Typography,
 } from '@mui/material'
@@ -29,15 +24,13 @@ import './style.css'
 
 type ClienteRow = TableCardRow & ClienteDTO
 
-const DEFAULT_USER = 'admin'
-
 const ClientesPage = () => {
   const [clientes, setClientes] = useState<ClienteRow[]>([])
   const [lojas, setLojas] = useState<Array<{ id: number; label: string }>>([])
   const [loading, setLoading] = useState(true)
   const [toast, setToast] = useState<{ open: boolean; message: string }>({ open: false, message: '' })
-  const [error, setError] = useState<string | null>(null)
-  const { setFilters, setPlaceholder, setQuery } = useSearch()
+  const [_error, setError] = useState<string | null>(null)
+  const { setFilters, setPlaceholder } = useSearch()
   const { permissions } = useAuth()
   const schema = getTenantSchema()
 

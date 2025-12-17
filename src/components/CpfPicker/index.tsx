@@ -58,7 +58,6 @@ const CpfPicker = ({
     // Limitar a 11 dígitos
     if (cleanInput.length > 11) return
     
-    const masked = maskCPF(cleanInput)
     onChange(cleanInput) // Envia valor sem máscara
   }
 

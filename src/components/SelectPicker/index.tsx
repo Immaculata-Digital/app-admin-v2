@@ -16,8 +16,6 @@ import {
   ExpandMore,
   Search,
   Close,
-  KeyboardArrowDown,
-  KeyboardArrowUp,
 } from '@mui/icons-material'
 import './style.css'
 
@@ -346,7 +344,7 @@ const SelectPicker = ({
                   <Typography variant="caption" className="select-picker__group-title">
                     {group}
                   </Typography>
-                  {filteredGroupedOptions[group].map((option, index) => {
+                  {filteredGroupedOptions[group].map((option) => {
                     const globalIndex = optionsToRender.indexOf(option)
                     const selected = isSelected(option.value)
                     return (

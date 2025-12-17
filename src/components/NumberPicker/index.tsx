@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useRef } from 'react'
 import {
   TextField,
   Box,
@@ -6,7 +6,7 @@ import {
   InputAdornment,
 } from '@mui/material'
 import { Close, Numbers } from '@mui/icons-material'
-import { maskCurrency, currencyToNumber, unmaskCurrency } from '../../utils/masks'
+import { maskCurrency, unmaskCurrency } from '../../utils/masks'
 import './style.css'
 
 type NumberPickerProps = {

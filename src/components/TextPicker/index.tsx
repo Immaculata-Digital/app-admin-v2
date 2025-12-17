@@ -84,11 +84,11 @@ const TextPicker = ({
     }
   }
 
-  const handleFocus = (event: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleFocus = () => {
     setFocused(true)
   }
 
-  const handleBlur = (event: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleBlur = () => {
     setFocused(false)
   }
 
