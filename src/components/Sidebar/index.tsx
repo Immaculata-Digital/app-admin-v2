@@ -198,24 +198,7 @@ const Sidebar = ({ open, onToggle }: SidebarProps) => {
               }}
             />
           </Box>
-        ) : (
-          <Typography
-            variant="h6"
-            className={withState('sidebar-logo', 'sidebar-logo--compact')}
-            onClick={() => navigate('/dashboard')}
-            sx={{ 
-              cursor: 'pointer', 
-              color: '#335599',
-              fontWeight: 700,
-              fontSize: open ? '1.25rem' : '0.875rem',
-              transition: 'all 0.3s ease',
-              textAlign: open ? 'left' : 'center',
-              width: '100%',
-            }}
-          >
-            {open ? 'Concordia ERP' : 'C'}
-          </Typography>
-        )}
+        ) : null}
         {isMobile && (
           <IconButton 
             onClick={onToggle} 

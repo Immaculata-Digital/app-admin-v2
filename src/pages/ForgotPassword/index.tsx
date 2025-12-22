@@ -55,13 +55,6 @@ const ForgotPasswordPage = () => {
           }}
         >
           <Stack spacing={4} alignItems="center">
-            {/* Logo */}
-            <Box className="login-logo-wrapper">
-              <Typography variant="h4" fontWeight={700} sx={{ color: 'white' }}>
-                Concordia ERP
-              </Typography>
-            </Box>
-
             {/* Conteúdo */}
             {success ? (
               <Stack spacing={3} alignItems="center" sx={{ width: '100%' }}>

@@ -10,7 +10,6 @@ import {
   InputAdornment,
   Alert,
   CircularProgress,
-  Typography,
 } from '@mui/material'
 import { Visibility, VisibilityOff } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
@@ -100,13 +99,6 @@ const LoginPage = () => {
           }}
         >
           <Stack spacing={4} alignItems="center">
-            {/* Logo */}
-            <Box className="login-logo-wrapper">
-              <Typography variant="h4" fontWeight={700} sx={{ color: 'white' }}>
-                Concordia ERP
-              </Typography>
-            </Box>
-
             {/* Formulário */}
             <Box component="form" onSubmit={handleSubmit} className="login-form" sx={{ width: '100%' }}>
               <TextField
