@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react'
+import { createContext, useContext, useState, useEffect, useCallback, useMemo, type ReactNode } from 'react'
 import { authService, type AuthUser } from '../services/auth'
 import { menusService, type MenuDefinition } from '../services/menus'
 
@@ -32,10 +32,17 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [permissions, setPermissions] = useState<string[]>([])
   const [menus, setMenus] = useState<MenuDefinition[]>([])
   const [loading, setLoading] = useState(true)
+  const [justLoggedIn, setJustLoggedIn] = useState(false)
 
   // Carregar dados do usuário ao montar o componente
   useEffect(() => {
     const loadAuth = async () => {
+      // Se acabou de fazer login, não executar loadAuth para evitar conflitos
+      if (justLoggedIn) {
+        setLoading(false)
+        return
+      }
+
       const storedUser = authService.getUser()
       const storedPermissions = authService.getPermissions()
 
@@ -43,16 +50,47 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         setUser(storedUser)
         setPermissions(storedPermissions)
         
-        // Carregar menus
+        // Carregar menus de forma não bloqueante
+        menusService.getAll()
+          .then((menusData) => {
+            setMenus(menusData || [])
+          })
+          .catch((error) => {
+            console.error('Erro ao carregar menus:', error)
+            // Não limpar dados se houver erro ao carregar menus
+          })
+      } else if (storedUser) {
+        // Se há usuário mas token inválido/expirado, tentar refresh antes de limpar
         try {
-          const menusData = await menusService.getAll()
-          setMenus(menusData || [])
+          const refreshResponse = await authService.refreshToken()
+          if (refreshResponse) {
+            // Token renovado com sucesso
+            setUser(storedUser)
+            setPermissions(authService.getPermissions())
+            menusService.getAll()
+              .then((menusData) => {
+                setMenus(menusData || [])
+              })
+              .catch((error) => {
+                console.error('Erro ao carregar menus:', error)
+              })
+          } else {
+            // Refresh falhou, limpar dados
+            authService.logout()
+            setUser(null)
+            setPermissions([])
+            setMenus([])
+          }
         } catch (error) {
-          console.error('Erro ao carregar menus:', error)
+          // Erro no refresh, limpar dados
+          console.error('Erro ao renovar token:', error)
+          authService.logout()
+          setUser(null)
+          setPermissions([])
+          setMenus([])
         }
       } else {
-        // Token expirado ou inválido, limpar dados
-        authService.logout()
+        // Sem usuário armazenado, garantir que está limpo
         setUser(null)
         setPermissions([])
         setMenus([])
@@ -62,24 +100,47 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
 
     loadAuth()
-  }, [])
+  }, [justLoggedIn])
 
   const login = async (credentials: { loginOrEmail: string; password: string }) => {
     setLoading(true)
+    setJustLoggedIn(true) // Marcar que acabou de fazer login
     try {
       const response = await authService.login(credentials)
+      
+      // Verificar se o token foi armazenado corretamente antes de atualizar o estado
+      if (!authService.isAuthenticated() || authService.isTokenExpired()) {
+        throw new Error('Falha ao armazenar token de autenticação')
+      }
+      
+      // Atualizar estado do usuário e permissões PRIMEIRO
       setUser(response.user)
       const newPermissions = authService.getPermissions()
       setPermissions(newPermissions)
       
-      // Carregar menus após login
-      try {
-        const menusData = await menusService.getAll()
-        setMenus(menusData || [])
-      } catch (error) {
-        console.error('Erro ao carregar menus:', error)
-      }
+      // Carregar menus após login de forma assíncrona e não bloqueante
+      // Não aguardar o resultado para não bloquear o fluxo de login
+      menusService.getAll()
+        .then((menusData) => {
+          setMenus(menusData || [])
+        })
+        .catch((error) => {
+          console.error('Erro ao carregar menus (não crítico):', error)
+          // Não limpar autenticação se houver erro ao carregar menus
+          // O usuário já está autenticado, apenas não terá os menus por enquanto
+        })
+      
+      // Resetar a flag após um pequeno delay para permitir que o componente seja renderizado
+      setTimeout(() => {
+        setJustLoggedIn(false)
+      }, 1000)
     } catch (error) {
+      // Se houver erro no login, limpar dados de autenticação
+      setJustLoggedIn(false)
+      await authService.logout()
+      setUser(null)
+      setPermissions([])
+      setMenus([])
       throw error
     } finally {
       setLoading(false)
@@ -102,6 +163,20 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const refreshPermissions = useCallback(async () => {
     try {
+      // Se o token ainda não expirou, apenas atualizar permissões do token atual
+      if (!authService.isTokenExpired()) {
+        setPermissions(authService.getPermissions())
+        // Atualizar menus também
+        try {
+          const menusData = await menusService.getAll()
+          setMenus(menusData || [])
+        } catch (error) {
+          console.error('Erro ao carregar menus:', error)
+        }
+        return
+      }
+
+      // Se o token expirou, tentar fazer refresh
       const response = await authService.refreshToken()
       if (response) {
         setPermissions(authService.getPermissions())
@@ -112,17 +187,36 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         } catch (error) {
           console.error('Erro ao carregar menus:', error)
         }
+      } else {
+        // Se o refresh falhou, fazer logout apenas se realmente necessário
+        // Não fazer logout aqui para evitar loops
+        console.warn('Não foi possível atualizar o token')
       }
     } catch (error) {
       console.error('Erro ao atualizar permissões:', error)
+      // Não fazer logout aqui para evitar loops infinitos
     }
   }, [])
+
+  // Calcular isAuthenticated de forma mais robusta
+  // Usar useMemo para evitar recálculos desnecessários
+  // Recalcular apenas quando user mudar ou quando loading mudar
+  const isAuthenticated = useMemo(() => {
+    if (!user || loading) return false
+    
+    const hasToken = authService.isAuthenticated()
+    if (!hasToken) return false
+    
+    const tokenValid = !authService.isTokenExpired()
+    
+    return tokenValid
+  }, [user, loading])
 
   return (
     <AuthContext.Provider
       value={{
         user,
-        isAuthenticated: !!user && authService.isAuthenticated() && !authService.isTokenExpired(),
+        isAuthenticated,
         permissions,
         menus,
         login,

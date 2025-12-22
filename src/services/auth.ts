@@ -75,10 +75,10 @@ export const authService = {
     } catch (error) {
       console.error('Erro ao atualizar token:', error)
 
-      // Apenas fazer logout se for erro de autenticação (401)
-      if (error instanceof ApiError && error.status === 401) {
-        await this.logout()
-      }
+      // Não fazer logout imediato em caso de erro no refresh
+      // O token atual pode ainda ser válido por alguns segundos
+      // Apenas retornar null e deixar que o sistema tente usar o token atual
+      // O logout só deve acontecer quando realmente necessário (token expirado e refresh falhou)
       return null
     }
   },

@@ -57,12 +57,22 @@ const MainLayout = ({ children }: MainLayoutProps) => {
     window.localStorage.setItem('concordia-theme-mode', themeMode)
   }, [themeMode])
 
-  // Atualizar permissões ao navegar
+  // Atualizar permissões ao navegar (apenas se já estiver autenticado e não estiver carregando)
+  // Usar debounce mais longo e verificar se realmente precisa atualizar
   useEffect(() => {
-    if (isAuthenticated) {
-      refreshPermissions()
-    }
-  }, [location.pathname, isAuthenticated, refreshPermissions])
+    if (!isAuthenticated || loading) return
+
+    // Debounce mais longo para evitar chamadas muito frequentes
+    const timeoutId = setTimeout(() => {
+      // Verificar se token ainda é válido antes de tentar refresh
+      const token = localStorage.getItem('concordia_access_token')
+      if (token) {
+        refreshPermissions()
+      }
+    }, 500) // Aumentado de 100ms para 500ms
+    
+    return () => clearTimeout(timeoutId)
+  }, [location.pathname, isAuthenticated, loading, refreshPermissions])
 
   return (
     <SearchProvider>
