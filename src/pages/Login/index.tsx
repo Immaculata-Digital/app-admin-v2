@@ -10,8 +10,11 @@ import {
   InputAdornment,
   Alert,
   CircularProgress,
+  Typography,
+  Checkbox,
+  FormControlLabel,
 } from '@mui/material'
-import { Visibility, VisibilityOff } from '@mui/icons-material'
+import { Visibility, VisibilityOff, Email, Lock } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import './style.css'
@@ -23,6 +26,7 @@ const LoginPage = () => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [credentials, setCredentials] = useState({ loginOrEmail: '', password: '' })
+  const [rememberMe, setRememberMe] = useState(false)
   const [initialCheckDone, setInitialCheckDone] = useState(false)
 
   // Verificar autenticação inicial apenas uma vez
@@ -40,11 +44,9 @@ const LoginPage = () => {
   if (!initialCheckDone) {
     return (
       <Box className="login-page">
-        <Box className="login-video-container">
-          <Box className="login-video-overlay" />
-        </Box>
+        <Box className="login-image-container" />
         <Box className="login-content-wrapper">
-          <CircularProgress sx={{ color: 'white' }} />
+          <CircularProgress sx={{ color: '#007AFF' }} />
         </Box>
       </Box>
     )
@@ -54,11 +56,9 @@ const LoginPage = () => {
   if (isAuthenticated) {
     return (
       <Box className="login-page">
-        <Box className="login-video-container">
-          <Box className="login-video-overlay" />
-        </Box>
+        <Box className="login-image-container" />
         <Box className="login-content-wrapper">
-          <CircularProgress sx={{ color: 'white' }} />
+          <CircularProgress sx={{ color: '#007AFF' }} />
         </Box>
       </Box>
     )
@@ -83,26 +83,47 @@ const LoginPage = () => {
 
   return (
     <Box className="login-page">
-      {/* Background gradiente */}
-      <Box className="login-video-container">
-        <Box className="login-video-overlay" />
-      </Box>
+      {/* Container da imagem (lado esquerdo no desktop, topo no mobile) */}
+      <Box className="login-image-container" />
 
-      {/* Paper centralizado com logo e formulário */}
+      {/* Container do formulário (lado direito no desktop, embaixo no mobile) */}
       <Box className="login-content-wrapper">
-        <Paper
-          elevation={24}
-          className="login-panel"
-          sx={{
-            backgroundColor: 'transparent',
-            backgroundImage: 'none',
-          }}
-        >
-          <Stack spacing={4} alignItems="center">
+        <Paper elevation={0} className="login-panel">
+          <Stack spacing={4} sx={{ width: '100%' }}>
+            {/* Título e subtítulo */}
+            <Box sx={{ marginBottom: '8px' }}>
+              <Typography 
+                variant="h4" 
+                className="login-title" 
+                sx={{ 
+                  fontWeight: 600, 
+                  color: '#1d1d1f',
+                  fontSize: '32px',
+                  letterSpacing: '-0.5px',
+                  lineHeight: '1.1',
+                }}
+              >
+                Concordia ERP
+              </Typography>
+              <Typography 
+                variant="body1" 
+                className="login-subtitle" 
+                sx={{ 
+                  color: '#86868b', 
+                  marginTop: '8px',
+                  fontSize: '17px',
+                  fontWeight: 400,
+                  lineHeight: '1.47',
+                }}
+              >
+                Sistema de Gestão de Franquias
+              </Typography>
+            </Box>
+
             {/* Formulário */}
-            <Box component="form" onSubmit={handleSubmit} className="login-form" sx={{ width: '100%' }}>
+            <Box component="form" onSubmit={handleSubmit} className="login-form">
               <TextField
-                placeholder="Digite seu login ou e-mail"
+                placeholder="Login ou e-mail"
                 type="text"
                 value={credentials.loginOrEmail}
                 onChange={(event) =>
@@ -115,29 +136,44 @@ const LoginPage = () => {
                 required
                 disabled={loading}
                 autoComplete="username"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Email sx={{ color: '#8e8e93', fontSize: '20px' }} />
+                    </InputAdornment>
+                  ),
+                }}
                 sx={{
                   '& .MuiOutlinedInput-root': {
-                    backgroundColor: 'rgba(0, 0, 0, 0.2)',
-                    color: 'white',
+                    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                    borderRadius: '12px',
+                    fontSize: '16px',
                     '& fieldset': {
-                      borderColor: 'rgba(255, 255, 255, 0.3)',
+                      borderColor: 'rgba(0, 0, 0, 0.08)',
+                      borderWidth: '1px',
                     },
                     '&:hover fieldset': {
-                      borderColor: 'rgba(255, 255, 255, 0.5)',
+                      borderColor: 'rgba(0, 0, 0, 0.12)',
                     },
                     '&.Mui-focused fieldset': {
-                      borderColor: 'white',
+                      borderColor: '#007AFF',
+                      borderWidth: '2px',
                     },
-                  },
-                  '& .MuiInputBase-input::placeholder': {
-                    color: 'rgba(255, 255, 255, 0.7)',
-                    opacity: 1,
+                    '& input': {
+                      padding: '14px 16px',
+                      fontSize: '16px',
+                      color: '#1d1d1f',
+                      '&::placeholder': {
+                        color: '#8e8e93',
+                        opacity: 1,
+                      },
+                    },
                   },
                 }}
               />
 
               <TextField
-                placeholder="Digite sua senha"
+                placeholder="Senha"
                 type={showPassword ? 'text' : 'password'}
                 value={credentials.password}
                 onChange={(event) =>
@@ -150,66 +186,167 @@ const LoginPage = () => {
                 required
                 disabled={loading}
                 autoComplete="current-password"
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    backgroundColor: 'rgba(0, 0, 0, 0.2)',
-                    color: 'white',
-                    '& fieldset': {
-                      borderColor: 'rgba(255, 255, 255, 0.3)',
-                    },
-                    '&:hover fieldset': {
-                      borderColor: 'rgba(255, 255, 255, 0.5)',
-                    },
-                    '&.Mui-focused fieldset': {
-                      borderColor: 'white',
-                    },
-                  },
-                  '& .MuiInputBase-input::placeholder': {
-                    color: 'rgba(255, 255, 255, 0.7)',
-                    opacity: 1,
-                  },
-                }}
                 InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Lock sx={{ color: '#8e8e93', fontSize: '20px' }} />
+                    </InputAdornment>
+                  ),
                   endAdornment: (
                     <InputAdornment position="end">
                       <IconButton
                         aria-label="mostrar senha"
                         onClick={() => setShowPassword((prev) => !prev)}
                         edge="end"
-                        sx={{ color: 'rgba(255, 255, 255, 0.7)' }}
+                        sx={{ 
+                          color: '#8e8e93',
+                          '&:hover': {
+                            backgroundColor: 'rgba(0, 0, 0, 0.04)',
+                          },
+                        }}
                       >
                         {showPassword ? <VisibilityOff /> : <Visibility />}
                       </IconButton>
                     </InputAdornment>
                   ),
                 }}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                    borderRadius: '12px',
+                    fontSize: '16px',
+                    '& fieldset': {
+                      borderColor: 'rgba(0, 0, 0, 0.08)',
+                      borderWidth: '1px',
+                    },
+                    '&:hover fieldset': {
+                      borderColor: 'rgba(0, 0, 0, 0.12)',
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: '#007AFF',
+                      borderWidth: '2px',
+                    },
+                    '& input': {
+                      padding: '14px 16px',
+                      fontSize: '16px',
+                      color: '#1d1d1f',
+                      '&::placeholder': {
+                        color: '#8e8e93',
+                        opacity: 1,
+                      },
+                    },
+                  },
+                }}
               />
 
-              <Stack spacing={1.5}>
+              <Stack spacing={2.5}>
                 {error && (
-                  <Alert severity="error" onClose={() => setError(null)}>
+                  <Alert 
+                    severity="error" 
+                    onClose={() => setError(null)}
+                    sx={{
+                      borderRadius: '12px',
+                      backgroundColor: '#ff3b30',
+                      color: '#ffffff',
+                      fontSize: '15px',
+                      fontWeight: 400,
+                      '& .MuiAlert-icon': {
+                        color: '#ffffff',
+                      },
+                      '& .MuiAlert-action': {
+                        '& .MuiIconButton-root': {
+                          color: '#ffffff',
+                          '&:hover': {
+                            backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                          },
+                        },
+                      },
+                    }}
+                  >
                     {error}
                   </Alert>
                 )}
+
+                <Box className="login-options">
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={rememberMe}
+                        onChange={(e) => setRememberMe(e.target.checked)}
+                        sx={{
+                          color: '#007AFF',
+                          padding: '4px',
+                          '&.Mui-checked': {
+                            color: '#007AFF',
+                          },
+                          '& .MuiSvgIcon-root': {
+                            fontSize: '20px',
+                          },
+                        }}
+                      />
+                    }
+                    label="Lembrar-me"
+                    sx={{ 
+                      color: '#1d1d1f', 
+                      fontSize: '15px',
+                      fontWeight: 400,
+                      margin: 0,
+                      '& .MuiFormControlLabel-label': {
+                        paddingLeft: '8px',
+                      },
+                    }}
+                  />
+                  <Link
+                    component="button"
+                    type="button"
+                    className="forgot-password"
+                    underline="none"
+                    onClick={() => navigate('/forgot-password', { replace: false })}
+                    sx={{ 
+                      color: '#007AFF', 
+                      fontSize: '15px', 
+                      fontWeight: 400,
+                      textDecoration: 'none',
+                      '&:hover': {
+                        textDecoration: 'underline',
+                      },
+                    }}
+                  >
+                    Esqueci minha senha?
+                  </Link>
+                </Box>
+
                 <Button
                   variant="contained"
                   size="large"
                   fullWidth
                   type="submit"
                   disabled={loading}
-                  startIcon={loading ? <CircularProgress size={20} /> : null}
+                  sx={{
+                    background: '#007AFF',
+                    padding: '14px 24px',
+                    fontSize: '17px',
+                    fontWeight: 600,
+                    textTransform: 'none',
+                    borderRadius: '12px',
+                    boxShadow: '0 2px 8px rgba(0, 122, 255, 0.2)',
+                    letterSpacing: '-0.2px',
+                    '&:hover': {
+                      background: '#0051D5',
+                      boxShadow: '0 4px 12px rgba(0, 122, 255, 0.3)',
+                    },
+                    '&:active': {
+                      background: '#0040A3',
+                    },
+                    '&.Mui-disabled': {
+                      background: '#c7c7cc',
+                      color: '#ffffff',
+                    },
+                  }}
+                  startIcon={loading ? <CircularProgress size={18} color="inherit" sx={{ color: '#ffffff' }} /> : null}
                 >
                   {loading ? 'Entrando...' : 'Entrar'}
                 </Button>
-                <Link
-                  component="button"
-                  type="button"
-                  className="forgot-password"
-                  underline="none"
-                  onClick={() => navigate('/forgot-password', { replace: false })}
-                >
-                  Esqueci minha senha
-                </Link>
               </Stack>
             </Box>
           </Stack>

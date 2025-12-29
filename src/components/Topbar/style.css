@@ -1,13 +1,15 @@
 .topbar {
-  background: var(--color-surface);
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
   border-bottom: 1px solid var(--color-border-lighter);
-  padding: 0.5rem 1rem;
+  padding: var(--spacing-sm) var(--spacing-lg);
   display: flex;
   flex-direction: column;
   position: sticky;
   top: 0;
   z-index: 10;
-  box-shadow: 0 1px 3px var(--color-shadow);
+  box-shadow: 0 1px 0 var(--color-border-lighter);
 }
 
 .topbar__user-button .MuiTypography-root {
@@ -15,9 +17,11 @@
 }
 
 .theme-dark .topbar {
-  background: var(--color-surface);
+  background: rgba(28, 28, 30, 0.8);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
   border-bottom-color: var(--color-border);
-  box-shadow: 0 1px 3px var(--color-shadow);
+  box-shadow: 0 1px 0 var(--color-border-lighter);
 }
 
 .topbar__content {
@@ -45,11 +49,13 @@
 }
 
 .topbar__toggle {
-  background: var(--color-hover);
+  background: transparent;
+  border-radius: var(--radius-md);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .topbar__toggle:hover {
-  background: var(--color-hover-strong);
+  background: var(--color-hover);
 }
 
 .theme-dark .topbar__toggle {
@@ -76,8 +82,13 @@
 
 .topbar__profile {
   background: var(--color-hover);
-  padding: 0.35rem 0.75rem;
-  border-radius: 999px;
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-radius: var(--radius-full);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.topbar__profile:hover {
+  background: var(--color-hover-strong);
 }
 
 .topbar__profile .MuiAvatar-root {
@@ -128,19 +139,20 @@
   display: flex;
   align-items: center;
   background: var(--color-hover);
-  border-radius: 24px;
-  padding: 0.5rem 0.75rem;
-  transition: all 0.3s ease;
+  border-radius: var(--radius-full);
+  padding: var(--spacing-sm) var(--spacing-md);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   min-width: 48px;
-  height: 48px;
+  height: 44px;
 }
 
 .topbar__search-container--open {
   flex: 1;
   max-width: 100%;
   background: var(--color-surface);
-  border: 1px solid var(--color-border-lighter);
-  box-shadow: 0 2px 8px var(--color-shadow);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 2px 8px var(--color-shadow-subtle);
+  border-radius: var(--radius-md);
 }
 
 .theme-dark .topbar__search-container {

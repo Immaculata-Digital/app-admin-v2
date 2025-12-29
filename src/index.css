@@ -1,30 +1,62 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
-  /* Cores Concordia - baseadas no app-admin atual */
-  --color-primary: hsl(220 70% 28%);
-  --color-primary-dark: hsl(220 75% 18%);
-  --color-primary-light: hsl(220 65% 45%);
-  --color-primary-rgb: 51, 85, 153;
-  --color-secondary: hsl(220 15% 92%);
-  --color-text: hsl(220 70% 12%);
-  --color-accent: hsl(200 80% 50%);
-  --color-background: hsl(220 25% 97%);
-  --color-surface: hsl(0 0% 100%);
-  --color-on-primary: hsl(0 0% 100%);
-  --color-on-primary-muted: hsla(0, 0%, 100%, 0.8);
-  --color-on-primary-soft: hsla(0, 0%, 100%, 0.2);
-  --color-on-secondary: hsla(220, 70%, 12%, 0.6);
-  --color-sidebar-bg: hsl(220 70% 12%);
-  --color-border: hsla(220, 20%, 88%, 1);
-  --color-border-light: hsla(220, 20%, 88%, 0.5);
-  --color-border-lighter: hsla(220, 20%, 88%, 0.2);
-  --color-hover: hsla(220, 70%, 28%, 0.08);
-  --color-hover-strong: hsla(220, 70%, 28%, 0.16);
-  --color-shadow: hsla(220, 70%, 28%, 0.1);
-  --color-shadow-strong: hsla(220, 70%, 28%, 0.2);
-  --font-title: 'Poppins', sans-serif;
-  --font-body: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  /* Cores Apple - Sistema de Design Moderno */
+  --color-primary: #007AFF;
+  --color-primary-dark: #0051D5;
+  --color-primary-light: #5AC8FA;
+  --color-primary-rgb: 0, 122, 255;
+  
+  /* Cores de Texto Apple */
+  --color-text: #1d1d1f;
+  --color-text-secondary: #86868b;
+  --color-text-tertiary: #8e8e93;
+  
+  /* Cores de Fundo Apple */
+  --color-background: #f5f5f7;
+  --color-surface: #ffffff;
+  --color-surface-secondary: rgba(255, 255, 255, 0.8);
+  
+  /* Cores de Borda Apple */
+  --color-border: rgba(0, 0, 0, 0.08);
+  --color-border-light: rgba(0, 0, 0, 0.05);
+  --color-border-lighter: rgba(0, 0, 0, 0.03);
+  
+  /* Estados Hover Apple */
+  --color-hover: rgba(0, 0, 0, 0.04);
+  --color-hover-strong: rgba(0, 0, 0, 0.08);
+  --color-hover-primary: rgba(0, 122, 255, 0.1);
+  
+  /* Sombras Apple */
+  --color-shadow: rgba(0, 0, 0, 0.06);
+  --color-shadow-strong: rgba(0, 0, 0, 0.12);
+  --color-shadow-subtle: rgba(0, 0, 0, 0.02);
+  
+  /* Sidebar */
+  --color-sidebar-bg: #ffffff;
+  --color-sidebar-text: #1d1d1f;
+  --color-sidebar-hover: rgba(0, 0, 0, 0.04);
+  --color-sidebar-active: rgba(0, 122, 255, 0.1);
+  
+  /* Tipografia Apple */
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif;
+  --font-title: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  
+  /* Espaçamento Apple */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-2xl: 48px;
+  
+  /* Border Radius Apple */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-full: 9999px;
+  
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -49,6 +81,9 @@ body {
   font-family: var(--font-body);
   background-color: var(--color-background);
   color: var(--color-text);
+  font-size: 15px;
+  line-height: 1.47;
+  letter-spacing: -0.01em;
 }
 
 #root {
@@ -56,28 +91,48 @@ body {
   min-height: 100vh;
 }
 
+/* Botões Apple Style */
 .MuiButton-containedPrimary {
   background-color: var(--color-primary) !important;
-  color: var(--color-on-primary) !important;
+  color: #ffffff !important;
+  border-radius: var(--radius-md) !important;
+  font-weight: 600 !important;
+  text-transform: none !important;
+  letter-spacing: -0.2px !important;
+  box-shadow: 0 2px 8px rgba(0, 122, 255, 0.2) !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
 .MuiButton-containedPrimary:hover {
   background-color: var(--color-primary-dark) !important;
+  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3) !important;
+  transform: translateY(-1px);
 }
 
 .MuiButton-outlinedPrimary {
-  border-color: var(--color-primary) !important;
-  color: var(--color-primary) !important;
+  border-color: var(--color-border) !important;
+  color: var(--color-text) !important;
+  border-radius: var(--radius-md) !important;
+  font-weight: 500 !important;
+  text-transform: none !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
 .MuiButton-outlinedPrimary:hover {
-  border-color: var(--color-primary-dark) !important;
-  color: var(--color-primary-dark) !important;
-  background-color: var(--color-hover) !important;
+  border-color: var(--color-primary) !important;
+  color: var(--color-primary) !important;
+  background-color: var(--color-hover-primary) !important;
 }
 
-.theme-dark .MuiButton-outlinedPrimary:hover {
-  background-color: hsla(var(--color-primary-rgb), 0.12) !important;
+.MuiButton-textPrimary {
+  color: var(--color-primary) !important;
+  border-radius: var(--radius-md) !important;
+  font-weight: 500 !important;
+  text-transform: none !important;
+}
+
+.MuiButton-textPrimary:hover {
+  background-color: var(--color-hover-primary) !important;
 }
 
 .MuiCheckbox-root.Mui-checked,
@@ -90,52 +145,62 @@ body {
 }
 
 .MuiIconButton-colorPrimary:hover {
-  background-color: var(--color-hover-strong) !important;
+  background-color: var(--color-hover-primary) !important;
 }
 
 .theme-dark {
-  /* Cores primárias - mantém a identidade Concordia */
-  --color-primary: hsl(220 65% 55%);
-  --color-primary-dark: hsl(220 70% 40%);
-  --color-primary-light: hsl(220 60% 65%);
-  --color-primary-rgb: 102, 136, 204;
+  /* Cores primárias - mantém Apple Blue */
+  --color-primary: #0A84FF;
+  --color-primary-dark: #0051D5;
+  --color-primary-light: #64D2FF;
+  --color-primary-rgb: 10, 132, 255;
 
-  /* Cores de texto */
-  --color-secondary: hsl(220 15% 95%);
-  --color-text: hsl(220 15% 95%);
-  --color-accent: hsl(200 80% 60%);
+  /* Cores de Texto Apple Dark */
+  --color-text: #f5f5f7;
+  --color-text-secondary: #a1a1a6;
+  --color-text-tertiary: #8e8e93;
 
-  /* Cores de fundo */
-  --color-background: hsl(220 70% 8%);
-  --color-surface: hsl(220 65% 12%);
-  --color-sidebar-bg: hsl(220 70% 10%);
+  /* Cores de Fundo Apple Dark */
+  --color-background: #000000;
+  --color-surface: #1c1c1e;
+  --color-surface-secondary: rgba(28, 28, 30, 0.8);
 
-  /* Cores on-primary - texto claro sobre fundo escuro do sidebar */
-  --color-on-primary: hsl(0 0% 100%);
-  --color-on-primary-muted: hsla(0, 0%, 100%, 0.8);
-  --color-on-primary-soft: hsla(0, 0%, 100%, 0.3);
+  /* Cores de Borda Apple Dark */
+  --color-border: rgba(255, 255, 255, 0.12);
+  --color-border-light: rgba(255, 255, 255, 0.08);
+  --color-border-lighter: rgba(255, 255, 255, 0.05);
 
-  /* Cores on-secondary */
-  --color-on-secondary: hsla(220, 15%, 95%, 0.7);
+  /* Estados Hover Apple Dark */
+  --color-hover: rgba(255, 255, 255, 0.1);
+  --color-hover-strong: rgba(255, 255, 255, 0.16);
+  --color-hover-primary: rgba(10, 132, 255, 0.2);
 
-  /* Bordas e divisores */
-  --color-border: hsla(255, 255, 255, 0.12);
-  --color-border-light: hsla(255, 255, 255, 0.08);
-  --color-border-lighter: hsla(255, 255, 255, 0.05);
+  /* Sombras Apple Dark */
+  --color-shadow: rgba(0, 0, 0, 0.4);
+  --color-shadow-strong: rgba(0, 0, 0, 0.6);
+  --color-shadow-subtle: rgba(0, 0, 0, 0.2);
 
-  /* Estados hover */
-  --color-hover: hsla(255, 255, 255, 0.1);
-  --color-hover-strong: hsla(255, 255, 255, 0.16);
-
-  /* Sombras */
-  --color-shadow: hsla(0, 0%, 0%, 0.3);
-  --color-shadow-strong: hsla(0, 0%, 0%, 0.5);
+  /* Sidebar Dark */
+  --color-sidebar-bg: #1c1c1e;
+  --color-sidebar-text: #f5f5f7;
+  --color-sidebar-hover: rgba(255, 255, 255, 0.1);
+  --color-sidebar-active: rgba(10, 132, 255, 0.2);
 }
 
 /* Estilos globais para Material-UI no modo escuro */
 .theme-dark .MuiPaper-root {
   background-color: var(--color-surface) !important;
   color: var(--color-text) !important;
+  border-radius: var(--radius-lg) !important;
+}
+
+/* Paper com glassmorphism Apple */
+.MuiPaper-root {
+  border-radius: var(--radius-lg) !important;
+  box-shadow: 
+    0 2px 8px var(--color-shadow-subtle),
+    0 1px 3px var(--color-shadow-subtle) !important;
+  border: 1px solid var(--color-border-lighter) !important;
 }
 
 /* Sidebar sempre com fundo escuro e texto branco */
@@ -164,8 +229,29 @@ body {
   color: var(--color-text) !important;
 }
 
+/* TextFields Apple Style */
+.MuiTextField-root .MuiOutlinedInput-root {
+  border-radius: var(--radius-md) !important;
+  background-color: var(--color-surface-secondary) !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.MuiTextField-root .MuiOutlinedInput-notchedOutline {
+  border-color: var(--color-border) !important;
+  border-width: 1px !important;
+}
+
+.MuiTextField-root .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
+  border-color: var(--color-border-light) !important;
+}
+
+.MuiTextField-root .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: var(--color-primary) !important;
+  border-width: 2px !important;
+}
+
 .theme-dark .MuiTextField-root .MuiOutlinedInput-root {
-  background-color: transparent;
+  background-color: var(--color-surface-secondary) !important;
 }
 
 .theme-dark .MuiTextField-root .MuiOutlinedInput-notchedOutline {
@@ -193,14 +279,37 @@ body {
   -webkit-text-fill-color: hsla(255, 255, 255, 0.5) !important;
 }
 
+/* Tables Apple Style */
+.MuiTableCell-root {
+  border-bottom-color: var(--color-border-lighter) !important;
+  font-size: 15px !important;
+  padding: 12px 16px !important;
+}
+
+.MuiTableHead-root .MuiTableCell-root {
+  color: var(--color-text-secondary) !important;
+  font-weight: 600 !important;
+  font-size: 13px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+}
+
 .theme-dark .MuiTableCell-root {
   border-bottom-color: var(--color-border-lighter) !important;
   color: var(--color-text) !important;
 }
 
 .theme-dark .MuiTableHead-root .MuiTableCell-root {
-  color: var(--color-on-secondary) !important;
+  color: var(--color-text-secondary) !important;
   font-weight: 600;
+}
+
+/* Chips Apple Style */
+.MuiChip-root {
+  border-radius: var(--radius-full) !important;
+  font-weight: 500 !important;
+  font-size: 13px !important;
+  height: 28px !important;
 }
 
 .theme-dark .MuiChip-root {
@@ -212,9 +321,33 @@ body {
   border-color: var(--color-border-lighter) !important;
 }
 
+/* Menus Apple Style */
+.MuiMenu-paper {
+  border-radius: var(--radius-lg) !important;
+  box-shadow: 
+    0 8px 24px var(--color-shadow),
+    0 2px 8px var(--color-shadow-subtle) !important;
+  border: 1px solid var(--color-border-lighter) !important;
+  margin-top: 8px !important;
+  padding: 4px 0 !important;
+}
+
 .theme-dark .MuiMenu-paper {
   background-color: var(--color-surface) !important;
   border: 1px solid var(--color-border) !important;
+}
+
+/* Menu Items Apple Style */
+.MuiMenuItem-root {
+  border-radius: var(--radius-sm) !important;
+  margin: 2px 8px !important;
+  padding: 8px 12px !important;
+  font-size: 15px !important;
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.MuiMenuItem-root:hover {
+  background-color: var(--color-hover) !important;
 }
 
 .theme-dark .MuiMenuItem-root {
@@ -229,6 +362,14 @@ body {
   opacity: 0.5 !important;
   color: var(--color-on-secondary) !important;
   pointer-events: none !important;
+}
+
+/* Dialogs Apple Style */
+.MuiDialog-paper {
+  border-radius: var(--radius-xl) !important;
+  box-shadow: 
+    0 12px 48px var(--color-shadow-strong),
+    0 4px 16px var(--color-shadow) !important;
 }
 
 .theme-dark .MuiDialog-paper {
@@ -277,13 +418,30 @@ body {
   background-color: var(--color-hover-strong) !important;
 }
 
+/* Icon Buttons Apple Style */
+.MuiIconButton-root {
+  border-radius: var(--radius-md) !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.MuiIconButton-root:hover {
+  background-color: var(--color-hover) !important;
+}
+
 .theme-dark .MuiIconButton-root:hover {
   background-color: var(--color-hover-strong) !important;
 }
 
+/* Disabled States Apple */
+.MuiButton-contained.Mui-disabled {
+  background-color: var(--color-hover) !important;
+  color: var(--color-text-tertiary) !important;
+  opacity: 0.5 !important;
+}
+
 .theme-dark .MuiButton-contained.Mui-disabled {
-  background-color: hsla(255, 255, 255, 0.12) !important;
-  color: hsla(255, 255, 255, 0.3) !important;
+  background-color: rgba(255, 255, 255, 0.12) !important;
+  color: rgba(255, 255, 255, 0.3) !important;
 }
 
 .theme-dark .access-denied-text {

@@ -11,12 +11,20 @@
   background-color: var(--color-background);
   min-height: 100vh;
   width: 100%;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .main-layout__page {
   flex: 1;
-  padding: 2rem;
+  padding: var(--spacing-lg);
   overflow-y: auto;
   width: 100%;
+  transition: padding 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (max-width: 768px) {
+  .main-layout__page {
+    padding: var(--spacing-md);
+  }
 }
 
