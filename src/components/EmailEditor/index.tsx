@@ -11,6 +11,11 @@ import {
   IconButton,
   TextField,
   Divider,
+  InputAdornment,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel,
 } from '@mui/material'
 import {
   Delete,
@@ -55,13 +60,79 @@ const CLIENTE_VARIABLES = [
   { label: 'ID da Loja', value: '{{cliente.id_loja}}' },
 ]
 
-// Variáveis específicas para reset de senha
-const RESET_SENHA_VARIABLES = [
-  { label: 'Nome do Cliente', value: '{{nome_cliente}}' },
-  { label: 'Token Reset', value: '{{token_reset}}' },
-  { label: 'URL Reset', value: '{{url_reset}}' },
-  { label: 'Email do Cliente', value: '{{email_cliente}}' },
+// Opções de unidade para tamanho de fonte
+const FONT_SIZE_UNITS = ['px', 'rem', 'em', 'pt', '%']
+
+// Opções de peso da fonte
+const FONT_WEIGHT_OPTIONS = [
+  { value: '100', label: '100 (Thin)' },
+  { value: '200', label: '200 (Extra Light)' },
+  { value: '300', label: '300 (Light)' },
+  { value: '400', label: '400 (Normal)' },
+  { value: 'normal', label: 'Normal' },
+  { value: '500', label: '500 (Medium)' },
+  { value: '600', label: '600 (Semi Bold)' },
+  { value: '700', label: '700 (Bold)' },
+  { value: 'bold', label: 'Bold' },
+  { value: '800', label: '800 (Extra Bold)' },
+  { value: '900', label: '900 (Black)' },
+  { value: 'bolder', label: 'Bolder' },
+  { value: 'lighter', label: 'Lighter' },
 ]
+
+// Função para converter cores para formato HEX
+const normalizeColorToHex = (color: string | undefined): string => {
+  if (!color) return '#000000'
+  
+  // Se já é um HEX válido, retornar
+  if (/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(color)) {
+    // Converter formato curto (#fff) para formato longo (#ffffff)
+    if (color.length === 4) {
+      return `#${color[1]}${color[1]}${color[2]}${color[2]}${color[3]}${color[3]}`.toUpperCase()
+    }
+    return color.toUpperCase()
+  }
+  
+  // Mapeamento de cores nomeadas comuns
+  const namedColors: Record<string, string> = {
+    'black': '#000000',
+    'white': '#FFFFFF',
+    'red': '#FF0000',
+    'green': '#008000',
+    'blue': '#0000FF',
+    'yellow': '#FFFF00',
+    'cyan': '#00FFFF',
+    'magenta': '#FF00FF',
+    'silver': '#C0C0C0',
+    'gray': '#808080',
+    'grey': '#808080',
+    'maroon': '#800000',
+    'olive': '#808000',
+    'lime': '#00FF00',
+    'aqua': '#00FFFF',
+    'teal': '#008080',
+    'navy': '#000080',
+    'fuchsia': '#FF00FF',
+    'purple': '#800080',
+  }
+  
+  const lowerColor = color.toLowerCase().trim()
+  if (namedColors[lowerColor]) {
+    return namedColors[lowerColor]
+  }
+  
+  // Tentar converter RGB/RGBA para HEX
+  const rgbMatch = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*[\d.]+)?\)/)
+  if (rgbMatch) {
+    const r = parseInt(rgbMatch[1]).toString(16).padStart(2, '0')
+    const g = parseInt(rgbMatch[2]).toString(16).padStart(2, '0')
+    const b = parseInt(rgbMatch[3]).toString(16).padStart(2, '0')
+    return `#${r}${g}${b}`.toUpperCase()
+  }
+  
+  // Se não conseguir converter, retornar padrão
+  return '#000000'
+}
 
 export type EmailElement = 
   | { type: 'text'; id: string; content: string; styles?: { fontSize?: string; color?: string; fontWeight?: string } }
@@ -233,12 +304,43 @@ const ElementEditor = ({
 }) => {
   const [editedElement, setEditedElement] = useState<EmailElement | null>(null)
   const [textFieldRef, setTextFieldRef] = useState<HTMLTextAreaElement | null>(null)
+  
+  // Estados para tamanho de fonte dividido
+  const [fontSizeNumber, setFontSizeNumber] = useState<string>('16')
+  const [fontSizeUnit, setFontSizeUnit] = useState<string>('px')
 
   useEffect(() => {
     if (element) {
-      // Garantir que os estilos existam para botões
-      if (element.type === 'button' && !element.styles) {
-        setEditedElement({ ...element, styles: { backgroundColor: '#1976d2', color: '#fff' } })
+      // Normalizar cores para HEX e garantir que os estilos existam
+      if (element.type === 'button') {
+        const normalizedStyles = {
+          backgroundColor: normalizeColorToHex(element.styles?.backgroundColor || '#1976d2'),
+          color: normalizeColorToHex(element.styles?.color || '#FFFFFF'),
+        }
+        setEditedElement({ ...element, styles: normalizedStyles })
+      } else if (element.type === 'text') {
+        const normalizedStyles = {
+          ...element.styles,
+          color: normalizeColorToHex(element.styles?.color || '#000000'),
+        }
+        setEditedElement({ ...element, styles: normalizedStyles })
+        
+        // Parsear tamanho de fonte
+        if (element.styles?.fontSize) {
+          const fontSize = element.styles.fontSize
+          const match = fontSize.match(/^(\d+(?:\.\d+)?)(px|rem|em|pt|%)$/)
+          if (match) {
+            setFontSizeNumber(match[1])
+            setFontSizeUnit(match[2])
+          } else {
+            // Se não conseguir parsear, usar valores padrão
+            setFontSizeNumber('16')
+            setFontSizeUnit('px')
+          }
+        } else {
+          setFontSizeNumber('16')
+          setFontSizeUnit('px')
+        }
       } else {
         setEditedElement({ ...element })
       }
@@ -300,26 +402,6 @@ const ElementEditor = ({
                 ))}
               </Box>
             </Box>
-            <Box>
-              <Typography variant="subtitle2" sx={{ mb: 1 }}>
-                Variáveis de Reset de Senha
-              </Typography>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
-                {RESET_SENHA_VARIABLES.map((variable) => (
-                  <Button
-                    key={variable.value}
-                    size="small"
-                    variant="outlined"
-                    color="secondary"
-                    startIcon={<Add />}
-                    onClick={() => insertVariable(variable.value)}
-                    sx={{ fontSize: '0.75rem' }}
-                  >
-                    {variable.label}
-                  </Button>
-                ))}
-              </Box>
-            </Box>
             <TextField
               label="Conteúdo"
               multiline
@@ -332,36 +414,100 @@ const ElementEditor = ({
               inputRef={setTextFieldRef}
               helperText="Use os botões acima para inserir variáveis do cliente (ex: {{cliente.nome_completo}})"
             />
+            <Box sx={{ display: 'flex', gap: 2 }}>
+              <TextField
+                label="Tamanho da fonte"
+                type="number"
+                value={fontSizeNumber}
+                onChange={(e) => {
+                  const num = e.target.value
+                  setFontSizeNumber(num)
+                  if (editedElement.type === 'text') {
+                    setEditedElement({
+                      ...editedElement,
+                      styles: { ...editedElement.styles, fontSize: `${num}${fontSizeUnit}` },
+                    } as EmailElement)
+                  }
+                }}
+                inputProps={{ min: 0, step: 0.1 }}
+                sx={{ flex: 1 }}
+              />
+              <FormControl sx={{ minWidth: 120 }}>
+                <InputLabel>Unidade</InputLabel>
+                <Select
+                  value={fontSizeUnit}
+                  label="Unidade"
+                  onChange={(e) => {
+                    const unit = e.target.value
+                    setFontSizeUnit(unit)
+                    if (editedElement.type === 'text') {
+                      setEditedElement({
+                        ...editedElement,
+                        styles: { ...editedElement.styles, fontSize: `${fontSizeNumber}${unit}` },
+                      } as EmailElement)
+                    }
+                  }}
+                >
+                  {FONT_SIZE_UNITS.map((unit) => (
+                    <MenuItem key={unit} value={unit}>
+                      {unit}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Box>
             <TextField
-              label="Tamanho da fonte (ex: 16px, 1.2em)"
-              value={editedElement.styles?.fontSize || ''}
-              onChange={(e) =>
-                setEditedElement({
-                  ...editedElement,
-                  styles: { ...editedElement.styles, fontSize: e.target.value },
-                } as EmailElement)
-              }
-            />
-            <TextField
-              label="Cor (ex: #000000, red)"
-              value={editedElement.styles?.color || ''}
+              label="Cor"
+              value={editedElement.styles?.color || '#000000'}
               onChange={(e) =>
                 setEditedElement({
                   ...editedElement,
                   styles: { ...editedElement.styles, color: e.target.value },
                 } as EmailElement)
               }
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <input
+                      type="color"
+                      value={editedElement.styles?.color || '#000000'}
+                      onChange={(e) =>
+                        setEditedElement({
+                          ...editedElement,
+                          styles: { ...editedElement.styles, color: e.target.value },
+                        } as EmailElement)
+                      }
+                      style={{
+                        width: 40,
+                        height: 40,
+                        border: '1px solid',
+                        borderRadius: 4,
+                        cursor: 'pointer',
+                      }}
+                    />
+                  </InputAdornment>
+                ),
+              }}
             />
-            <TextField
-              label="Peso da fonte (normal, bold, 600)"
-              value={editedElement.styles?.fontWeight || ''}
-              onChange={(e) =>
-                setEditedElement({
-                  ...editedElement,
-                  styles: { ...editedElement.styles, fontWeight: e.target.value },
-                } as EmailElement)
-              }
-            />
+            <FormControl fullWidth>
+              <InputLabel>Peso da fonte</InputLabel>
+              <Select
+                value={editedElement.styles?.fontWeight || 'normal'}
+                label="Peso da fonte"
+                onChange={(e) =>
+                  setEditedElement({
+                    ...editedElement,
+                    styles: { ...editedElement.styles, fontWeight: e.target.value },
+                  } as EmailElement)
+                }
+              >
+                {FONT_WEIGHT_OPTIONS.map((option) => (
+                  <MenuItem key={option.value} value={option.value}>
+                    {option.label}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
           </Box>
         )}
 
@@ -396,28 +542,6 @@ const ElementEditor = ({
 
         {element.type === 'button' && editedElement.type === 'button' && (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
-            <Box>
-              <Typography variant="subtitle2" sx={{ mb: 1 }}>
-                Variáveis de Reset de Senha (para URL)
-              </Typography>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
-                {RESET_SENHA_VARIABLES.filter(v => v.value === '{{url_reset}}' || v.value === '{{token_reset}}').map((variable) => (
-                  <Button
-                    key={variable.value}
-                    size="small"
-                    variant="outlined"
-                    color="secondary"
-                    startIcon={<Add />}
-                    onClick={() => {
-                      setEditedElement({ ...editedElement, url: editedElement.url + variable.value })
-                    }}
-                    sx={{ fontSize: '0.75rem' }}
-                  >
-                    {variable.label}
-                  </Button>
-                ))}
-              </Box>
-            </Box>
             <TextField
               label="Texto do Botão"
               fullWidth
@@ -433,10 +557,10 @@ const ElementEditor = ({
               onChange={(e) =>
                 setEditedElement({ ...editedElement, url: e.target.value } as EmailElement)
               }
-              helperText="Use {{url_reset}} para inserir a URL completa de reset de senha"
+              helperText="Para botões de reset de senha, use {{url_reset}}. As variáveis serão inseridas automaticamente na geração do HTML."
             />
             <TextField
-              label="Cor de Fundo (ex: #1976d2)"
+              label="Cor de Fundo"
               fullWidth
               value={editedElement.styles?.backgroundColor || '#1976d2'}
               onChange={(e) => {
@@ -446,9 +570,33 @@ const ElementEditor = ({
                   styles: newStyles,
                 } as EmailElement)
               }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <input
+                      type="color"
+                      value={editedElement.styles?.backgroundColor || '#1976d2'}
+                      onChange={(e) => {
+                        const newStyles = { ...editedElement.styles, backgroundColor: e.target.value }
+                        setEditedElement({
+                          ...editedElement,
+                          styles: newStyles,
+                        } as EmailElement)
+                      }}
+                      style={{
+                        width: 40,
+                        height: 40,
+                        border: '1px solid',
+                        borderRadius: 4,
+                        cursor: 'pointer',
+                      }}
+                    />
+                  </InputAdornment>
+                ),
+              }}
             />
             <TextField
-              label="Cor do Texto (ex: #ffffff)"
+              label="Cor do Texto"
               fullWidth
               value={editedElement.styles?.color || '#fff'}
               onChange={(e) => {
@@ -457,6 +605,30 @@ const ElementEditor = ({
                   ...editedElement,
                   styles: newStyles,
                 } as EmailElement)
+              }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <input
+                      type="color"
+                      value={editedElement.styles?.color || '#fff'}
+                      onChange={(e) => {
+                        const newStyles = { ...editedElement.styles, color: e.target.value }
+                        setEditedElement({
+                          ...editedElement,
+                          styles: newStyles,
+                        } as EmailElement)
+                      }}
+                      style={{
+                        width: 40,
+                        height: 40,
+                        border: '1px solid',
+                        borderRadius: 4,
+                        cursor: 'pointer',
+                      }}
+                    />
+                  </InputAdornment>
+                ),
               }}
             />
           </Box>
@@ -518,7 +690,8 @@ export const EmailEditor = ({ open, onClose, onSave, initialHtml }: EmailEditorP
           if (tagName === 'p') {
             const style = element.getAttribute('style') || ''
             const fontSize = style.match(/font-size:\s*([^;]+)/)?.[1]?.trim() || '16px'
-            const color = style.match(/color:\s*([^;]+)/)?.[1]?.trim() || '#000'
+            const colorRaw = style.match(/color:\s*([^;]+)/)?.[1]?.trim() || '#000'
+            const color = normalizeColorToHex(colorRaw)
             const fontWeight = style.match(/font-weight:\s*([^;]+)/)?.[1]?.trim() || 'normal'
             const content = element.textContent?.trim() || ''
             
@@ -570,17 +743,19 @@ export const EmailEditor = ({ open, onClose, onSave, initialHtml }: EmailEditorP
               const style = linkElement.getAttribute('style') || ''
               // Extrair background-color
               const backgroundColorMatch = style.match(/background-color:\s*([^;]+)/)
-              const backgroundColor = backgroundColorMatch?.[1]?.trim() || '#1976d2'
+              const backgroundColorRaw = backgroundColorMatch?.[1]?.trim() || '#1976d2'
+              const backgroundColor = normalizeColorToHex(backgroundColorRaw)
               // Extrair color (dividir por ; e procurar especificamente por "color:")
               const styleParts = style.split(';').map(s => s.trim())
-              let color = '#fff'
+              let colorRaw = '#fff'
               for (const part of styleParts) {
                 // Verificar se começa exatamente com "color:" (não "background-color:")
                 if (part.startsWith('color:') && !part.includes('background')) {
-                  color = part.replace(/^color:\s*/, '').trim()
+                  colorRaw = part.replace(/^color:\s*/, '').trim()
                   break
                 }
               }
+              const color = normalizeColorToHex(colorRaw)
               
               // Aceitar botão se tiver texto (URL pode estar vazia)
               if (text) {
@@ -693,11 +868,22 @@ export const EmailEditor = ({ open, onClose, onSave, initialHtml }: EmailEditorP
     const newElement: EmailElement = (() => {
       switch (type) {
         case 'text':
-          return { type: 'text', id: `text-${Date.now()}`, content: 'Novo texto' }
+          return { 
+            type: 'text', 
+            id: `text-${Date.now()}`, 
+            content: 'Novo texto',
+            styles: { color: '#000000', fontSize: '16px', fontWeight: 'normal' }
+          }
         case 'image':
           return { type: 'image', id: `image-${Date.now()}`, src: '', alt: '' }
         case 'button':
-          return { type: 'button', id: `button-${Date.now()}`, text: 'Clique aqui', url: '', styles: { backgroundColor: '#1976d2', color: '#fff' } }
+          return { 
+            type: 'button', 
+            id: `button-${Date.now()}`, 
+            text: 'Clique aqui', 
+            url: '', 
+            styles: { backgroundColor: '#1976D2', color: '#FFFFFF' } 
+          }
         case 'divider':
           return { type: 'divider', id: `divider-${Date.now()}` }
       }
@@ -711,7 +897,7 @@ export const EmailEditor = ({ open, onClose, onSave, initialHtml }: EmailEditorP
       id: `button-reset-${Date.now()}`,
       text: 'Redefinir Senha',
       url: '{{url_reset}}',
-      styles: { backgroundColor: '#000000', color: '#ffffff' }
+      styles: { backgroundColor: '#000000', color: '#FFFFFF' }
     }
     setElements([...elements, newElement])
   }
