@@ -31,14 +31,14 @@ const LoginPage = () => {
 
   // Verificar autenticação inicial apenas uma vez
   useEffect(() => {
-    if (!authLoading) {
+    if (!authLoading && !initialCheckDone) {
       setInitialCheckDone(true)
       if (isAuthenticated) {
         // Redirecionar para o dashboard após login
         navigate('/dashboard', { replace: true })
       }
     }
-  }, [authLoading, isAuthenticated, navigate])
+  }, [authLoading, isAuthenticated, navigate, initialCheckDone])
 
   // Mostrar loading durante verificação inicial
   if (!initialCheckDone) {
@@ -74,8 +74,13 @@ const LoginPage = () => {
       // Aguardar um pouco para garantir que o estado foi atualizado
       await new Promise(resolve => setTimeout(resolve, 100))
       navigate('/dashboard', { replace: true })
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao fazer login. Tente novamente.')
+    } catch (err: any) {
+      // Se for erro 401 (Unauthorized), mostrar mensagem genérica de credenciais inválidas
+      if (err?.status === 401) {
+        setError('Usuário ou senha inválidos')
+      } else {
+        setError(err instanceof Error ? err.message : 'Erro ao fazer login. Tente novamente.')
+      }
     } finally {
       setLoading(false)
     }

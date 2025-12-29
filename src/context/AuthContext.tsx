@@ -103,7 +103,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   }, [justLoggedIn])
 
   const login = async (credentials: { loginOrEmail: string; password: string }) => {
-    setLoading(true)
+    // Não alterar loading do contexto durante login para evitar re-renderizações
+    // O componente de login usa seu próprio estado de loading
     setJustLoggedIn(true) // Marcar que acabou de fazer login
     try {
       const response = await authService.login(credentials)
@@ -135,15 +136,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         setJustLoggedIn(false)
       }, 1000)
     } catch (error) {
-      // Se houver erro no login, limpar dados de autenticação
+      // Se houver erro no login, apenas limpar a flag
+      // Não alterar estados do contexto para evitar re-renderizações que causam "piscada"
       setJustLoggedIn(false)
-      await authService.logout()
-      setUser(null)
-      setPermissions([])
-      setMenus([])
       throw error
-    } finally {
-      setLoading(false)
     }
   }
 

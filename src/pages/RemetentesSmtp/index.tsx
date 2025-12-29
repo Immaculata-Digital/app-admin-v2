@@ -15,6 +15,7 @@ import TableCard, {
 import { useSearch } from '../../context/SearchContext'
 import { useAuth } from '../../context/AuthContext'
 import TextPicker from '../../components/TextPicker'
+import PasswordPicker from '../../components/PasswordPicker'
 import { comunicacoesService, type RemetenteSmtpDTO, type CreateRemetenteSmtpPayload, type UpdateRemetenteSmtpPayload } from '../../services/comunicacoes'
 import { getTenantSchema } from '../../utils/schema'
 import './style.css'
@@ -141,17 +142,17 @@ const RemetentesSmtpPage = () => {
       {
         key: 'senha',
         label: 'Senha',
-        required: true,
+        required: false, // Será controlado dinamicamente no renderInput
         renderInput: ({ value, onChange, disabled, isEditMode }) => (
-          <TextPicker
+          <PasswordPicker
             label="Senha"
-            value={isEditMode ? '' : (typeof value === 'string' ? value : '')}
+            value={typeof value === 'string' ? value : ''}
             onChange={(text) => onChange(text)}
             fullWidth
-            type="password"
             disabled={disabled}
             placeholder={isEditMode ? 'Deixe em branco para manter a senha atual' : 'Digite a senha'}
             helperText={isEditMode ? 'Deixe em branco para manter a senha atual' : undefined}
+            required={!isEditMode}
           />
         ),
       },

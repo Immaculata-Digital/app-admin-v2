@@ -1,4 +1,5 @@
 import { api } from './api'
+import { getTenantSchema } from '../utils/schema'
 
 export type UserDTO = {
   id: string
@@ -53,13 +54,19 @@ export type UpdateUserPermissionsPayload = {
   updatedBy: string
 }
 
-const list = () => api.get<UserDTO[]>('/users')
-const create = (payload: CreateUserPayload) => api.post<UserDTO>('/users', payload)
-const update = (id: string, payload: UpdateUserPayload) => api.put<UserDTO>(`/users/${id}`, payload)
-const updateBasic = (id: string, payload: UpdateUserBasicPayload) => api.put<UserDTO>(`/users/${id}/basic`, payload)
-const updateGroups = (id: string, payload: UpdateUserGroupsPayload) => api.put<UserDTO>(`/users/${id}/groups`, payload)
-const updatePermissions = (id: string, payload: UpdateUserPermissionsPayload) => api.put<UserDTO>(`/users/${id}/permissions`, payload)
-const remove = (id: string) => api.delete<void>(`/users/${id}`)
+// Helper para obter headers com schema
+const getSchemaHeaders = () => {
+  const schema = getTenantSchema()
+  return { 'X-Schema': schema }
+}
+
+const list = () => api.get<UserDTO[]>('/users', { headers: getSchemaHeaders() })
+const create = (payload: CreateUserPayload) => api.post<UserDTO>('/users', payload, { headers: getSchemaHeaders() })
+const update = (id: string, payload: UpdateUserPayload) => api.put<UserDTO>(`/users/${id}`, payload, { headers: getSchemaHeaders() })
+const updateBasic = (id: string, payload: UpdateUserBasicPayload) => api.put<UserDTO>(`/users/${id}/basic`, payload, { headers: getSchemaHeaders() })
+const updateGroups = (id: string, payload: UpdateUserGroupsPayload) => api.put<UserDTO>(`/users/${id}/groups`, payload, { headers: getSchemaHeaders() })
+const updatePermissions = (id: string, payload: UpdateUserPermissionsPayload) => api.put<UserDTO>(`/users/${id}/permissions`, payload, { headers: getSchemaHeaders() })
+const remove = (id: string) => api.delete<void>(`/users/${id}`, { headers: getSchemaHeaders() })
 const resetPassword = (payload: { token: string; password: string; confirmPassword: string }) =>
   api.post<void>('/users/password/reset', payload, { skipAuth: true })
 
