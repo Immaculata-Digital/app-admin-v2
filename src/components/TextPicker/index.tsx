@@ -138,13 +138,37 @@ const TextPicker = ({
         rows={rows}
         maxRows={maxRows}
         InputLabelProps={{
-          shrink: value ? true : false,
+          shrink: multiline ? true : (value ? true : false),
         }}
         inputProps={{
           maxLength: maxLength,
           type: inputType,
           placeholder: placeholder,
         }}
+        data-multiline={multiline ? 'true' : undefined}
+        sx={multiline ? {
+          '& .MuiInputLabel-root': {
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            transform: 'translate(14px, -9px) scale(0.75) !important',
+            backgroundColor: 'var(--color-surface)',
+            padding: '0 4px',
+            zIndex: 10,
+          },
+          '& .MuiInputLabel-root.MuiInputLabel-shrink': {
+            transform: 'translate(14px, -9px) scale(0.75) !important',
+            zIndex: 10,
+          },
+          '& .MuiOutlinedInput-root': {
+            paddingTop: '16px !important',
+            position: 'relative',
+            zIndex: 1,
+          },
+        } : undefined}
+        className={`text-picker ${focused ? 'text-picker--focused' : ''} ${
+          error ? 'text-picker--error' : ''
+        }`}
         InputProps={{
           startAdornment: displayStartIcon ? (
             <InputAdornment position="start">
@@ -178,11 +202,8 @@ const TextPicker = ({
                 </IconButton>
               )}
             </InputAdornment>
-          ) : undefined,
+          )           : undefined,
         }}
-        className={`text-picker ${focused ? 'text-picker--focused' : ''} ${
-          error ? 'text-picker--error' : ''
-        }`}
       />
     </Box>
   )

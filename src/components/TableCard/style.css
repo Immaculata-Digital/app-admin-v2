@@ -688,10 +688,17 @@
 /* Estilização específica do conteúdo do formulário */
 .table-card__dialog-content {
   min-height: 200px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  position: relative;
+  z-index: 1;
 }
 
 .table-card__form-fields {
   padding: 4px 0;
+  position: relative;
+  z-index: 1;
+  isolation: isolate;
 }
 
 /* Ícones menores nos campos do formulário */
@@ -734,6 +741,19 @@
 .table-card__form-fields > .MuiTextField-root,
 .table-card__form-fields > div {
   margin-bottom: 0 !important;
+  position: relative;
+  z-index: 1;
+}
+
+/* Garantir que o Stack não cause problemas de sobreposição */
+.table-card__form-fields.MuiStack-root {
+  position: relative;
+  z-index: 1;
+}
+
+.table-card__form-fields.MuiStack-root > * {
+  position: relative;
+  z-index: 1;
 }
 
 /* Melhorias para componentes picker dentro do formulário */
@@ -748,13 +768,125 @@
 .table-card__form-fields .select-picker,
 .table-card__form-fields .multi-select-picker-container {
   width: 100%;
+  position: relative;
+  z-index: 1;
+}
+
+/* Garantir que os campos não se sobreponham */
+.table-card__form-fields .cnpj-picker-container,
+.table-card__form-fields .cpf-picker-container,
+.table-card__form-fields .cep-picker-container {
+  position: relative;
+  z-index: 1;
+  pointer-events: auto;
+}
+
+.table-card__form-fields .cnpj-picker-container .MuiTextField-root,
+.table-card__form-fields .cpf-picker-container .MuiTextField-root,
+.table-card__form-fields .cep-picker-container .MuiTextField-root {
+  position: relative;
+  z-index: 1;
+}
+
+/* Garantir que os campos de texto multiline não sejam bloqueados */
+.table-card__form-fields .MuiTextField-root[data-multiline="true"],
+.table-card__form-fields .MuiTextField-root[data-multiline="true"] .MuiOutlinedInput-root,
+.table-card__form-fields .MuiTextField-root textarea {
+  position: relative;
+  z-index: 1;
+  pointer-events: auto;
+}
+
+/* Ajuste de z-index para labels de PhonePicker e CnpjPicker */
+.table-card__form-fields .phone-picker .MuiInputLabel-root,
+.table-card__form-fields .cnpj-picker .MuiInputLabel-root {
+  z-index: 10 !important;
+}
+
+.table-card__form-fields .phone-picker .MuiInputLabel-root.MuiInputLabel-shrink,
+.table-card__form-fields .cnpj-picker .MuiInputLabel-root.MuiInputLabel-shrink {
+  z-index: 10 !important;
+  background-color: var(--color-surface) !important;
+  padding: 0 4px;
+}
+
+.theme-dark .table-card__form-fields .phone-picker .MuiInputLabel-root.MuiInputLabel-shrink,
+.theme-dark .table-card__form-fields .cnpj-picker .MuiInputLabel-root.MuiInputLabel-shrink {
+  background-color: var(--color-surface) !important;
+}
+
+.table-card__form-fields .phone-picker .MuiOutlinedInput-root.Mui-focused,
+.table-card__form-fields .cnpj-picker .MuiOutlinedInput-root.Mui-focused,
+.table-card__form-fields .text-picker .MuiOutlinedInput-root.Mui-focused {
+  position: relative;
+  z-index: 1;
+}
+
+/* Ajuste de z-index para labels de TextPicker */
+.table-card__form-fields .text-picker .MuiInputLabel-root {
+  z-index: 10 !important;
+}
+
+.table-card__form-fields .text-picker .MuiInputLabel-root.MuiInputLabel-shrink {
+  z-index: 10 !important;
+  background-color: var(--color-surface) !important;
+  padding: 0 4px;
+}
+
+.theme-dark .table-card__form-fields .text-picker .MuiInputLabel-root.MuiInputLabel-shrink {
+  background-color: var(--color-surface) !important;
+}
+
+/* Garantir que o container do TextPicker multiline não cause sobreposição */
+.table-card__form-fields .text-picker-container {
+  position: relative;
+  z-index: 1;
+  isolation: isolate;
 }
 
 /* Garantir que os inputs tenham altura consistente - COMPACTO */
-.table-card__form-fields .MuiTextField-root,
-.table-card__form-fields .MuiTextField-root .MuiOutlinedInput-root {
+.table-card__form-fields .MuiTextField-root:not([data-multiline="true"]),
+.table-card__form-fields .MuiTextField-root:not([data-multiline="true"]) .MuiOutlinedInput-root {
   min-height: 40px;
   height: 40px;
+}
+
+/* Campos multiline não devem ter altura fixa */
+.table-card__form-fields .MuiTextField-root[data-multiline="true"] .MuiOutlinedInput-root {
+  min-height: auto !important;
+  height: auto !important;
+  padding-top: 16px !important;
+}
+
+.table-card__form-fields .MuiTextField-root[data-multiline="true"] .MuiOutlinedInput-input {
+  min-height: auto !important;
+  height: auto !important;
+}
+
+/* Ajuste de label para campos multiline no formulário */
+.table-card__form-fields .MuiTextField-root[data-multiline="true"] .MuiInputLabel-root {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  transform: translate(14px, -9px) scale(0.75) !important;
+  background-color: var(--color-surface) !important;
+  padding: 0 4px !important;
+  z-index: 10 !important;
+  font-size: 0.75rem !important;
+}
+
+.theme-dark .table-card__form-fields .MuiTextField-root[data-multiline="true"] .MuiInputLabel-root {
+  background-color: var(--color-surface) !important;
+}
+
+.table-card__form-fields .MuiTextField-root[data-multiline="true"] .MuiInputLabel-root.MuiInputLabel-shrink {
+  transform: translate(14px, -9px) scale(0.75) !important;
+  z-index: 10 !important;
+}
+
+.table-card__form-fields .MuiTextField-root[data-multiline="true"] .MuiOutlinedInput-root {
+  position: relative;
+  z-index: 1;
 }
 
 .table-card__form-fields .MuiTextField-root .MuiOutlinedInput-input {
@@ -790,10 +922,14 @@
 .table-card__form-fields .MuiOutlinedInput-root.Mui-focused {
   border-color: var(--color-primary) !important;
   box-shadow: 0 0 0 3px rgba(51, 85, 153, 0.1);
+  position: relative;
+  z-index: 2;
 }
 
 .theme-dark .table-card__form-fields .MuiOutlinedInput-root.Mui-focused {
   box-shadow: 0 0 0 3px rgba(102, 136, 204, 0.2);
+  position: relative;
+  z-index: 2;
 }
 
 /* Estilização de labels flutuantes - COMPACTO */
