@@ -21,6 +21,7 @@ import {
   Link,
   HorizontalRule,
   Add,
+  VpnKey,
 } from '@mui/icons-material'
 import {
   DndContext,
@@ -52,6 +53,14 @@ const CLIENTE_VARIABLES = [
   { label: 'CEP', value: '{{cliente.cep}}' },
   { label: 'ID do Cliente', value: '{{cliente.id_cliente}}' },
   { label: 'ID da Loja', value: '{{cliente.id_loja}}' },
+]
+
+// Variáveis específicas para reset de senha
+const RESET_SENHA_VARIABLES = [
+  { label: 'Nome do Cliente', value: '{{nome_cliente}}' },
+  { label: 'Token Reset', value: '{{token_reset}}' },
+  { label: 'URL Reset', value: '{{url_reset}}' },
+  { label: 'Email do Cliente', value: '{{email_cliente}}' },
 ]
 
 export type EmailElement = 
@@ -169,7 +178,10 @@ const SortableItem = ({ element, onEdit, onDelete }: {
   )
 }
 
-const ElementPalette = ({ onAdd }: { onAdd: (type: EmailElement['type']) => void }) => {
+const ElementPalette = ({ onAdd, onAddResetButton }: { 
+  onAdd: (type: EmailElement['type']) => void
+  onAddResetButton: () => void
+}) => {
   const elements = [
     { type: 'text' as const, label: 'Texto', icon: <Title /> },
     { type: 'image' as const, label: 'Imagem', icon: <Image /> },
@@ -194,6 +206,15 @@ const ElementPalette = ({ onAdd }: { onAdd: (type: EmailElement['type']) => void
             {el.label}
           </Button>
         ))}
+        <Button
+          variant="contained"
+          color="primary"
+          startIcon={<VpnKey />}
+          onClick={onAddResetButton}
+          sx={{ textTransform: 'none' }}
+        >
+          Botão Reset de Senha
+        </Button>
       </Box>
     </Paper>
   )
@@ -279,6 +300,26 @@ const ElementEditor = ({
                 ))}
               </Box>
             </Box>
+            <Box>
+              <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                Variáveis de Reset de Senha
+              </Typography>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
+                {RESET_SENHA_VARIABLES.map((variable) => (
+                  <Button
+                    key={variable.value}
+                    size="small"
+                    variant="outlined"
+                    color="secondary"
+                    startIcon={<Add />}
+                    onClick={() => insertVariable(variable.value)}
+                    sx={{ fontSize: '0.75rem' }}
+                  >
+                    {variable.label}
+                  </Button>
+                ))}
+              </Box>
+            </Box>
             <TextField
               label="Conteúdo"
               multiline
@@ -355,6 +396,28 @@ const ElementEditor = ({
 
         {element.type === 'button' && editedElement.type === 'button' && (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
+            <Box>
+              <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                Variáveis de Reset de Senha (para URL)
+              </Typography>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
+                {RESET_SENHA_VARIABLES.filter(v => v.value === '{{url_reset}}' || v.value === '{{token_reset}}').map((variable) => (
+                  <Button
+                    key={variable.value}
+                    size="small"
+                    variant="outlined"
+                    color="secondary"
+                    startIcon={<Add />}
+                    onClick={() => {
+                      setEditedElement({ ...editedElement, url: editedElement.url + variable.value })
+                    }}
+                    sx={{ fontSize: '0.75rem' }}
+                  >
+                    {variable.label}
+                  </Button>
+                ))}
+              </Box>
+            </Box>
             <TextField
               label="Texto do Botão"
               fullWidth
@@ -370,6 +433,7 @@ const ElementEditor = ({
               onChange={(e) =>
                 setEditedElement({ ...editedElement, url: e.target.value } as EmailElement)
               }
+              helperText="Use {{url_reset}} para inserir a URL completa de reset de senha"
             />
             <TextField
               label="Cor de Fundo (ex: #1976d2)"
@@ -641,6 +705,17 @@ export const EmailEditor = ({ open, onClose, onSave, initialHtml }: EmailEditorP
     setElements([...elements, newElement])
   }
 
+  const handleAddResetButton = () => {
+    const newElement: EmailElement = {
+      type: 'button',
+      id: `button-reset-${Date.now()}`,
+      text: 'Redefinir Senha',
+      url: '{{url_reset}}',
+      styles: { backgroundColor: '#000000', color: '#ffffff' }
+    }
+    setElements([...elements, newElement])
+  }
+
   const handleEditElement = (element: EmailElement) => {
     setEditingElement(element)
   }
@@ -704,7 +779,7 @@ export const EmailEditor = ({ open, onClose, onSave, initialHtml }: EmailEditorP
       <Dialog open={open} onClose={handleClose} fullScreen>
         <DialogContent sx={{ minHeight: 'calc(100vh - 80px)', display: 'flex', flexDirection: 'column', pt: 2 }}>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <ElementPalette onAdd={handleAddElement} />
+            <ElementPalette onAdd={handleAddElement} onAddResetButton={handleAddResetButton} />
             
             <Box sx={{ display: 'flex', gap: 2, flex: 1, minHeight: 0 }}>
               <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
