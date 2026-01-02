@@ -35,7 +35,7 @@ export const authService = {
     // skipAuth=true porque ainda não temos o token
     const response = await api.post<LoginResponse>('/auth/login', credentials, { skipAuth: true })
 
-    // Armazenar tokens e dados do usuário
+    // Armazenar tokens e dados do usuário (Sempre localStorage)
     localStorage.setItem(TOKEN_KEY, response.accessToken)
     localStorage.setItem(REFRESH_TOKEN_KEY, response.refreshToken)
     localStorage.setItem(USER_KEY, JSON.stringify(response.user))
@@ -65,11 +65,15 @@ export const authService = {
       // skipAuth=true para evitar loop infinito se usarmos interceptors que checam token
       const response = await api.post<LoginResponse>('/auth/refresh-token', { refreshToken }, { skipAuth: true })
 
-      // Atualizar tokens
-      localStorage.setItem(TOKEN_KEY, response.accessToken)
-      localStorage.setItem(REFRESH_TOKEN_KEY, response.refreshToken)
+      // Atualizar tokens mantendo o armazenamento original (local ou session)
+      // Como não sabemos qual era o armazenamento original facilmente aqui, vamos tentar manter onde estava o refresh token
+      const isSession = !!sessionStorage.getItem(REFRESH_TOKEN_KEY)
+      const storage = isSession ? sessionStorage : localStorage
+      
+      storage.setItem(TOKEN_KEY, response.accessToken)
+      storage.setItem(REFRESH_TOKEN_KEY, response.refreshToken)
       // Opcional: atualizar dados do usuário se vierem atualizados
-      // localStorage.setItem(USER_KEY, JSON.stringify(response.user))
+      // storage.setItem(USER_KEY, JSON.stringify(response.user))
 
       return response
     } catch (error) {
@@ -94,6 +98,10 @@ export const authService = {
     localStorage.removeItem(REFRESH_TOKEN_KEY)
     localStorage.removeItem(USER_KEY)
 
+    sessionStorage.removeItem(TOKEN_KEY)
+    sessionStorage.removeItem(REFRESH_TOKEN_KEY)
+    sessionStorage.removeItem(USER_KEY)
+
     // Tenta invalidar o token no servidor (opcional, não bloqueia o logout)
     if (refreshToken) {
       try {
@@ -109,21 +117,21 @@ export const authService = {
    * Obtém o access token armazenado
    */
   getAccessToken(): string | null {
-    return localStorage.getItem(TOKEN_KEY)
+    return localStorage.getItem(TOKEN_KEY) || sessionStorage.getItem(TOKEN_KEY)
   },
 
   /**
    * Obtém o refresh token armazenado
    */
   getRefreshToken(): string | null {
-    return localStorage.getItem(REFRESH_TOKEN_KEY)
+    return localStorage.getItem(REFRESH_TOKEN_KEY) || sessionStorage.getItem(REFRESH_TOKEN_KEY)
   },
 
   /**
    * Obtém os dados do usuário armazenados
    */
   getUser(): AuthUser | null {
-    const userStr = localStorage.getItem(USER_KEY)
+    const userStr = localStorage.getItem(USER_KEY) || sessionStorage.getItem(USER_KEY)
     if (!userStr) return null
 
     try {

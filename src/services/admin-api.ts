@@ -16,13 +16,17 @@ const USER_KEY = 'concordia_user'
 
 // Funções auxiliares para evitar dependência circular
 const getAccessToken = (): string | null => {
-  return localStorage.getItem(TOKEN_KEY)
+  return localStorage.getItem(TOKEN_KEY) || sessionStorage.getItem(TOKEN_KEY)
 }
 
 const clearAuth = () => {
   localStorage.removeItem(TOKEN_KEY)
   localStorage.removeItem(REFRESH_TOKEN_KEY)
   localStorage.removeItem(USER_KEY)
+
+  sessionStorage.removeItem(TOKEN_KEY)
+  sessionStorage.removeItem(REFRESH_TOKEN_KEY)
+  sessionStorage.removeItem(USER_KEY)
 }
 
 type RequestOptions = RequestInit & {
@@ -77,7 +81,10 @@ async function request<TResponse>(path: string, options: RequestOptions = {}) {
       // (por enquanto, não há rotas críticas que não estejam na lista acima)
       clearAuth()
       if (typeof window !== 'undefined') {
-        window.location.href = '/'
+        // Evitar loop de redirecionamento se já estiver na página de login
+        if (window.location.pathname !== '/' && window.location.pathname !== '/login') {
+          window.location.href = '/'
+        }
       }
     }
     // Para rotas não críticas, apenas lançar o erro sem limpar autenticação
