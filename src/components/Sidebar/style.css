@@ -1,451 +1,243 @@
+:root {
+  /* Default Theme (matches Nexus OS Dark Blue/Black vibe for sidebar) */
+  --sidebar-bg: #0b0f19;
+  --sidebar-paper-bg-gradient: linear-gradient(225deg, #1e293b 0%, #020617 100%);
+  --sidebar-text-primary: #ffffff;
+  --sidebar-text-secondary: rgba(255, 255, 255, 0.7);
+  --sidebar-hover-bg: rgba(255, 255, 255, 0.08);
+
+  /* Hardcoded Highlight Color #3b82f6 */
+  --brand-primary: #3b82f6;
+  --sidebar-active-bg: var(--brand-primary);
+  --sidebar-active-text: #ffffff;
+  --sidebar-border: rgba(255, 255, 255, 0.05);
+}
+
+/* Light Mode Overrides for Sidebar? 
+   User asked for specific design in the image which is dark. 
+   Usually Sidebars in these admin templates stay dark even in light mode, OR they invert. 
+   Given "Nexus OS" image is dark, we default to dark styles. 
+   If light mode is strictly required to be white, uncomment below.
+*/
+/*
+html:not(.theme-dark) {
+  --sidebar-bg: #ffffff;
+  --sidebar-paper-bg: #ffffff;
+  --sidebar-text-primary: #1e293b;
+  --sidebar-text-secondary: #64748b;
+  --sidebar-hover-bg: #f1f5f9;
+  --sidebar-active-bg: var(--brand-primary, #2563eb);
+  --sidebar-active-text: #ffffff;
+  --sidebar-border: #e2e8f0;
+}
+*/
+
+/* Sidebar Container */
 .sidebar-container {
+  height: 100vh;
+  flex-shrink: 0;
   width: 280px;
-  transition: width 0.3s ease;
+  /* Expanded Width */
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background-color: var(--sidebar-bg);
+  border-right: 1px solid var(--sidebar-border);
 }
 
 .sidebar-container--closed {
-  width: 64px;
+  width: 80px;
+  /* Collapsed Width */
 }
 
-.sidebar {
-  width: 280px;
-  flex-shrink: 0;
-  transition: width 0.3s ease;
-}
-
-.sidebar--closed {
-  width: 64px;
-}
-
+/* Paper / Drawer styling */
+/* Paper / Drawer styling */
 .sidebar-paper {
+  /* Login Gradient: Top Right (#3b82f6) -> Bottom Left (Darker) */
+  background: linear-gradient(225deg,
+      var(--brand-primary, #3b82f6) 0%,
+      color-mix(in srgb, var(--brand-primary, #3b82f6), black 60%) 100%) !important;
+  color: var(--sidebar-text-primary) !important;
+  border-right: 1px solid var(--sidebar-border) !important;
   width: 280px;
-  box-sizing: border-box;
-  border: none;
-  border-right: 1px solid var(--color-border-lighter);
-  padding: var(--spacing-lg) var(--spacing-md) var(--spacing-md);
-  background: var(--color-sidebar-bg) !important;
-  color: var(--color-sidebar-text) !important;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow-x: hidden;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  padding: 1.5rem;
   display: flex;
   flex-direction: column;
-  height: 100%;
-  box-shadow: none !important;
-}
-
-.theme-dark .sidebar-paper {
-  background: var(--color-sidebar-bg) !important;
-  color: var(--color-sidebar-text) !important;
-  border-right-color: var(--color-border) !important;
+  /* Ensure Sharp Edges for Sidebar Paper */
+  border-radius: 0 !important;
 }
 
 .sidebar-paper--closed {
-  width: 64px !important;
-  padding: 1.5rem 0.5rem 0.75rem !important;
-  overflow: visible !important;
-  visibility: visible !important;
+  width: 80px;
+  padding: 1.5rem 0.5rem;
 }
 
-.sidebar-paper--closed .sidebar-link .MuiListItemText-root {
-  display: none !important;
-}
-
-.sidebar-paper--closed .sidebar-section__title {
-  display: none !important;
-}
-
+/* ----------------------------------
+   Header 
+---------------------------------- */
 .sidebar-header {
+  margin-bottom: 2rem;
+  min-height: 48px;
+  height: auto;
+  /* Allow growth for vertical stack */
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 0 var(--spacing-md) var(--spacing-lg);
-  color: var(--color-sidebar-text) !important;
-}
-
-.sidebar-paper--closed .sidebar-header {
-  padding: 0 0.5rem 1rem;
   justify-content: center;
+  /* Center content */
 }
 
-.sidebar-logo {
-  height: 52px;
-  max-width: 256px;
-  object-fit: contain;
-  transition: all 0.3s ease;
-}
-
-.sidebar-logo--compact {
-  height: 36px;
-  max-width: 64px;
-}
-
-.sidebar-close {
-  color: var(--color-sidebar-text) !important;
-}
-
-.theme-dark .sidebar-close {
-  color: var(--color-sidebar-text) !important;
-}
-
-.theme-dark .sidebar-close:hover {
-  background: var(--color-hover);
-  color: var(--color-sidebar-text) !important;
-}
-
-.sidebar-title {
-  font-weight: 600;
-}
-
-.sidebar-content {
+.brand-icon-container {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--brand-primary, #2563eb), rgba(37, 99, 235, 0.5));
   display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  align-items: stretch;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* ----------------------------------
+   Navigation 
+---------------------------------- */
+.sidebar-content {
   flex: 1;
   overflow-y: auto;
-}
-
-.sidebar-section__title {
-  color: var(--color-text-secondary) !important;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  padding-left: var(--spacing-md);
-  text-align: left;
-  opacity: 1 !important;
-  font-size: 11px;
-  margin-bottom: var(--spacing-sm);
-}
-
-.sidebar-section__title,
-.sidebar-section__title *,
-.sidebar-section__title.MuiTypography-root,
-.sidebar-section__title.MuiTypography-caption {
-  color: var(--color-sidebar-text) !important;
-}
-
-.theme-dark .sidebar-section__title {
-  color: var(--color-sidebar-text) !important;
-  opacity: 1 !important;
-}
-
-.theme-dark .sidebar-section__title,
-.theme-dark .sidebar-section__title *,
-.theme-dark .sidebar-section__title.MuiTypography-root,
-.theme-dark .sidebar-section__title.MuiTypography-caption {
-  color: var(--color-sidebar-text) !important;
+  margin-right: -10px;
+  /* Push scrollbar out or hide */
+  padding-right: 10px;
 }
 
 .sidebar-section {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.sidebar-section__title {
+  display: block;
+  margin-bottom: 0.75rem;
+  padding-left: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--sidebar-text-secondary) !important;
+  font-size: 0.75rem !important;
 }
 
 .sidebar-link {
-  border-radius: var(--radius-md);
-  color: var(--color-sidebar-text) !important;
-  margin-bottom: var(--spacing-xs);
-  padding: var(--spacing-sm) var(--spacing-md);
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  justify-content: flex-start !important;
-  text-align: left;
-  gap: var(--spacing-md);
-  background: transparent !important;
-  min-height: 44px;
-  font-size: 15px;
-  font-weight: 500;
+  border-radius: 8px !important;
+  /* Slightly smaller radius */
+  margin-bottom: 4px;
+  padding: 8px 12px !important;
+  /* Reduced padding */
+  transition: all 0.2s ease;
+  min-height: 40px;
+  /* Reduced height */
 }
 
-.sidebar-paper--closed .sidebar-link {
-  padding: 0.5rem;
-  justify-content: center !important;
-}
-
-.sidebar-link .MuiListItemText-primary {
-  font-size: 0.875rem !important;
-  font-weight: 500;
-}
-
-.sidebar-link__icon .MuiSvgIcon-root {
-  font-size: 1.125rem !important;
-  color: var(--sidebar-icon-color, var(--color-on-primary)) !important;
-}
-
-.sidebar-link,
-.sidebar-link * {
-  color: var(--color-sidebar-text) !important;
-}
-
-.sidebar-link .MuiListItemText-primary {
-  color: var(--color-sidebar-text) !important;
-}
-
-.sidebar-link .MuiListItemText-root {
-  color: var(--color-sidebar-text) !important;
-}
-
-.sidebar-link .MuiListItemIcon-root {
-  color: var(--color-sidebar-text) !important;
-}
-
+/* ... existing hover ... */
 .sidebar-link:hover {
-  background: var(--color-sidebar-hover) !important;
-  transform: none;
+  background-color: var(--sidebar-hover-bg) !important;
 }
 
-.sidebar-link:hover .MuiListItemIcon-root,
-.sidebar-link:hover .MuiListItemText-primary {
-  color: var(--color-sidebar-text) !important;
-}
-
-.sidebar-link__icon {
-  min-width: 28px !important;
-  color: inherit;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.sidebar-paper--closed .sidebar-link__icon {
-  min-width: 24px !important;
-  margin: 0 auto;
-}
-
-.sidebar-paper--closed .sidebar-link:hover {
-  transform: none !important;
-  background: transparent !important;
-}
-
-.sidebar-link__icon .MuiSvgIcon-root {
-  font-size: 1.125rem !important;
-  color: var(--color-sidebar-text) !important;
-}
-
-.theme-dark .sidebar-link__icon {
-  color: var(--color-sidebar-text) !important;
-}
-
-.theme-dark .sidebar-link.active .sidebar-link__icon {
-  color: var(--color-sidebar-text) !important;
-}
-
-.theme-dark .sidebar-link:hover .sidebar-link__icon {
-  color: var(--color-sidebar-text) !important;
-}
-
-.sidebar-link .MuiListItemText-root {
-  margin: 0;
-}
-
-.theme-dark .sidebar-link {
-  color: var(--color-sidebar-text) !important;
-}
-
-.theme-dark .sidebar-link:hover {
-  background: transparent !important;
-  transform: none;
-}
-
-.theme-dark .sidebar-paper--closed .sidebar-link:hover {
-  transform: none !important;
-  background: transparent !important;
-}
-
-.theme-dark .sidebar-link.active {
-  background: rgba(255, 255, 255, 0.15) !important;
-  font-weight: 600;
-}
-
-.theme-dark .sidebar-link.active:hover {
-  background: rgba(255, 255, 255, 0.15) !important;
-}
-
-.theme-dark .sidebar-link .MuiListItemText-root {
-  color: var(--color-sidebar-text) !important;
-}
-
-.theme-dark .sidebar-link .MuiListItemText-primary {
-  color: var(--color-sidebar-text) !important;
-}
-
-.theme-dark .sidebar-link.active .MuiListItemText-root {
-  color: var(--color-sidebar-text) !important;
-}
-
-.theme-dark .sidebar-link.active .MuiListItemText-primary {
-  color: var(--color-sidebar-text) !important;
-}
-
-.theme-dark .sidebar-link:hover .MuiListItemText-root {
-  color: var(--color-sidebar-text) !important;
-}
-
-.theme-dark .sidebar-link:hover .MuiListItemText-primary {
-  color: var(--color-sidebar-text) !important;
-}
-
-.theme-dark .sidebar-link .MuiListItemIcon-root {
-  color: var(--color-sidebar-text) !important;
-  min-width: 32px;
-}
-
-.theme-dark .sidebar-link.active .MuiListItemIcon-root {
-  color: var(--color-sidebar-text) !important;
-}
-
-.theme-dark .sidebar-link:hover .MuiListItemIcon-root {
-  color: var(--color-sidebar-text) !important;
-}
-
+/* Active State - White Glass Style for Blue Background */
 .sidebar-link.active {
-  background: var(--color-sidebar-active) !important;
-  font-weight: 600;
-  color: var(--color-primary) !important;
-}
-
-.sidebar-link.active:hover {
-  background: var(--color-sidebar-active) !important;
+  background-color: rgba(255, 255, 255, 0.2);
+  /* Lighter glass effect */
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.15) 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .sidebar-link.active .MuiListItemIcon-root,
-.sidebar-link.active .MuiListItemText-primary {
-  color: var(--color-primary) !important;
+.sidebar-link.active .MuiTypography-root {
+  color: #ffffff;
+  font-weight: 700;
+  opacity: 1;
 }
 
-.sidebar-paper--mobile {
-  width: 75vw;
-  max-width: 360px;
+/* Global Sidebar Text/Icon Override */
+.sidebar-link .MuiListItemIcon-root,
+.sidebar-link .MuiTypography-root,
+.sidebar-link .MuiSvgIcon-root {
+  color: #ffffff !important;
+  opacity: 1 !important;
 }
 
-/* Footer da sidebar */
+/* Ensure no default min-width on icons */
+.sidebar-link .MuiListItemIcon-root {
+  min-width: 0 !important;
+  /* Fix lateral spacing issue */
+  margin-right: 12px;
+  /* Add explicit gap only when open/needed */
+}
+
+/* Collapsed Icon Centering */
+.sidebar-paper--closed .sidebar-link {
+  justify-content: center;
+  padding: 8px 0;
+}
+
+.sidebar-paper--closed .MuiListItemIcon-root {
+  margin-right: 0 !important;
+  /* No margin when closed */
+}
+
+/* ----------------------------------
+   Footer (User Profile)
+---------------------------------- */
 .sidebar-footer {
   margin-top: auto;
   padding-top: 1rem;
 }
 
-.sidebar-paper--closed .sidebar-footer {
-  padding-top: 1rem;
-}
-
 .sidebar-footer__divider {
-  margin-bottom: 0.5rem;
-  border-color: var(--color-on-primary-soft);
+  background-color: var(--sidebar-border) !important;
+  margin: 1rem 0 !important;
 }
 
-.sidebar-paper--closed .sidebar-footer__divider {
-  margin-bottom: 0.5rem;
-}
-
-.theme-dark .sidebar-footer__divider {
-  border-color: var(--color-border);
-}
-
-.sidebar-footer__content {
-  padding: 0 0.75rem;
-}
-
-.sidebar-paper--closed .sidebar-footer__content {
-  padding: 0 0.5rem;
-}
-
-.sidebar-footer__item {
-  border-radius: 10px;
-  color: var(--color-sidebar-text) !important;
-  padding: 0.5rem 0.625rem;
-  transition: all 0.2s ease;
-  justify-content: flex-start !important;
-  text-align: left;
-  gap: 0;
-  background: transparent !important;
-  min-height: 40px;
-}
-
-.sidebar-paper--closed .sidebar-footer__item {
-  padding: 0.5rem;
-  justify-content: center !important;
-}
-
-.sidebar-footer__item .MuiTypography-root {
-  font-size: 0.875rem !important;
-}
-
-.sidebar-footer__icon .MuiSvgIcon-root {
-  font-size: 1.125rem !important;
-}
-
-.sidebar-footer__item:hover {
-  background: transparent !important;
-  transform: none;
-}
-
-.theme-dark .sidebar-footer__item {
-  color: var(--color-sidebar-text) !important;
-}
-
-.theme-dark .sidebar-footer__item:hover {
-  background: transparent !important;
-  transform: none;
-}
-
-.sidebar-footer__item.active {
-  background: rgba(255, 255, 255, 0.15) !important;
-  font-weight: 600;
-}
-
-.sidebar-footer__item.active:hover {
-  background: rgba(255, 255, 255, 0.15) !important;
-}
-
-.theme-dark .sidebar-footer__item.active {
-  background: rgba(255, 255, 255, 0.15) !important;
-}
-
-.theme-dark .sidebar-footer__item.active:hover {
-  background: rgba(255, 255, 255, 0.15) !important;
-}
-
-.sidebar-footer__icon {
-  min-width: 32px !important;
-  color: inherit;
+.user-profile-card {
   display: flex;
   align-items: center;
+  padding: 10px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  background-color: rgba(255, 255, 255, 0.03);
+  border: 1px solid transparent;
+}
+
+.user-profile-card:hover {
+  background-color: var(--sidebar-hover-bg);
+  border-color: var(--sidebar-border);
+}
+
+.sidebar-paper--closed .user-profile-card {
   justify-content: center;
+  padding: 10px 0;
+  background: transparent;
 }
 
-.theme-dark .sidebar-footer__icon {
-  color: var(--color-sidebar-text) !important;
+/* Scrollbar styling */
+.sidebar-content::-webkit-scrollbar {
+  width: 4px;
 }
 
-.theme-dark .sidebar-footer__item:hover .sidebar-footer__icon {
-  color: var(--color-sidebar-text) !important;
+.sidebar-content::-webkit-scrollbar-track {
+  background: transparent;
 }
 
-.sidebar-footer__text {
-  margin: 0;
-  flex: 1;
-  color: var(--color-sidebar-text) !important;
+.sidebar-content::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
 }
 
-.theme-dark .sidebar-footer__text {
-  color: var(--color-sidebar-text) !important;
-}
-
-.theme-dark .sidebar-footer__item:hover .sidebar-footer__text {
-  color: var(--color-sidebar-text) !important;
-}
-
-.sidebar-footer__switch {
-  margin-left: auto;
-}
-
-.theme-dark .sidebar-footer__switch .MuiSwitch-switchBase.Mui-checked {
-  color: var(--color-primary);
-}
-
-.theme-dark .sidebar-footer__switch .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track {
-  background-color: var(--color-primary);
-}
-
-.main-layout__page {
-  padding: 1rem !important;
+/* Mobile */
+@media (max-width: 900px) {
+  .sidebar-paper--mobile {
+    width: 280px;
+    background-color: var(--sidebar-bg) !important;
+  }
 }

@@ -6,42 +6,42 @@
   --color-primary-dark: #0051D5;
   --color-primary-light: #5AC8FA;
   --color-primary-rgb: 0, 122, 255;
-  
+
   /* Cores de Texto Apple */
   --color-text: #1d1d1f;
   --color-text-secondary: #86868b;
   --color-text-tertiary: #8e8e93;
-  
+
   /* Cores de Fundo Apple */
   --color-background: #f5f5f7;
   --color-surface: #ffffff;
   --color-surface-secondary: rgba(255, 255, 255, 0.8);
-  
+
   /* Cores de Borda Apple */
   --color-border: rgba(0, 0, 0, 0.08);
   --color-border-light: rgba(0, 0, 0, 0.05);
   --color-border-lighter: rgba(0, 0, 0, 0.03);
-  
+
   /* Estados Hover Apple */
   --color-hover: rgba(0, 0, 0, 0.04);
   --color-hover-strong: rgba(0, 0, 0, 0.08);
   --color-hover-primary: rgba(0, 122, 255, 0.1);
-  
+
   /* Sombras Apple */
   --color-shadow: rgba(0, 0, 0, 0.06);
   --color-shadow-strong: rgba(0, 0, 0, 0.12);
   --color-shadow-subtle: rgba(0, 0, 0, 0.02);
-  
+
   /* Sidebar */
   --color-sidebar-bg: #ffffff;
   --color-sidebar-text: #1d1d1f;
   --color-sidebar-hover: rgba(0, 0, 0, 0.04);
   --color-sidebar-active: rgba(0, 122, 255, 0.1);
-  
+
   /* Tipografia Apple */
   --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif;
   --font-title: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
-  
+
   /* Espaçamento Apple */
   --spacing-xs: 4px;
   --spacing-sm: 8px;
@@ -49,14 +49,14 @@
   --spacing-lg: 24px;
   --spacing-xl: 32px;
   --spacing-2xl: 48px;
-  
+
   /* Border Radius Apple */
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
   --radius-xl: 20px;
   --radius-full: 9999px;
-  
+
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -69,7 +69,8 @@
   padding: 0;
 }
 
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
   width: 100%;
@@ -197,7 +198,7 @@ body {
 /* Paper com glassmorphism Apple */
 .MuiPaper-root {
   border-radius: var(--radius-lg) !important;
-  box-shadow: 
+  box-shadow:
     0 2px 8px var(--color-shadow-subtle),
     0 1px 3px var(--color-shadow-subtle) !important;
   border: 1px solid var(--color-border-lighter) !important;
@@ -210,18 +211,11 @@ body {
   color: var(--color-on-primary) !important;
 }
 
-.sidebar-paper .MuiListItemButton-root,
-.sidebar-paper .MuiListItemText-primary,
-.sidebar-paper .MuiListItemIcon-root,
-.sidebar-paper .MuiTypography-root {
-  color: var(--color-on-primary) !important;
-}
-
 .theme-dark .sidebar-paper .MuiListItemButton-root,
 .theme-dark .sidebar-paper .MuiListItemText-primary,
 .theme-dark .sidebar-paper .MuiListItemIcon-root,
 .theme-dark .sidebar-paper .MuiTypography-root {
-  color: var(--color-on-primary) !important;
+  color: var(--color-text) !important;
 }
 
 .theme-dark .MuiCard-root {
@@ -324,7 +318,7 @@ body {
 /* Menus Apple Style */
 .MuiMenu-paper {
   border-radius: var(--radius-lg) !important;
-  box-shadow: 
+  box-shadow:
     0 8px 24px var(--color-shadow),
     0 2px 8px var(--color-shadow-subtle) !important;
   border: 1px solid var(--color-border-lighter) !important;
@@ -367,7 +361,7 @@ body {
 /* Dialogs Apple Style */
 .MuiDialog-paper {
   border-radius: var(--radius-xl) !important;
-  box-shadow: 
+  box-shadow:
     0 12px 48px var(--color-shadow-strong),
     0 4px 16px var(--color-shadow) !important;
 }
@@ -447,4 +441,3 @@ body {
 .theme-dark .access-denied-text {
   color: hsl(220 15% 95%) !important;
 }
-

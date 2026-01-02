@@ -11,6 +11,10 @@ import {
   useMediaQuery,
   useTheme,
   Box,
+  Avatar,
+  Tooltip,
+  Menu,
+  MenuItem,
 } from '@mui/material'
 import {
   Inventory2Outlined,
@@ -18,6 +22,7 @@ import {
   AdminPanelSettingsOutlined,
   Groups2Outlined,
   ChevronLeft,
+  ChevronRight,
   Logout,
   MailOutlined,
   EmailOutlined,
@@ -27,6 +32,8 @@ import {
   StoreOutlined,
   BusinessOutlined,
   Settings,
+  MoreVert,
+  NotificationsNone,
 } from '@mui/icons-material'
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import React, { useEffect, useState, useMemo } from 'react'
@@ -83,12 +90,32 @@ type SidebarProps = {
 const Sidebar = ({ open, onToggle }: SidebarProps) => {
   const location = useLocation()
   const navigate = useNavigate()
-  const { logout, permissions } = useAuth()
+  const { logout, permissions, user } = useAuth()
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down('md'))
   const [logoBase64, setLogoBase64] = useState<string | null>(null)
   const withState = (base: string, closedModifier: string) =>
     open ? base : `${base} ${closedModifier}`
+
+  const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
+
+  // Determine App Name based on Domain
+  const getAppName = () => {
+    if (typeof window === 'undefined') return 'Concordia'
+    const hostname = window.location.hostname
+    if (hostname.includes('localhost') || hostname === '127.0.0.1') return 'Concordia'
+    
+    const parts = hostname.split('.')
+    if (parts.length > 2) {
+      const subdomain = parts[0]
+      if (subdomain !== 'www' && subdomain !== 'homolog' && subdomain !== 'app') {
+        return subdomain.charAt(0).toUpperCase() + subdomain.slice(1)
+      }
+    }
+    return 'Concordia'
+  }
+
+  const [appName] = useState(getAppName())
 
   useEffect(() => {
     const loadConfig = async () => {
@@ -169,135 +196,152 @@ const Sidebar = ({ open, onToggle }: SidebarProps) => {
       // Se houver erro, ainda assim redireciona para login
       console.error('Erro ao fazer logout:', error)
       navigate('/', { replace: true })
+    } finally {
+      handleCloseUserMenu()
     }
+  }
+
+  const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorElUser(event.currentTarget)
+  }
+
+  const handleCloseUserMenu = () => {
+    setAnchorElUser(null)
   }
 
   const drawerContent = (
     <>
       <div className="sidebar-header">
-        {logoBase64 ? (
-          <Box
-            onClick={() => navigate('/dashboard')}
-            sx={{
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: open ? 'flex-start' : 'center',
-              width: '100%',
-              height: open ? '48px' : '40px',
-              transition: 'all 0.3s ease',
-            }}
-          >
-            <img
-              src={logoBase64}
-              alt="Logo"
-              style={{
-                maxHeight: open ? '48px' : '32px',
-                maxWidth: open ? '100%' : '32px',
-                objectFit: 'contain',
-              }}
-            />
-          </Box>
-        ) : null}
-        {isMobile && (
-          <IconButton 
-            onClick={onToggle} 
-            size="small" 
-            className="sidebar-close"
-            sx={{ color: '#335599 !important' }}
-          >
-            <ChevronLeft />
-          </IconButton>
-        )}
+        <Stack 
+          direction={open ? "row" : "column"} 
+          alignItems="center" 
+          spacing={open ? 1.5 : 1} // Reduced vertical spacing when closed
+          sx={{ 
+            width: '100%', 
+            overflow: 'visible',
+            paddingLeft: open ? '4px' : '0', 
+            justifyContent: open ? 'flex-start' : 'center',
+            position: 'relative',
+            height: 'auto',
+            marginTop: open ? 0 : 1,
+            marginBottom: open ? 0 : 1
+          }}
+        >
+           {/* Logo / Icon Area - ALWAYS Visible */}
+           <Box 
+             className="brand-icon-container"
+             onClick={() => navigate('/dashboard')}
+           >
+              {logoBase64 ? (
+                <img src={logoBase64} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+              ) : (
+                <Inventory2Outlined sx={{ color: 'white' }} />
+              )}
+           </Box>
+
+           {/* Header Text Area - Visible when open */}
+           {open && (
+             <Box sx={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+               <Typography variant="body1" fontWeight="800" noWrap sx={{ lineHeight: 1.1, color: '#ffffff', fontSize: '1rem', textShadow: '0 1px 2px rgba(0,0,0,0.1)' }}>
+                 {appName}
+               </Typography>
+               <Typography variant="caption" sx={{ letterSpacing: '0.05em', color: '#ffffff', fontSize: '0.7rem', fontWeight: 600, opacity: 0.9 }}>
+                 WORKSPACE
+               </Typography>
+             </Box>
+           )}
+
+           {/* Notifications Mockup - Visible always on Desktop */}
+           {!isMobile && (
+             <IconButton 
+               size="small" 
+               sx={{ 
+                 color: '#ffffff',
+                 marginRight: open ? 0.5 : 0, // Only margin when horizontal
+                 marginBottom: open ? 0 : 1, // Add spacing below when stacked
+                 opacity: 0.8,
+                 '&:hover': { opacity: 1, backgroundColor: 'rgba(255,255,255,0.1)' }
+               }}
+             >
+                <NotificationsNone fontSize="small" />
+             </IconButton>
+           )}
+
+           {/* Toggle Button */}
+           {!isMobile && (
+             <Tooltip title={open ? "Recolher" : "Expandir"}>
+               <IconButton 
+                 onClick={onToggle} 
+                 size="small" 
+                 sx={{ 
+                   color: '#ffffff',
+                   margin: open ? 0 : '0 auto',
+                   opacity: 0.8,
+                   '&:hover': { opacity: 1, backgroundColor: 'rgba(255,255,255,0.1)' }
+                 }}
+               >
+                  {open ? <ChevronLeft fontSize="small" /> : <ChevronRight />}
+               </IconButton>
+             </Tooltip>
+           )}
+
+           {/* Mobile Close Button */}
+           {isMobile && open && (
+             <IconButton 
+               onClick={onToggle} 
+               size="small" 
+               className="sidebar-close"
+               sx={{ color: '#ffffff' }}
+             >
+               <ChevronLeft />
+             </IconButton>
+           )}
+        </Stack>
       </div>
 
       <nav className="sidebar-content">
         {menuStructure.length === 0 ? (
-          <Box sx={{ p: 2, color: '#335599' }}>
+          <Box sx={{ p: 2, color: '#ffffff' }}>
             <Typography variant="body2">
-              Nenhum menu disponível. Verifique suas permissões.
-            </Typography>
-            <Typography variant="caption" sx={{ display: 'block', mt: 1, opacity: 0.7 }}>
-              Menus: {allMenus.length} | Permissões: {permissions.length}
+              Nenhum menu disponível.
             </Typography>
           </Box>
         ) : (
           menuStructure.map((section) => (
             <div key={section.title} className="sidebar-section">
-              {(open || isMobile) && (
+              {open && (
                 <Typography 
                   variant="caption" 
                   className="sidebar-section__title" 
-                  style={{
-                    color: '#335599',
-                    opacity: 1,
-                  }}
                   sx={{ 
-                    color: '#335599 !important',
-                    opacity: '1 !important',
-                    '&.MuiTypography-root': {
-                      color: '#335599 !important',
-                    },
+                    color: '#ffffff !important',
+                    fontWeight: 700,
+                    fontSize: '0.75rem',
+                    letterSpacing: '0.05em',
+                    opacity: 1,
+                    textTransform: 'uppercase',
+                    mb: 1,
+                    pl: 1.5
                   }}
                 >
                   {section.title}
                 </Typography>
               )}
-              <List disablePadding>
+              <List disablePadding className="sidebar-list">
                 {section.items.map((item) => (
-                  <ListItemButton
-                    key={item.label}
-                    component={NavLink}
-                    to={item.path}
-                    className={`sidebar-link ${location.pathname.startsWith(item.path) ? 'active' : ''
-                      }`}
-                    sx={{ 
-                      gap: 0,
-                      color: '#335599 !important',
-                      '& .MuiListItemText-primary': {
-                        color: '#335599 !important',
-                      },
-                      '& .MuiListItemIcon-root': {
-                        color: '#335599 !important',
-                        minWidth: open ? 28 : 24,
-                      },
-                      '& .MuiSvgIcon-root': {
-                        color: '#335599 !important',
-                      },
-                      '&:hover .MuiListItemIcon-root': {
-                        color: '#335599 !important',
-                      },
-                      '&:hover .MuiSvgIcon-root': {
-                        color: '#335599 !important',
-                      },
-                      '&.active .MuiListItemIcon-root': {
-                        color: '#335599 !important',
-                      },
-                      '&.active .MuiSvgIcon-root': {
-                        color: '#335599 !important',
-                      },
-                      justifyContent: open ? 'flex-start' : 'center',
-                    }}
-                    onClick={() => isMobile && onToggle()}
-                    title={!open ? item.label : ''}
-                  >
-                    <ListItemIcon 
-                      className="sidebar-link__icon" 
-                      sx={{ 
-                        color: '#335599 !important',
-                        '& .MuiSvgIcon-root': {
-                          color: '#335599 !important',
-                        },
-                        '& svg': {
-                          color: '#335599 !important',
-                          fill: '#335599 !important',
-                        },
-                      }}
+                  <Tooltip key={item.label} title={!open ? item.label : ''} placement="right">
+                    <ListItemButton
+                      component={NavLink}
+                      to={item.path}
+                      className={`sidebar-link ${location.pathname.startsWith(item.path) ? 'active' : ''}`}
+                      onClick={() => isMobile && onToggle()}
                     >
-                      {item.icon}
-                    </ListItemIcon>
-                    {(open || isMobile) && <ListItemText primary={item.label} sx={{ color: '#335599 !important' }} />}
-                  </ListItemButton>
+                      <ListItemIcon className="sidebar-link__icon" sx={{ color: '#ffffff !important' }}>
+                        {item.icon}
+                      </ListItemIcon>
+                      {open && <ListItemText primary={item.label} sx={{ color: '#ffffff !important', '& .MuiTypography-root': { fontWeight: 500 } }} />}
+                    </ListItemButton>
+                  </Tooltip>
                 ))}
               </List>
             </div>
@@ -306,35 +350,69 @@ const Sidebar = ({ open, onToggle }: SidebarProps) => {
       </nav>
 
       <div className="sidebar-footer">
-        <Divider className="sidebar-footer__divider" />
-        <Stack spacing={1} className="sidebar-footer__content">
-          <ListItemButton
-            className="sidebar-footer__item"
-            onClick={handleLogout}
-            sx={{ 
-              gap: 0,
-              color: '#335599 !important',
-              '& .MuiListItemText-primary': {
-                color: '#335599 !important',
-              },
-              '& .MuiListItemIcon-root': {
-                color: '#335599 !important',
-              },
-            }}
-            title={!open && !isMobile ? 'Sair' : ''}
-          >
-            <ListItemIcon className="sidebar-footer__icon" sx={{ color: '#335599 !important' }}>
-              <Logout fontSize="small" />
-            </ListItemIcon>
-            {(open || isMobile) && (
-              <ListItemText
-                primary="Sair"
-                className="sidebar-footer__text"
-                sx={{ color: '#335599 !important' }}
-              />
-            )}
-          </ListItemButton>
-        </Stack>
+        
+        <Divider className="sidebar-footer__divider" sx={{ borderColor: 'rgba(255,255,255,0.2) !important' }} />
+        
+        {/* User Profile Card */}
+        <Box 
+          className="user-profile-card"
+          onClick={handleOpenUserMenu}
+        >
+           <Avatar 
+             sx={{ 
+               width: 36, 
+               height: 36, 
+               bgcolor: '#ffffff',
+               color: 'var(--brand-primary)',
+               fontSize: '0.9rem',
+               fontWeight: 'bold'
+             }}
+           >
+             {user?.fullName?.charAt(0).toUpperCase() || 'U'}
+           </Avatar>
+           
+           {open && (
+             <Box sx={{ ml: 1.5, flex: 1, minWidth: 0 }}>
+                <Typography variant="body2" noWrap sx={{ color: '#ffffff', fontWeight: 700, fontSize: '0.9rem' }}>
+                  {user?.fullName || 'Usuário'}
+                </Typography>
+                <Typography variant="caption" noWrap sx={{ color: '#ffffff', display: 'block', fontSize: '0.75rem', opacity: 0.9 }}>
+                  {user?.email || 'email@exemplo.com'}
+                </Typography>
+             </Box>
+           )}
+           
+           {open && (
+             <MoreVert fontSize="small" sx={{ color: '#ffffff', opacity: 0.8 }} />
+           )}
+        </Box>
+
+        <Menu
+          sx={{ mt: -5, ml: 1 }}
+          id="menu-appbar"
+          anchorEl={anchorElUser}
+          anchorOrigin={{
+            vertical: 'top',
+            horizontal: 'right',
+          }}
+          keepMounted
+          transformOrigin={{
+            vertical: 'bottom',
+            horizontal: 'left',
+          }}
+          open={Boolean(anchorElUser)}
+          onClose={handleCloseUserMenu}
+        >
+          <MenuItem disabled>
+             <Typography textAlign="center" variant="body2">{user?.fullName}</Typography>
+          </MenuItem>
+          <Divider />
+          <MenuItem onClick={handleLogout}>
+            <ListItemIcon><Logout fontSize="small" /></ListItemIcon>
+            <Typography textAlign="center" variant="body2">Sair</Typography>
+          </MenuItem>
+        </Menu>
+
       </div>
     </>
   )

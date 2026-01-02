@@ -4,7 +4,6 @@ import { Outlet, Navigate, useLocation } from 'react-router-dom'
 import { SearchProvider } from '../../context/SearchContext'
 import { useAuth } from '../../context/AuthContext'
 import Sidebar from '../Sidebar'
-import Topbar from '../Topbar'
 import './style.css'
 
 type MainLayoutProps = {
@@ -82,10 +81,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
           onToggle={() => setSidebarOpen((prev) => !prev)}
         />
         <Box component="section" className="main-layout__content">
-          <Topbar
-            sidebarOpen={sidebarOpen}
-            onToggleSidebar={() => setSidebarOpen((prev) => !prev)}
-          />
+          {/* Topbar removed as per redesign */}
           <Box component="main" className="main-layout__page">
             {children ?? <Outlet />}
           </Box>
