@@ -1,0 +1,274 @@
+/* Brand Variables Defaults */
+.auth-template-container {
+    /* Brand color provided by ThemeContext or fallbacks in var() */
+
+    min-height: 100vh;
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    background-color: #0d1117;
+}
+
+/* Left components - Visual Side */
+.auth-visual-side {
+    flex: 1;
+    /* 
+       Dynamic gradient using the brand highlight color.
+       Top-Right (0%): The brand color itself (lighter/vibrant).
+       Bottom-Left (100%): Mixed with black to be darker.
+    */
+    background: linear-gradient(225deg,
+            var(--brand-primary, #2563eb) 0%,
+            color-mix(in srgb, var(--brand-primary, #2563eb), black 60%) 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 4rem;
+    position: relative;
+}
+
+.auth-visual-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    /* Dynamic radial gradient overlay */
+    background: radial-gradient(circle at top right,
+            color-mix(in srgb, var(--brand-primary), transparent 80%),
+            transparent 60%);
+    pointer-events: none;
+}
+
+.auth-feature-card {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 32px;
+    padding: 2.5rem;
+    max-width: 500px;
+    width: 100%;
+}
+
+.auth-feature-icon {
+    /* Dynamic folder icon bg */
+    background: color-mix(in srgb, var(--brand-primary, #2563eb), black 20%);
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+    color: white;
+}
+
+.auth-feature-list {
+    margin-top: 1.5rem;
+}
+
+/* Right components - Form Side */
+.auth-form-side {
+    flex: 1;
+    /* Default to taking up equal space or adapting */
+    max-width: 700px;
+    /* Limit width on large screens */
+    min-width: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+
+    /* Default Theme (Light) */
+    --login-bg: #ffffff;
+    --login-text: #1a202c;
+    --login-text-secondary: #718096;
+    --input-bg: #f7fafc;
+    --input-border: #e2e8f0;
+    --input-border-hover: #cbd5e0;
+    --input-text: #2d3748;
+    --input-label: #718096;
+
+    background-color: var(--login-bg);
+    color: var(--login-text);
+
+    position: relative;
+    z-index: 2;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Dark Theme Overrides */
+html.theme-dark .auth-form-side {
+    --login-bg: #0b0f19;
+    --login-text: #ffffff;
+    --login-text-secondary: rgba(255, 255, 255, 0.6);
+    --input-bg: rgba(255, 255, 255, 0.03);
+    --input-border: rgba(255, 255, 255, 0.1);
+    --input-border-hover: rgba(255, 255, 255, 0.2);
+    --input-text: #ffffff;
+    --input-label: rgba(255, 255, 255, 0.5);
+}
+
+.auth-form-container {
+    width: 100%;
+    max-width: 400px;
+}
+
+.auth-title {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    font-size: 2.5rem;
+    color: var(--login-text);
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.5px;
+    transition: color 0.3s ease;
+}
+
+.auth-subtitle {
+    color: var(--login-text-secondary);
+    margin-bottom: 3rem;
+    font-size: 1rem;
+    transition: color 0.3s ease;
+    transition: color 0.3s ease;
+}
+
+/* Form Elements Styling overrides */
+.custom-input .MuiOutlinedInput-root {
+    background-color: var(--input-bg) !important;
+    border-radius: 12px !important;
+    transition: all 0.2s ease;
+}
+
+.custom-input .MuiOutlinedInput-root fieldset {
+    border-color: var(--input-border) !important;
+}
+
+.custom-input .MuiOutlinedInput-root:hover fieldset {
+    border-color: var(--input-border-hover) !important;
+}
+
+.custom-input .MuiOutlinedInput-root.Mui-focused fieldset {
+    border-color: var(--brand-primary, #2563eb) !important;
+    /* Dynamic Brand Color */
+    border-width: 1px !important;
+}
+
+.custom-input .MuiInputBase-input {
+    color: var(--input-text) !important;
+    padding: 16px !important;
+}
+
+.custom-input .MuiInputLabel-root {
+    color: var(--input-label);
+}
+
+.custom-input .MuiInputLabel-root.Mui-focused {
+    color: var(--brand-primary, #2563eb);
+}
+
+/* Label text above inputs */
+.input-label-text {
+    color: var(--login-text);
+    margin-bottom: 8px;
+    /* 1 * 8px */
+    display: block;
+    font-weight: 500;
+    font-size: 0.75rem;
+    /* caption variant */
+    transition: color 0.3s ease;
+}
+
+.forgot-password-link {
+    color: var(--brand-primary, #2563eb) !important;
+    filter: brightness(1.2);
+    /* Slightly lighter than main brand color */
+    font-weight: 500;
+    font-size: 0.9rem;
+    text-decoration: none;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.forgot-password-link:hover {
+    text-decoration: underline;
+    filter: brightness(1.4);
+}
+
+.login-button {
+    background-color: var(--brand-primary, #2563eb) !important;
+    /* Dynamic Brand Color */
+    color: white !important;
+    text-transform: none !important;
+    font-weight: 600 !important;
+    font-size: 1rem !important;
+    padding: 12px !important;
+    border-radius: 50px !important;
+    /* Pill shape */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+    /* Generic shadow */
+    transition: all 0.2s ease !important;
+}
+
+.login-button:hover {
+    filter: brightness(0.9);
+    /* Darker on hover regardless of color */
+    transform: translateY(-1px);
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 900px) {
+    .auth-visual-side {
+        display: none;
+        /* Hide visual visual side on smaller screens */
+    }
+
+    .auth-form-side {
+        max-width: 100%;
+        /* Take full width */
+        /* Light Mode gradient */
+        background: radial-gradient(circle at top right, #e2e8f0, #ffffff 80%);
+    }
+
+    html.theme-dark .auth-form-side {
+        /* Dark Mode gradient with brand hint */
+        background: radial-gradient(circle at top right,
+                color-mix(in srgb, var(--brand-primary, #2563eb), transparent 90%),
+                #0b0f19 80%);
+    }
+}
+
+/* Glass Alert Styles */
+.glass-alert {
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    border-radius: 16px !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15) !important;
+    color: inherit !important;
+}
+
+.glass-alert.MuiAlert-standardError {
+    background: rgba(253, 237, 237, 0.8) !important;
+    color: rgb(95, 33, 32) !important;
+}
+
+.glass-alert.MuiAlert-standardSuccess {
+    background: rgba(237, 247, 237, 0.8) !important;
+    color: rgb(30, 70, 32) !important;
+}
+
+/* Dark mode adjustments for alerts */
+html.theme-dark .glass-alert.MuiAlert-standardError {
+    background: rgba(22, 11, 11, 0.8) !important;
+    /* heavily desaturated dark red/bg */
+    color: #ffb4ab !important;
+    border-color: rgba(255, 180, 171, 0.1) !important;
+}
+
+html.theme-dark .glass-alert.MuiAlert-standardSuccess {
+    background: rgba(12, 19, 13, 0.8) !important;
+    /* heavily desaturated dark green/bg */
+    color: #bce9b6 !important;
+    border-color: rgba(188, 233, 182, 0.1) !important;
+}
