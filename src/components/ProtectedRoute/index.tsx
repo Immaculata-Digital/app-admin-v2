@@ -1,4 +1,5 @@
 import { Navigate } from 'react-router-dom'
+import { CircularProgress } from '@mui/material'
 import { useAuth } from '../../context/AuthContext'
 
 interface ProtectedRouteProps {
@@ -24,9 +25,11 @@ export const ProtectedRoute = ({
         display: 'flex', 
         justifyContent: 'center', 
         alignItems: 'center', 
-        height: '100vh' 
+        height: '100vh',
+        backgroundColor: 'var(--background-default)', // Use theme background if available
+        color: 'var(--brand-primary)', // Use brand color
       }}>
-        Carregando...
+        <CircularProgress color="inherit" />
       </div>
     )
   }

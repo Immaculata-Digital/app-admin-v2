@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react'
-import { Box } from '@mui/material'
+import { Box, CircularProgress } from '@mui/material'
 import { Outlet, Navigate, useLocation } from 'react-router-dom'
 import { SearchProvider } from '../../context/SearchContext'
 import { useAuth } from '../../context/AuthContext'
@@ -41,7 +41,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
           height: '100vh',
         }}
       >
-        Carregando...
+        <CircularProgress />
       </Box>
     )
   }

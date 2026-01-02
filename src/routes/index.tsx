@@ -29,13 +29,13 @@ const RootRedirect = () => {
     }
   }, [isAuthenticated, loading, navigate])
   
-  if (loading) {
-    return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
-        Carregando...
-      </div>
-    )
-  }
+  // if (loading) {
+  //   return (
+  //     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+  //       Carregando...
+  //     </div>
+  //   )
+  // }
   
   if (isAuthenticated) {
     return null // Será redirecionado pelo useEffect
