@@ -16,7 +16,6 @@ import {
   Search,
   Close,
   Logout,
-  AccountCircle,
   Menu as MenuIcon,
 } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'

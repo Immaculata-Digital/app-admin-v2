@@ -14,7 +14,6 @@ import {
   type FeatureDefinition,
   accessGroupService,
 } from '../../services/accessGroups'
-import PageContainer from '../../components/PageContainer'
 
 type AccessGroupRow = TableCardRow &
   Pick<AccessGroupDTO, 'name' | 'code' | 'features' | 'createdAt' | 'createdBy' | 'updatedAt' | 'updatedBy'>

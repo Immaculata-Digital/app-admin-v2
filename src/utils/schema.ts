@@ -1,6 +1,6 @@
 /**
  * Obtém o schema do tenant baseado no subdomínio da URL
- * Fallback: usa SCHEMA_DEFAULT do .env ou "casona"
+ * Fallback: usa SCHEMA_DEFAULT do .env ou "thiago"
  */
 export const getTenantSchema = (): string => {
   // Tentar obter do subdomínio
@@ -28,8 +28,8 @@ export const getTenantSchema = (): string => {
     }
   }
   
-  // Fallback: usar variável de ambiente ou "casona"
+  // Fallback: usar variável de ambiente ou "thiago"
   const envSchema = import.meta.env.VITE_SCHEMA_DEFAULT
-  return envSchema && /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(envSchema) ? envSchema : 'casona'
+  return envSchema && /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(envSchema) ? envSchema : 'thiago'
 }
 

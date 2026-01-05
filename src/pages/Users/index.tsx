@@ -28,7 +28,6 @@ import MultiSelectPicker from '../../components/MultiSelectPicker'
 import MailPicker from '../../components/MailPicker'
 import { accessGroupService } from '../../services/accessGroups'
 import { userService, type UserDTO } from '../../services/users'
-import PageContainer from '../../components/PageContainer'
 import './style.css'
 
 type UserRow = TableCardRow & {
