@@ -55,7 +55,6 @@ const ClientesPage = () => {
   const schema = getTenantSchema()
 
   const canDelete = permissions.includes('erp:clientes:excluir')
-  const canEdit = permissions.includes('erp:clientes:editar')
   const canCreate = permissions.includes('erp:clientes:criar')
   const canView = permissions.includes('erp:clientes:visualizar')
   const canList = permissions.includes('erp:clientes:listar')

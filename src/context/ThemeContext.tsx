@@ -25,7 +25,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   })
 
   // Branding State
-  const [appName, setAppName] = useState('Concordia ERP')
+  const [appName] = useState('Concordia ERP')
   const [brandColor, setBrandColor] = useState<string | undefined>(undefined)
   const [logoBase64, setLogoBase64] = useState<string | undefined>(undefined)
   const [loadingBranding, setLoadingBranding] = useState(true)
