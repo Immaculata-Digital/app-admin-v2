@@ -18,9 +18,7 @@
        Top-Right (0%): The brand color itself (lighter/vibrant).
        Bottom-Left (100%): Mixed with black to be darker.
     */
-    background: linear-gradient(225deg,
-            var(--brand-primary, #2563eb) 0%,
-            color-mix(in srgb, var(--brand-primary, #2563eb), black 60%) 100%);
+    background: var(--brand-gradient);
     display: flex;
     flex-direction: column;
     justify-content: flex-end;

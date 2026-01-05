@@ -36,7 +36,7 @@ html:not(.theme-dark) {
 .sidebar-container {
   height: 100vh;
   flex-shrink: 0;
-  width: 280px;
+  width: 300px;
   /* Expanded Width */
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   background-color: var(--sidebar-bg);
@@ -57,7 +57,7 @@ html:not(.theme-dark) {
       color-mix(in srgb, var(--brand-primary, #3b82f6), black 60%) 100%) !important;
   color: var(--sidebar-text-primary) !important;
   border-right: 1px solid var(--sidebar-border) !important;
-  width: 280px;
+  width: 300px;
   overflow-x: hidden;
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
   padding: 1.5rem;
@@ -237,7 +237,7 @@ html:not(.theme-dark) {
 /* Mobile */
 @media (max-width: 900px) {
   .sidebar-paper--mobile {
-    width: 280px;
+    width: 300px;
     background-color: var(--sidebar-bg) !important;
   }
 }

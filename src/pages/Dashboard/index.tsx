@@ -240,7 +240,7 @@ const DashboardPage = () => {
       {/* Busca de Código */}
       <Grid container spacing={3} sx={{ mb: 3 }}>
         <Grid size={{ xs: 12, md: 6 }}>
-          <Card>
+          <Card className="glass-effect">
             <CardContent>
               <Box display="flex" flexDirection="column" gap={2}>
                 <Box display="flex" alignItems="center" gap={1}>
@@ -293,7 +293,7 @@ const DashboardPage = () => {
           </Card>
         </Grid>
         <Grid size={{ xs: 12, md: 6 }}>
-          <Card>
+          <Card className="glass-effect">
             <CardContent>
               <Box display="flex" flexDirection="column" gap={2}>
                 <Box display="flex" alignItems="center" gap={1}>

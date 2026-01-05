@@ -7,14 +7,10 @@ import {
   ListItemText,
   Typography,
   Stack,
-  Divider,
   useMediaQuery,
   useTheme,
   Box,
-  Avatar,
   Tooltip,
-  Menu,
-  MenuItem,
 } from '@mui/material'
 import {
   Inventory2Outlined,
@@ -23,7 +19,6 @@ import {
   Groups2Outlined,
   ChevronLeft,
   ChevronRight,
-  Logout,
   MailOutlined,
   EmailOutlined,
   ContactMailOutlined,
@@ -32,14 +27,13 @@ import {
   StoreOutlined,
   BusinessOutlined,
   Settings,
-  MoreVert,
-  NotificationsNone,
 } from '@mui/icons-material'
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import React, { useEffect, useState, useMemo } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { configuracoesService } from '../../services/configuracoes'
 import { getTenantSchema } from '../../utils/schema'
+import { ThemeSwitcher } from '../ThemeSwitcher'
 import './style.css'
 
 // Ícone customizado que combina Mail e Settings
@@ -90,14 +84,12 @@ type SidebarProps = {
 const Sidebar = ({ open, onToggle }: SidebarProps) => {
   const location = useLocation()
   const navigate = useNavigate()
-  const { logout, permissions, user } = useAuth()
+  const { permissions } = useAuth()
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down('md'))
   const [logoBase64, setLogoBase64] = useState<string | null>(null)
   const withState = (base: string, closedModifier: string) =>
     open ? base : `${base} ${closedModifier}`
-
-  const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
 
   // Determine App Name based on Domain
   const getAppName = () => {
@@ -188,26 +180,7 @@ const Sidebar = ({ open, onToggle }: SidebarProps) => {
     return result
   }, [allMenus, permissions])
 
-  const handleLogout = async () => {
-    try {
-      await logout()
-      navigate('/', { replace: true })
-    } catch (error) {
-      // Se houver erro, ainda assim redireciona para login
-      console.error('Erro ao fazer logout:', error)
-      navigate('/', { replace: true })
-    } finally {
-      handleCloseUserMenu()
-    }
-  }
 
-  const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorElUser(event.currentTarget)
-  }
-
-  const handleCloseUserMenu = () => {
-    setAnchorElUser(null)
-  }
 
   const drawerContent = (
     <>
@@ -251,23 +224,7 @@ const Sidebar = ({ open, onToggle }: SidebarProps) => {
              </Box>
            )}
 
-           {/* Notifications Mockup - Visible always on Desktop */}
-           {!isMobile && (
-             <IconButton 
-               size="small" 
-               sx={{ 
-                 color: '#ffffff',
-                 marginRight: open ? 0.5 : 0, // Only margin when horizontal
-                 marginBottom: open ? 0 : 1, // Add spacing below when stacked
-                 opacity: 0.8,
-                 '&:hover': { opacity: 1, backgroundColor: 'rgba(255,255,255,0.1)' }
-               }}
-             >
-                <NotificationsNone fontSize="small" />
-             </IconButton>
-           )}
-
-           {/* Toggle Button */}
+           {/* Toggle Button - Restored per user request */}
            {!isMobile && (
              <Tooltip title={open ? "Recolher" : "Expandir"}>
                <IconButton 
@@ -349,71 +306,19 @@ const Sidebar = ({ open, onToggle }: SidebarProps) => {
         )}
       </nav>
 
-      <div className="sidebar-footer">
-        
-        <Divider className="sidebar-footer__divider" sx={{ borderColor: 'rgba(255,255,255,0.2) !important' }} />
-        
-        {/* User Profile Card */}
-        <Box 
-          className="user-profile-card"
-          onClick={handleOpenUserMenu}
-        >
-           <Avatar 
-             sx={{ 
-               width: 36, 
-               height: 36, 
-               bgcolor: '#ffffff',
-               color: 'var(--brand-primary)',
-               fontSize: '0.9rem',
-               fontWeight: 'bold'
-             }}
-           >
-             {user?.fullName?.charAt(0).toUpperCase() || 'U'}
-           </Avatar>
-           
-           {open && (
-             <Box sx={{ ml: 1.5, flex: 1, minWidth: 0 }}>
-                <Typography variant="body2" noWrap sx={{ color: '#ffffff', fontWeight: 700, fontSize: '0.9rem' }}>
-                  {user?.fullName || 'Usuário'}
-                </Typography>
-                <Typography variant="caption" noWrap sx={{ color: '#ffffff', display: 'block', fontSize: '0.75rem', opacity: 0.9 }}>
-                  {user?.email || 'email@exemplo.com'}
-                </Typography>
-             </Box>
-           )}
-           
-           {open && (
-             <MoreVert fontSize="small" sx={{ color: '#ffffff', opacity: 0.8 }} />
-           )}
-        </Box>
+      <Box sx={{ p: 2, mt: 'auto', borderTop: '1px solid rgba(255,255,255,0.1)', color: '#ffffff' }}>
+        <Stack direction="row" alignItems="center" justifyContent={open ? 'space-between' : 'center'}>
+          {open && (
+             <Typography variant="caption" sx={{ color: '#ffffff' }}>
+               Tema
+             </Typography>
+          )}
+          <ThemeSwitcher />
+        </Stack>
+      </Box>
 
-        <Menu
-          sx={{ mt: -5, ml: 1 }}
-          id="menu-appbar"
-          anchorEl={anchorElUser}
-          anchorOrigin={{
-            vertical: 'top',
-            horizontal: 'right',
-          }}
-          keepMounted
-          transformOrigin={{
-            vertical: 'bottom',
-            horizontal: 'left',
-          }}
-          open={Boolean(anchorElUser)}
-          onClose={handleCloseUserMenu}
-        >
-          <MenuItem disabled>
-             <Typography textAlign="center" variant="body2">{user?.fullName}</Typography>
-          </MenuItem>
-          <Divider />
-          <MenuItem onClick={handleLogout}>
-            <ListItemIcon><Logout fontSize="small" /></ListItemIcon>
-            <Typography textAlign="center" variant="body2">Sair</Typography>
-          </MenuItem>
-        </Menu>
 
-      </div>
+
     </>
   )
 
@@ -426,8 +331,8 @@ const Sidebar = ({ open, onToggle }: SidebarProps) => {
         classes={{ paper: 'sidebar-paper sidebar-paper--mobile' }}
         PaperProps={{
           sx: {
-            backgroundColor: '#ffffff !important',
-            color: '#335599 !important',
+            background: 'var(--color-sidebar-bg) !important',
+            color: 'var(--color-sidebar-text) !important',
           },
         }}
       >
@@ -445,8 +350,8 @@ const Sidebar = ({ open, onToggle }: SidebarProps) => {
         classes={{ paper: withState('sidebar-paper', 'sidebar-paper--closed') }}
         PaperProps={{
           sx: {
-            backgroundColor: '#ffffff !important',
-            color: '#335599 !important',
+            background: 'var(--color-sidebar-bg) !important',
+            color: 'var(--color-sidebar-text) !important',
           },
         }}
       >

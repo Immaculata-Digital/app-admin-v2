@@ -43,7 +43,7 @@ export function SimpleTable<T extends Record<string, any>>({
   }
 
   return (
-    <Card>
+    <Card className="glass-effect">
       <CardContent>
         <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
           {title}

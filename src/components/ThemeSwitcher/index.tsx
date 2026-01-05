@@ -83,7 +83,7 @@ export const ThemeSwitcher = () => {
               right: 14,
               width: 10,
               height: 10,
-              bgcolor: 'background.paper',
+              bgcolor: 'var(--color-surface)',
               transform: 'translateY(-50%) rotate(45deg)',
               zIndex: 0,
             },

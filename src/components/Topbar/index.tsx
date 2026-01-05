@@ -12,13 +12,12 @@ import {
   Typography,
 } from '@mui/material'
 import {
-  Menu as MenuIcon,
-  MenuOpen,
   NotificationsNone,
   Search,
   Close,
   Logout,
   AccountCircle,
+  Menu as MenuIcon,
 } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
 import { useSearch } from '../../context/SearchContext'
@@ -30,7 +29,7 @@ type TopbarProps = {
   onToggleSidebar: () => void
 }
 
-const Topbar = ({ sidebarOpen, onToggleSidebar }: TopbarProps) => {
+const Topbar = ({ sidebarOpen: _sidebarOpen, onToggleSidebar: _onToggleSidebar }: TopbarProps) => {
   const navigate = useNavigate()
   const { user, logout } = useAuth()
   const {
@@ -92,13 +91,18 @@ const Topbar = ({ sidebarOpen, onToggleSidebar }: TopbarProps) => {
         className="topbar__content"
         sx={{ width: '100%' }}
       >
-        <IconButton
-          aria-label={sidebarOpen ? 'Recolher menu lateral' : 'Expandir menu lateral'}
-          onClick={onToggleSidebar}
-          className="topbar__toggle"
-        >
-          {sidebarOpen ? <MenuOpen /> : <MenuIcon />}
-        </IconButton>
+        <Box className="topbar__mobile-toggle" sx={{ display: { md: 'none' } }}>
+            <IconButton
+              color="inherit"
+              aria-label="open drawer"
+              edge="start"
+              onClick={_onToggleSidebar}
+              sx={{ p: 1 }}
+            >
+              <MenuIcon />
+            </IconButton>
+        </Box>
+
 
         {showSearch && (
           <Box className="topbar__search-container topbar__search-container--open">
@@ -180,17 +184,6 @@ const Topbar = ({ sidebarOpen, onToggleSidebar }: TopbarProps) => {
                   horizontal: 'right',
                 }}
               >
-                <MenuItem disabled>
-                  <AccountCircle sx={{ mr: 1 }} />
-                  <Box>
-                    <Typography variant="body2" fontWeight="bold">
-                      {user.fullName}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      {user.email}
-                    </Typography>
-                  </Box>
-                </MenuItem>
                 <MenuItem onClick={handleLogout}>
                   <Logout sx={{ mr: 1 }} />
                   Sair

@@ -38,6 +38,7 @@ export function KPICard({
 
   return (
     <Card
+      className="glass-effect"
       sx={{
         cursor: onClick ? 'pointer' : 'default',
         transition: 'all 0.2s ease',

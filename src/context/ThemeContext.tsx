@@ -20,7 +20,7 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
 
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const [theme, setThemeState] = useState<Theme>(() => {
-    const savedTheme = localStorage.getItem('theme') as Theme
+    const savedTheme = localStorage.getItem('concordia-theme-mode') as Theme
     return savedTheme || 'system'
   })
 
@@ -104,7 +104,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   }, [theme, brandColor])
 
   const setTheme = (newTheme: Theme) => {
-    localStorage.setItem('theme', newTheme)
+    localStorage.setItem('concordia-theme-mode', newTheme)
     setThemeState(newTheme)
   }
 
