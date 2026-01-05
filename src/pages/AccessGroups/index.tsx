@@ -14,6 +14,7 @@ import {
   type FeatureDefinition,
   accessGroupService,
 } from '../../services/accessGroups'
+import PageContainer from '../../components/PageContainer'
 
 type AccessGroupRow = TableCardRow &
   Pick<AccessGroupDTO, 'name' | 'code' | 'features' | 'createdAt' | 'createdBy' | 'updatedAt' | 'updatedBy'>
@@ -253,13 +254,10 @@ const AccessGroupsPage = () => {
   }, [featureOptions])
 
   return (
-    <Box className="access-groups-page">
+    <Box>
       {loading ? (
-        <Box className="access-groups-page__loading">
+        <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
           <CircularProgress size={32} />
-          <Typography variant="body2" color="text.secondary">
-            Carregando grupos...
-          </Typography>
         </Box>
       ) : !canList ? (
         <Box display="flex" justifyContent="center" alignItems="center" height="100%" minHeight="400px">

@@ -198,7 +198,7 @@ const ConfiguracoesPage = () => {
   return (
     <Box className="configuracoes-page">
       <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" component="h1" gutterBottom>
+        <Typography variant="h5" component="h1" fontWeight={600}>
           Área do Cliente
         </Typography>
         <Typography variant="body2" color="text.secondary">

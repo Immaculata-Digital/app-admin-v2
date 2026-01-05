@@ -1,0 +1,36 @@
+.page-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+    padding: 2rem 2.5rem;
+    /* Standardized Padding: Top/Bottom 2rem, Left/Right 2.5rem */
+    gap: 1.5rem;
+    overflow-y: auto;
+}
+
+.page-container__header {
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+}
+
+.page-container__content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    /* Important for scrollable nested content */
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 600px) {
+    .page-container {
+        padding: 1.5rem 1rem;
+        gap: 1rem;
+    }
+}
+
+.theme-dark .page-container__header .MuiTypography-root {
+    color: #ffffff;
+}

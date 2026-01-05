@@ -20,7 +20,6 @@ import CnpjPicker from '../../components/CnpjPicker'
 import { lojaService, type LojaDTO, type CreateLojaPayload, type UpdateLojaPayload } from '../../services/lojas'
 import { getTenantSchema } from '../../utils/schema'
 import { downloadQRCodeClienteRegistro } from '../../utils/qrcode.utils'
-import './style.css'
 
 type LojaRow = TableCardRow & LojaDTO
 
@@ -310,7 +309,7 @@ const LojasPage = () => {
 
   if (!canList) {
     return (
-      <Box className="lojas-page">
+      <Box>
         <Typography variant="h6" color="error">
           Você não tem permissão para visualizar esta página.
         </Typography>
@@ -319,7 +318,7 @@ const LojasPage = () => {
   }
 
   return (
-    <Box className="lojas-page">
+    <Box>
       <TableCard
         title="Lojas"
         rows={lojas}

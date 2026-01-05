@@ -28,6 +28,7 @@ import MultiSelectPicker from '../../components/MultiSelectPicker'
 import MailPicker from '../../components/MailPicker'
 import { accessGroupService } from '../../services/accessGroups'
 import { userService, type UserDTO } from '../../services/users'
+import PageContainer from '../../components/PageContainer'
 import './style.css'
 
 type UserRow = TableCardRow & {
@@ -522,13 +523,10 @@ const UsersPage = () => {
   }
 
   return (
-    <Box className="users-page">
+    <Box>
       {loading ? (
-        <Box className="users-page__loading">
+        <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
           <CircularProgress size={32} />
-          <Typography variant="body2" color="text.secondary">
-            Carregando usuários...
-          </Typography>
         </Box>
       ) : (
         <TableCard
@@ -547,7 +545,7 @@ const UsersPage = () => {
           disableView={!hasPermission('erp:usuarios:visualizar')}
         />
       )}
-
+{/* ... keep existing dialogs ... */}
       <Dialog open={Boolean(detailUser)} onClose={() => setDetailUser(null)} fullWidth maxWidth="sm">
         <DialogTitle>Detalhes do usuário</DialogTitle>
         <DialogContent dividers>

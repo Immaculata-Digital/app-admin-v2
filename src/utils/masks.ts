@@ -19,6 +19,16 @@ export const formatTelefoneWhatsApp = (value?: string): string => {
   return `+55 (${withoutCountry.slice(0, 2)}) ${withoutCountry.slice(2, 3)} ${withoutCountry.slice(3, 7)}-${withoutCountry.slice(7, 11)}`
 }
 
+// Formata telefone para exibição BR padrão sem DDI: (XX) 9XXXX-XXXX
+export const formatTelefoneBR = (value?: string): string => {
+  if (!value) return '—'
+  
+  const numbers = value.replace(/\D/g, '')
+  const withoutCountry = numbers.startsWith('55') ? numbers.slice(2) : numbers
+  
+  return maskPhone(withoutCountry)
+}
+
 // Gera link do WhatsApp apenas com números
 export const getWhatsAppLink = (value?: string): string => {
   if (!value) return '#'
