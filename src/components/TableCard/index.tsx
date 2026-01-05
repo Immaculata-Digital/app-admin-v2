@@ -25,7 +25,7 @@ import {
   useTheme,
   useMediaQuery,
 } from '@mui/material'
-import { Add, DeleteOutline, MoreVert, ViewModule, TableChart } from '@mui/icons-material'
+import { Add, DeleteOutline, MoreVert, ViewModule, TableChart, Edit } from '@mui/icons-material'
 import type { SelectChangeEvent } from '@mui/material/Select'
 import './style.css'
 
@@ -98,6 +98,7 @@ type TableCardProps<T extends TableCardRow> = {
   canDeleteRow?: (row: T) => boolean
   disableEdit?: boolean
   disableView?: boolean
+  onRowClick?: (row: T) => void
 }
 
 type DialogState<T extends TableCardRow> =
@@ -120,16 +121,38 @@ const TableCard = <T extends TableCardRow>({
   canDeleteRow,
   disableEdit = false,
   disableView = false,
+  onRowClick,
 }: TableCardProps<T>) => {
   const { query, selectedFilter } = useSearch()
-  const theme = useTheme()
-  const isDesktop = useMediaQuery(theme.breakpoints.up('md'))
+  // const theme = useTheme()
+  const isDesktop = useMediaQuery('(min-width:900px)')
   const [selectedIds, setSelectedIds] = useState<Array<T['id']>>([])
-  const [viewMode, setViewMode] = useState<'card' | 'table'>('card')
+  const [viewMode, setViewMode] = useState<'card' | 'table'>(() => {
+    if (typeof window === 'undefined') return 'card'
+    
+    // Check local storage first (reset version)
+    const stored = window.localStorage.getItem('concordia-table-view-mode-v2') as 'card' | 'table' | null
+    if (stored) return stored
 
+    // If no storage, strictly check window width for default
+    return window.innerWidth >= 900 ? 'table' : 'card'
+  })
+
+  // Enforce view mode based on screen size changes
   useEffect(() => {
-    setViewMode(isDesktop ? 'table' : 'card')
+    if (!isDesktop) {
+      setViewMode('card')
+    } else {
+      // Restore preference when returning to desktop
+      const stored = window.localStorage.getItem('concordia-table-view-mode-v2') as 'card' | 'table' | null
+      setViewMode(stored || 'table')
+    }
   }, [isDesktop])
+
+  const handleSetViewMode = (mode: 'card' | 'table') => {
+    setViewMode(mode)
+    window.localStorage.setItem('concordia-table-view-mode-v2', mode)
+  }
   const [dialog, setDialog] = useState<DialogState<T>>({
     mode: null,
     open: false,
@@ -432,23 +455,27 @@ const TableCard = <T extends TableCardRow>({
           justifyContent="space-between"
           className="table-card__toolbar"
         >
-          <Typography variant="h5" fontWeight={600}>
-            {title}
-          </Typography>
+          {title && (
+            <Typography variant="h5" component="h1" fontWeight={600}>
+              {title}
+            </Typography>
+          )}
           <Stack direction="row" spacing={0.5} className="table-card__view-toggle">
             <IconButton
               size="small"
-              onClick={() => setViewMode('card')}
+              onClick={() => handleSetViewMode('card')}
               className={viewMode === 'card' ? 'table-card__view-toggle--active' : ''}
               aria-label="Visualização em cards"
+              sx={{ color: '#ffffff' }} // Force white
             >
               <ViewModule fontSize="small" />
             </IconButton>
             <IconButton
               size="small"
-              onClick={() => setViewMode('table')}
+              onClick={() => handleSetViewMode('table')}
               className={viewMode === 'table' ? 'table-card__view-toggle--active' : ''}
               aria-label="Visualização em tabela"
+              sx={{ color: '#ffffff' }} // Force white
             >
               <TableChart fontSize="small" />
             </IconButton>
@@ -467,8 +494,12 @@ const TableCard = <T extends TableCardRow>({
                     key={row.id}
                     className={`table-card__gmail-card ${isSelected ? 'table-card__gmail-card--selected' : ''}`}
                     onClick={() => {
-                      if (!isSelected && !disableView) {
-                        openDialog('edit', row)
+                      if (!isSelected) {
+                         if (onRowClick) {
+                           onRowClick(row)
+                         } else if (!disableView) {
+                           openDialog('edit', row)
+                         }
                       }
                     }}
                   >
@@ -566,8 +597,12 @@ const TableCard = <T extends TableCardRow>({
                       hover
                       className={`table-card__row ${selectedIds.includes(row.id) ? 'table-card__row--selected' : ''}`}
                       onClick={() => {
-                        if (!selectedIds.includes(row.id) && !disableView) {
-                          openDialog('edit', row)
+                        if (!selectedIds.includes(row.id)) {
+                          if (onRowClick) {
+                             onRowClick(row)
+                          } else if (!disableView) {
+                             openDialog('edit', row)
+                          }
                         }
                       }}
                     >
@@ -641,6 +676,20 @@ const TableCard = <T extends TableCardRow>({
             )
           })
         })()}
+        {onEdit && (
+          <MenuItem
+            onClick={() => {
+              if (menuRow) {
+                openDialog('edit', menuRow)
+                handleCloseMenu()
+              }
+            }}
+            disabled={disableEdit}
+          >
+            <Edit fontSize="small" style={{ marginRight: 8 }} />
+            Editar
+          </MenuItem>
+        )}
         {onDelete && (
           <MenuItem 
             onClick={handleDeleteRow} 
