@@ -1,11 +1,12 @@
-import { type ReactNode } from 'react'
+import { type ReactNode, useEffect, useState } from 'react'
 import {
   Box,
   Typography,
 } from '@mui/material'
 import { CheckCircleOutline } from '@mui/icons-material'
 import { ThemeSwitcher } from '../ThemeSwitcher'
-import { useTheme } from '../../context/ThemeContext'
+import { configuracoesService } from '../../services/configuracoes'
+import { getTenantSchema } from '../../utils/schema'
 import './style.css'
 
 interface AuthTemplateProps {
@@ -32,7 +33,26 @@ export const AuthTemplate = ({
   children,
   showThemeSwitcher = true,
 }: AuthTemplateProps) => {
-  const { appName, logoBase64 } = useTheme()
+  const [logoBase64, setLogoBase64] = useState<string | undefined>(undefined)
+  const appName = 'Concordia ERP'
+
+  useEffect(() => {
+    const fetchConfig = async () => {
+      try {
+        const schema = getTenantSchema()
+        const config = await configuracoesService.getFirst(schema, { skipAuth: true })
+        
+        if (config) {
+          if (config.logo_base64) {
+            setLogoBase64(config.logo_base64)
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load config:', err)
+      }
+    }
+    fetchConfig()
+  }, [])
 
   return (
     <Box className="auth-template-container">

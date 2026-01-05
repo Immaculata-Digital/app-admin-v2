@@ -1,30 +1,35 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
 
 :root {
-  /* Cores Apple - Sistema de Design Moderno */
-  --color-primary: #007AFF;
-  --color-primary-dark: #0051D5;
-  --color-primary-light: #5AC8FA;
-  --color-primary-rgb: 0, 122, 255;
+  /* Cores Apple - Sistema de Design Moderno - Updated to new defaults */
+  --color-primary: #3c83f5;
+  --color-primary-dark: #2a6cd1;
+  /* Darkened version of #3c83f5 */
+  --color-primary-light: #64a2ff;
+  /* Lightened version of #3c83f5 */
+  --color-primary-rgb: 60, 131, 245;
 
-  /* Cores de Texto Apple */
-  --color-text: #1d1d1f;
-  --color-text-secondary: #86868b;
-  --color-text-tertiary: #8e8e93;
+  /* Cores de Texto */
+  --color-text: #22272b;
+  --color-text-secondary: #5e6c79;
+  /* Adjusted for better contrast with new text color */
+  --color-text-tertiary: #8ea1b0;
 
-  /* Cores de Fundo Apple */
-  --color-background: #f5f5f7;
+  /* Cores de Fundo */
+  --color-background: #FAFAFA;
   --color-surface: #ffffff;
   --color-surface-secondary: rgba(255, 255, 255, 0.8);
 
   /* Shared Gradients */
-  --brand-gradient: linear-gradient(225deg, var(--brand-primary, #2563eb) 0%, color-mix(in srgb, var(--brand-primary, #2563eb), black 60%) 100%);
+  --brand-primary: #3c83f5;
+  --brand-gradient: linear-gradient(225deg, var(--brand-primary, #3c83f5) 0%, color-mix(in srgb, var(--brand-primary, #3c83f5), black 60%) 100%);
 
   /* Sidebar Light Mode */
   --color-sidebar-bg: var(--brand-gradient);
   --color-sidebar-text: #ffffff;
   --color-sidebar-hover: rgba(255, 255, 255, 0.1);
-  --color-sidebar-active: #007AFF;
+  --color-sidebar-active: #FAFAFA;
+  /* Active background usually lighter or contrasting */
 
   /* Cores de Borda Apple */
   --color-border: rgba(0, 0, 0, 0.08);
@@ -34,7 +39,7 @@
   /* Estados Hover Apple */
   --color-hover: rgba(0, 0, 0, 0.04);
   --color-hover-strong: rgba(0, 0, 0, 0.08);
-  --color-hover-primary: rgba(0, 122, 255, 0.1);
+  --color-hover-primary: rgba(60, 131, 245, 0.1);
 
   /* Sombras Apple */
   --color-shadow: rgba(0, 0, 0, 0.06);
@@ -50,9 +55,9 @@
 
 
 
-  /* Tipografia Apple */
-  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif;
-  --font-title: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  /* Tipografia */
+  --font-body: 'Roboto', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif;
+  --font-title: 'Roboto', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
 
   /* Espaçamento Apple */
   --spacing-xs: 4px;

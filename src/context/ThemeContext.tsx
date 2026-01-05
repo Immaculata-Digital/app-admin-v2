@@ -1,7 +1,5 @@
 import { createContext, useContext, useEffect, useState, useMemo, type ReactNode } from 'react'
 import { createTheme, ThemeProvider as MuiThemeProvider } from '@mui/material/styles'
-import { configuracoesService } from '../services/configuracoes'
-import { getTenantSchema } from '../utils/schema'
 
 type Theme = 'light' | 'dark' | 'system'
 
@@ -9,11 +7,6 @@ interface ThemeContextType {
   theme: Theme
   setTheme: (theme: Theme) => void
   resolvedTheme: 'light' | 'dark'
-  // Branding
-  appName: string
-  brandColor?: string
-  logoBase64?: string
-  loadingBranding: boolean
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
@@ -23,38 +16,6 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     const savedTheme = localStorage.getItem('concordia-theme-mode') as Theme
     return savedTheme || 'system'
   })
-
-  // Branding State
-  const [appName, setAppName] = useState('Concordia ERP')
-  const [brandColor, setBrandColor] = useState<string | undefined>(undefined)
-  const [logoBase64, setLogoBase64] = useState<string | undefined>(undefined)
-  const [loadingBranding, setLoadingBranding] = useState(true)
-
-  // Fetch Branding
-  useEffect(() => {
-    const fetchBranding = async () => {
-      try {
-        const schema = getTenantSchema()
-        // Try to fetch with skipAuth to avoid redirect loop on login page
-        const config = await configuracoesService.getFirst(schema, { skipAuth: true })
-        
-        if (config) {
-          if (config.cor_botao) {
-             setBrandColor(config.cor_botao)
-          }
-          if (config.logo_base64) {
-            setLogoBase64(config.logo_base64)
-          }
-          // Assuming we stick to "Concordia ERP" unless explicit branding overrides
-        }
-      } catch (err) {
-        console.error('Failed to load branding:', err)
-      } finally {
-        setLoadingBranding(false)
-      }
-    }
-    fetchBranding()
-  }, [])
 
   // Determine resolved theme
   const getResolvedTheme = (): 'light' | 'dark' => {
@@ -66,7 +27,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
 
   const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>(getResolvedTheme())
 
-  // Apply Theme & Branding to DOM
+  // Apply Theme to DOM
   useEffect(() => {
     const root = window.document.documentElement
     
@@ -84,15 +45,6 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
 
     applyTheme()
     
-    // Apply Branding Colors Global CSS Vars
-    if (brandColor) {
-      root.style.setProperty('--brand-primary', brandColor)
-      root.style.setProperty('--brand-primary-hover', brandColor) 
-    } else {
-      root.style.removeProperty('--brand-primary')
-      root.style.removeProperty('--brand-primary-hover')
-    }
-
     // Listener for system preference changes if in system mode
     if (theme === 'system') {
       const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
@@ -101,7 +53,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
       mediaQuery.addEventListener('change', handleChange)
       return () => mediaQuery.removeEventListener('change', handleChange)
     }
-  }, [theme, brandColor])
+  }, [theme])
 
   const setTheme = (newTheme: Theme) => {
     localStorage.setItem('concordia-theme-mode', newTheme)
@@ -114,11 +66,11 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
       palette: {
         mode: resolvedTheme,
         primary: {
-          main: brandColor || '#1976d2', // Default MUI blue if no brand color
+          main: '#3c83f5',
         },
       },
       typography: {
-        fontFamily: "'Poppins', sans-serif", // Enforce font globally
+        fontFamily: "'Roboto', sans-serif",
       },
       components: {
         MuiButton: {
@@ -140,17 +92,13 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
         }
       }
     })
-  }, [resolvedTheme, brandColor])
+  }, [resolvedTheme])
 
   return (
     <ThemeContext.Provider value={{
       theme,
       setTheme,
       resolvedTheme,
-      appName,
-      brandColor,
-      logoBase64,
-      loadingBranding
     }}>
       <MuiThemeProvider theme={muiTheme}>
         {children}
