@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
   Box,
@@ -32,12 +32,14 @@ import {
   Refresh,
   Add,
   Remove,
+  Store,
 } from '@mui/icons-material'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { clienteService, type ClienteDTO } from '../../services/clientes'
 import { getTenantSchema } from '../../utils/schema'
 import { formatTelefoneWhatsApp, getWhatsAppLink } from '../../utils/masks'
+import { lojaService } from '../../services/lojas'
 import TableCard, { type TableCardColumn, type TableCardRow } from '../../components/TableCard'
 import './style.css'
 
@@ -63,6 +65,7 @@ const ClienteDetalhesPage = () => {
   const schema = getTenantSchema()
 
   const [cliente, setCliente] = useState<ClienteDTO | null>(null)
+  const [lojas, setLojas] = useState<Array<{ id: number; label: string }>>([])
   const [loading, setLoading] = useState(true)
   const [loadingMovimentacoes, setLoadingMovimentacoes] = useState(false)
   const [movimentacoes, setMovimentacoes] = useState<MovimentacaoRow[]>([])
@@ -81,6 +84,18 @@ const ClienteDetalhesPage = () => {
     open: false,
     message: '',
   })
+
+  useEffect(() => {
+    const loadLojas = async () => {
+      try {
+        const response = await lojaService.list(schema, { limit: 200, offset: 0 })
+        setLojas(response.itens.map((loja) => ({ id: loja.id_loja ?? 0, label: loja.nome_loja })))
+      } catch (err) {
+        console.error('Erro ao carregar lojas:', err)
+      }
+    }
+    loadLojas()
+  }, [schema])
 
   useEffect(() => {
     if (!id) {
@@ -130,6 +145,13 @@ const ClienteDetalhesPage = () => {
 
     loadMovimentacoes()
   }, [cliente, schema, page])
+
+  // Helper para buscar o nome da loja (usado fora do useMemo)
+  const getNomeLoja = (idLoja: number | undefined): string => {
+    if (!idLoja) return '-'
+    const loja = lojas.find(l => l.id === idLoja)
+    return loja?.label || '-'
+  }
 
   const formatCurrency = (value: string): string => {
     const numbers = value.replace(/\D/g, '')
@@ -210,6 +232,122 @@ const ClienteDetalhesPage = () => {
     }
   }
 
+  const movimentacoesColumns: TableCardColumn<MovimentacaoRow>[] = useMemo(() => {
+    // Helper para buscar o nome da loja (dentro do useMemo para evitar problemas de closure)
+    const getNomeLoja = (idLoja: number | undefined): string => {
+      if (!idLoja) return '-'
+      const loja = lojas.find(l => l.id === idLoja)
+      return loja?.label || '-'
+    }
+
+    return [
+      {
+        key: 'dt_cadastro',
+        label: 'Data',
+        render: (value) => {
+          if (!value) return '—'
+          const date = new Date(value)
+          return format(date, 'dd/MM/yyyy HH:mm', { locale: ptBR })
+        },
+      },
+      {
+        key: 'tipo',
+        label: 'Tipo',
+        render: (value) => {
+          const tipoConfig = {
+            CREDITO: {
+              label: 'Crédito',
+              icon: TrendingUp,
+              color: 'success.main',
+            },
+            DEBITO: {
+              label: 'Débito',
+              icon: TrendingDown,
+              color: 'error.main',
+            },
+            ESTORNO: {
+              label: 'Estorno',
+              icon: Refresh,
+              color: 'warning.main',
+            },
+          }
+          const config = tipoConfig[value as keyof typeof tipoConfig]
+          if (!config) return value
+          const Icon = config.icon
+          return (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Icon sx={{ fontSize: 18, color: config.color }} />
+              <Typography variant="body2" sx={{ color: config.color }}>
+                {config.label}
+              </Typography>
+            </Box>
+          )
+        },
+      },
+      {
+        key: 'pontos',
+        label: 'Pontos',
+        render: (value, row) => {
+          const pontos = Number(value)
+          const isCredito = row.tipo === 'CREDITO' || row.tipo === 'ESTORNO'
+          return (
+            <Typography
+              variant="body2"
+              sx={{
+                fontWeight: 600,
+                color: isCredito ? 'success.main' : 'error.main',
+              }}
+            >
+              {isCredito ? '+' : '-'}
+              {pontos.toLocaleString('pt-BR')}
+            </Typography>
+          )
+        },
+      },
+      {
+        key: 'saldo_resultante',
+        label: 'Saldo Resultante',
+        render: (value) => {
+          const saldo = Number(value || 0)
+          return <Typography variant="body2">{saldo.toLocaleString('pt-BR')}</Typography>
+        },
+      },
+      {
+        key: 'origem',
+        label: 'Origem',
+        render: (value) => {
+          const origemLabels: Record<string, string> = {
+            MANUAL: 'Manual',
+            RESGATE: 'Resgate',
+            AJUSTE: 'Ajuste',
+            PROMO: 'Promoção',
+            OUTRO: 'Outro',
+          }
+          return origemLabels[value] || value
+        },
+      },
+      {
+        key: 'id_loja',
+        label: 'Loja',
+        render: (_value, row) => {
+          return (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Store sx={{ fontSize: 16, color: 'text.secondary' }} />
+              <Typography variant="body2">
+                {getNomeLoja(row.id_loja)}
+              </Typography>
+            </Box>
+          )
+        },
+      },
+      {
+        key: 'observacao',
+        label: 'Observação',
+        render: (value) => value || '—',
+      },
+    ]
+  }, [lojas])
+
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
@@ -228,99 +366,6 @@ const ClienteDetalhesPage = () => {
       </Box>
     )
   }
-
-  const movimentacoesColumns: TableCardColumn<MovimentacaoRow>[] = [
-    {
-      key: 'dt_cadastro',
-      label: 'Data',
-      render: (value) => {
-        if (!value) return '—'
-        const date = new Date(value)
-        return format(date, 'dd/MM/yyyy HH:mm', { locale: ptBR })
-      },
-    },
-    {
-      key: 'tipo',
-      label: 'Tipo',
-      render: (value) => {
-        const tipoConfig = {
-          CREDITO: {
-            label: 'Crédito',
-            icon: TrendingUp,
-            color: 'success.main',
-          },
-          DEBITO: {
-            label: 'Débito',
-            icon: TrendingDown,
-            color: 'error.main',
-          },
-          ESTORNO: {
-            label: 'Estorno',
-            icon: Refresh,
-            color: 'warning.main',
-          },
-        }
-        const config = tipoConfig[value as keyof typeof tipoConfig]
-        if (!config) return value
-        const Icon = config.icon
-        return (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Icon sx={{ fontSize: 18, color: config.color }} />
-            <Typography variant="body2" sx={{ color: config.color }}>
-              {config.label}
-            </Typography>
-          </Box>
-        )
-      },
-    },
-    {
-      key: 'pontos',
-      label: 'Pontos',
-      render: (value, row) => {
-        const pontos = Number(value)
-        const isCredito = row.tipo === 'CREDITO' || row.tipo === 'ESTORNO'
-        return (
-          <Typography
-            variant="body2"
-            sx={{
-              fontWeight: 600,
-              color: isCredito ? 'success.main' : 'error.main',
-            }}
-          >
-            {isCredito ? '+' : '-'}
-            {pontos.toLocaleString('pt-BR')}
-          </Typography>
-        )
-      },
-    },
-    {
-      key: 'saldo_resultante',
-      label: 'Saldo Resultante',
-      render: (value) => {
-        const saldo = Number(value || 0)
-        return <Typography variant="body2">{saldo.toLocaleString('pt-BR')}</Typography>
-      },
-    },
-    {
-      key: 'origem',
-      label: 'Origem',
-      render: (value) => {
-        const origemLabels: Record<string, string> = {
-          MANUAL: 'Manual',
-          RESGATE: 'Resgate',
-          AJUSTE: 'Ajuste',
-          PROMO: 'Promoção',
-          OUTRO: 'Outro',
-        }
-        return origemLabels[value] || value
-      },
-    },
-    {
-      key: 'observacao',
-      label: 'Observação',
-      render: (value) => value || '—',
-    },
-  ]
 
   return (
     <Box sx={{ p: 3 }}>
@@ -510,6 +555,20 @@ const ClienteDetalhesPage = () => {
                         {cliente.dt_cadastro && !isNaN(new Date(cliente.dt_cadastro).getTime())
                           ? format(new Date(cliente.dt_cadastro), 'dd/MM/yyyy', { locale: ptBR })
                           : '—'}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Grid>
+
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'start', gap: 2 }}>
+                    <Store sx={{ fontSize: 20, color: 'text.secondary', mt: 0.5 }} />
+                    <Box>
+                      <Typography variant="caption" color="text.secondary">
+                        Loja de Cadastro
+                      </Typography>
+                      <Typography variant="body1">
+                        {getNomeLoja(cliente.id_loja)}
                       </Typography>
                     </Box>
                   </Box>

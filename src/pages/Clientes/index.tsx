@@ -107,6 +107,13 @@ const ClientesPage = () => {
     ...cliente,
   })
 
+  // Helper para buscar o nome da loja
+  const getNomeLoja = (idLoja: number | undefined): string => {
+    if (!idLoja) return '-'
+    const loja = lojas.find(l => l.id === idLoja)
+    return loja?.label || '-'
+  }
+
   // Point Transaction Handlers
   const formatCurrency = (value: string): string => {
     const numbers = value.replace(/\D/g, '')
@@ -176,6 +183,11 @@ const ClientesPage = () => {
         render: (value) => formatTelefoneBR(value)
       },
       { 
+        key: 'id_loja', 
+        label: 'Loja',
+        render: (_value, row) => getNomeLoja(row.id_loja)
+      },
+      { 
         key: 'saldo', 
         label: 'Saldo de Pontos',
         render: (value) => value?.toLocaleString('pt-BR') || '0'
@@ -186,7 +198,7 @@ const ClientesPage = () => {
         render: (value) => value ? new Date(value).toLocaleDateString('pt-BR') : ''
       },
     ],
-    []
+    [lojas]
   )
 
   const formFields: TableCardFormField<ClienteRow>[] = useMemo(
