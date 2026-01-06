@@ -3,27 +3,57 @@ import jsPDF from 'jspdf'
 import { getTenantSchema } from './schema'
 
 /**
+ * Extrai o schema e ambiente (homolog/prod/localhost) da URL atual
+ * @returns Objeto com schema e ambiente
+ */
+function extractSchemaAndEnvironment(): { schema: string; isHomolog: boolean; isLocalhost: boolean } {
+  let schema = getTenantSchema()
+  let isHomolog = false
+  let isLocalhost = false
+
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname
+    
+    // Detecta se é localhost ou IP
+    if (hostname === 'localhost' || /^\d+\.\d+\.\d+\.\d+$/.test(hostname)) {
+      isLocalhost = true
+    }
+    
+    // Detecta se é homolog baseado no hostname
+    if (hostname.includes('.concordiaerp.com')) {
+      isHomolog = hostname.startsWith('homolog-')
+    }
+  }
+
+  return { schema, isHomolog, isLocalhost }
+}
+
+/**
  * Gera a URL de cadastro de cliente baseada no schema e ID da loja
+ * A URL é gerada de acordo com o ambiente atual:
+ * - Homolog: homolog-schema.concordiaerp.com
+ * - Produção: schema.concordiaerp.com
+ * - Localhost: homolog-schema.concordiaerp.com (usa homolog para o schema detectado)
  * @param idLoja ID da loja
  * @returns URL completa para cadastro de cliente
  */
 export function getClienteRegistroUrl(idLoja: number): string {
-  const schema = getTenantSchema()
+  const { schema, isHomolog, isLocalhost } = extractSchemaAndEnvironment()
   
-  // Se o schema for z_demo, usa homolog-app-cliente
-  // Caso contrário, usa o próprio schema como subdomínio (removendo z_ se existir)
   let subdomain: string
-  if (schema === 'z_demo') {
-    subdomain = 'homolog-app-cliente'
+  
+  // Se for localhost, usa homolog
+  if (isLocalhost) {
+    subdomain = `homolog-${schema}`
+  } else if (isHomolog) {
+    // Se for homolog, mantém o prefixo homolog
+    subdomain = `homolog-${schema}`
   } else {
-    // Remove o prefixo z_ se existir e adiciona -app-cliente
-    const schemaWithoutPrefix = schema.startsWith('z_') 
-      ? schema.substring(2) 
-      : schema
-    subdomain = `${schemaWithoutPrefix}-app-cliente`
+    // Produção: apenas o schema
+    subdomain = schema
   }
   
-  return `https://${subdomain}.immaculatadigital.com.br/registro?id_loja=${idLoja}`
+  return `https://${subdomain}.concordiaerp.com/registro?id_loja=${idLoja}`
 }
 
 /**
