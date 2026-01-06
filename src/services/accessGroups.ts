@@ -1,4 +1,5 @@
 import { api } from './api'
+import { getTenantSchema } from '../utils/schema'
 
 export type FeatureDefinition = {
   key: string
@@ -31,11 +32,17 @@ export type UpdateAccessGroupPayload = {
   updatedBy: string
 }
 
-const list = () => api.get<AccessGroupDTO[]>('/groups')
-const create = (payload: CreateAccessGroupPayload) => api.post<AccessGroupDTO>('/groups', payload)
+// Helper para obter headers com schema
+const getSchemaHeaders = () => {
+  const schema = getTenantSchema()
+  return { 'X-Schema': schema }
+}
+
+const list = () => api.get<AccessGroupDTO[]>('/groups', { headers: getSchemaHeaders() })
+const create = (payload: CreateAccessGroupPayload) => api.post<AccessGroupDTO>('/groups', payload, { headers: getSchemaHeaders() })
 const update = (id: string, payload: UpdateAccessGroupPayload) =>
-  api.put<AccessGroupDTO>(`/groups/${id}`, payload)
-const remove = (id: string) => api.delete<void>(`/groups/${id}`)
+  api.put<AccessGroupDTO>(`/groups/${id}`, payload, { headers: getSchemaHeaders() })
+const remove = (id: string) => api.delete<void>(`/groups/${id}`, { headers: getSchemaHeaders() })
 const listFeatures = () => api.get<FeatureDefinition[]>('/features')
 
 export const accessGroupService = {
