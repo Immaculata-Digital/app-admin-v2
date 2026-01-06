@@ -28,6 +28,8 @@ import MultiSelectPicker from '../../components/MultiSelectPicker'
 import MailPicker from '../../components/MailPicker'
 import { accessGroupService } from '../../services/accessGroups'
 import { userService, type UserDTO } from '../../services/users'
+import { lojaService } from '../../services/lojas'
+import { getTenantSchema } from '../../utils/schema'
 import './style.css'
 
 type UserRow = TableCardRow & {
@@ -39,6 +41,7 @@ type UserRow = TableCardRow & {
   groupNames: string[]
   allowFeatures: string[]
   deniedFeatures: string[]
+  lojasGestoras?: number[]
   createdAt: string
   createdBy: string
   updatedAt: string
@@ -46,7 +49,7 @@ type UserRow = TableCardRow & {
 }
 
 const DEFAULT_USER = 'admin'
-type GroupDictionary = Record<string, { name: string; features: string[] }>
+type GroupDictionary = Record<string, { name: string; code: string; features: string[] }>
 
 const UsersPage = () => {
   const [users, setUsers] = useState<UserRow[]>([])
@@ -54,6 +57,7 @@ const UsersPage = () => {
   const [groupDictionary, setGroupDictionary] = useState<GroupDictionary>({})
   const [featureOptions, setFeatureOptions] = useState<Array<{ label: string; value: string }>>([])
   const [featureDictionary, setFeatureDictionary] = useState<Record<string, string>>({})
+  const [lojaOptions, setLojaOptions] = useState<Array<{ label: string; value: number }>>([])
   const [loading, setLoading] = useState(true)
   const [detailUser, setDetailUser] = useState<UserRow | null>(null)
   const [toast, setToast] = useState<{ open: boolean; message: string }>({ open: false, message: '' })
@@ -63,7 +67,8 @@ const UsersPage = () => {
     userId: string | null
     groupIds: string[]
     allowFeatures: string[]
-  }>({ open: false, userId: null, groupIds: [], allowFeatures: [] })
+    lojasGestoras: number[]
+  }>({ open: false, userId: null, groupIds: [], allowFeatures: [], lojasGestoras: [] })
   const [manageAccessDialog, setManageAccessDialog] = useState<{
     open: boolean
     userId: string | null
@@ -118,11 +123,24 @@ const UsersPage = () => {
     const list = await accessGroupService.list()
     setGroupOptions(list.map((group) => ({ label: group.name, value: group.id })))
     const dictionary = list.reduce<GroupDictionary>((acc, group) => {
-      acc[group.id] = { name: group.name, features: group.features }
+      acc[group.id] = { name: group.name, code: group.code, features: group.features }
       return acc
     }, {})
     setGroupDictionary(dictionary)
     return dictionary
+  }
+
+  const loadLojas = async () => {
+    try {
+      const schema = getTenantSchema()
+      const response = await lojaService.list(schema, { limit: 200, offset: 0 })
+      setLojaOptions(response.itens.map((loja) => ({ 
+        label: loja.nome_loja, 
+        value: loja.id_loja ?? 0 
+      })))
+    } catch (err) {
+      console.error('Erro ao carregar lojas:', err)
+    }
   }
 
   const loadUsers = async (dictionary: GroupDictionary = groupDictionary) => {
@@ -136,6 +154,7 @@ const UsersPage = () => {
       try {
         await loadFeatures()
         const dictionary = await loadGroups()
+        await loadLojas()
         await loadUsers(dictionary)
       } catch (err) {
         console.error(err)
@@ -171,6 +190,7 @@ const UsersPage = () => {
       userId,
       groupIds: user.groupIds,
       allowFeatures: mergeGroupFeatures(user.groupIds, []),
+      lojasGestoras: Array.isArray(user.lojasGestoras) ? user.lojasGestoras : [],
     })
   }, [users, mergeGroupFeatures])
 
@@ -182,7 +202,25 @@ const UsersPage = () => {
         updatedBy: DEFAULT_USER,
       }
       const updated = await userService.updateGroups(manageGroupsDialog.userId, payload)
-      setUsers((prev) => prev.map((user) => (user.id === manageGroupsDialog.userId ? mapUserToRow(updated) : user)))
+      
+      // Atualizar lojas gestoras se o grupo ADM-LOJA estiver selecionado
+      const hasAdmLojaGroup = manageGroupsDialog.groupIds.some((groupId) => {
+        const group = groupDictionary[groupId]
+        return group?.code === 'ADM-LOJA'
+      })
+      
+      if (hasAdmLojaGroup) {
+        const basicPayload = {
+          fullName: updated.fullName,
+          login: updated.login,
+          email: updated.email,
+          lojasGestoras: manageGroupsDialog.lojasGestoras,
+          updatedBy: DEFAULT_USER,
+        }
+        await userService.updateBasic(manageGroupsDialog.userId, basicPayload)
+      }
+      
+      await loadUsers()
       setToast({ open: true, message: 'Grupos atualizados com sucesso' })
       setManageGroupsDialog((prev) => ({ ...prev, open: false }))
       if (currentUser?.id === manageGroupsDialog.userId) {
@@ -239,6 +277,7 @@ const UsersPage = () => {
         groupIds: Array.isArray(data.groupIds) ? (data.groupIds as string[]) : [],
         allowFeatures: Array.isArray(data.allowFeatures) ? (data.allowFeatures as string[]) : [],
         deniedFeatures: Array.isArray(data.deniedFeatures) ? (data.deniedFeatures as string[]) : [],
+        lojasGestoras: Array.isArray(data.lojasGestoras) ? (data.lojasGestoras as number[]) : undefined,
         createdBy: DEFAULT_USER,
       }
       await userService.create(payload)
@@ -256,6 +295,7 @@ const UsersPage = () => {
         fullName: data.fullName as string,
         login: data.login as string,
         email: data.email as string,
+        lojasGestoras: Array.isArray(data.lojasGestoras) ? (data.lojasGestoras as number[]) : undefined,
         updatedBy: DEFAULT_USER,
       }
       const updated = await userService.updateBasic(id as string, payload)
@@ -430,8 +470,57 @@ const UsersPage = () => {
           )
         },
       },
+      {
+        key: 'groupIds',
+        label: 'Grupos de Acesso',
+        required: false,
+        renderInput: ({ value, onChange, field, disabled }) => (
+          <MultiSelectPicker
+            label={field.label}
+            value={Array.isArray(value) ? value : []}
+            onChange={(selected) => onChange(selected)}
+            options={groupOptions}
+            placeholder="Selecione os grupos de acesso"
+            fullWidth
+            showSelectAll
+            chipDisplay="block"
+            disabled={disabled}
+          />
+        ),
+      },
+      {
+        key: 'lojasGestoras',
+        label: 'Lojas Gestoras',
+        required: false,
+        helperText: 'Selecione as lojas das quais este usuário é gestor (apenas para grupo ADM-LOJA)',
+        renderInput: ({ value, onChange, field, disabled, formValues }) => {
+          // Verificar se algum grupo selecionado é ADM-LOJA
+          const selectedGroupIds = Array.isArray(formValues.groupIds) ? formValues.groupIds : []
+          const hasAdmLojaGroup = selectedGroupIds.some((groupId) => {
+            const group = groupDictionary[groupId]
+            return group?.code === 'ADM-LOJA'
+          })
+
+          // Só mostrar se o grupo ADM-LOJA estiver selecionado
+          if (!hasAdmLojaGroup) return null
+
+          return (
+            <MultiSelectPicker
+              label={field.label}
+              value={Array.isArray(value) ? value : []}
+              onChange={(selected) => onChange(selected)}
+              options={lojaOptions}
+              placeholder="Selecione as lojas gestoras"
+              fullWidth
+              showSelectAll
+              chipDisplay="block"
+              disabled={disabled}
+            />
+          )
+        },
+      },
     ],
-    [],
+    [groupOptions, lojaOptions, groupDictionary],
   )
 
   const rowActions: TableCardRowAction<UserRow>[] = useMemo(() => [
@@ -660,6 +749,27 @@ const UsersPage = () => {
               chipDisplay="block"
               disabled
             />
+            {manageGroupsDialog.groupIds.some((groupId) => {
+              const group = groupDictionary[groupId]
+              return group?.code === 'ADM-LOJA'
+            }) && (
+              <MultiSelectPicker
+                label="Lojas Gestoras"
+                value={manageGroupsDialog.lojasGestoras}
+                onChange={(selected) => {
+                  setManageGroupsDialog(prev => ({
+                    ...prev,
+                    lojasGestoras: selected as number[]
+                  }))
+                }}
+                options={lojaOptions}
+                fullWidth
+                placeholder="Selecione as lojas das quais este usuário é gestor"
+                showSelectAll
+                chipDisplay="block"
+                disabled={!hasPermission('erp:usuarios:atribuir-grupos')}
+              />
+            )}
           </Stack>
         </DialogContent>
         <DialogActions>

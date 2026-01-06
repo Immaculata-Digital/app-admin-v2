@@ -210,12 +210,18 @@ export async function requestV1<TResponse>(path: string, options: RequestOptions
 }
 
 export const clienteService = {
-  list: async (schema: string, filters: { limit?: number; offset?: number; search?: string; id_loja?: number }): Promise<ListClientesResponse> => {
+  list: async (schema: string, filters: { limit?: number; offset?: number; search?: string; id_loja?: number | number[] }): Promise<ListClientesResponse> => {
     const params = new URLSearchParams()
     if (filters.limit) params.append('limit', filters.limit.toString())
     if (filters.offset) params.append('offset', filters.offset.toString())
     if (filters.search) params.append('search', filters.search)
-    if (filters.id_loja) params.append('id_loja', filters.id_loja.toString())
+    if (filters.id_loja) {
+      if (Array.isArray(filters.id_loja)) {
+        params.append('id_loja', filters.id_loja.join(','))
+      } else {
+        params.append('id_loja', filters.id_loja.toString())
+      }
+    }
 
     return request<ListClientesResponse>(`/clientes/${schema}?${params.toString()}`)
   },

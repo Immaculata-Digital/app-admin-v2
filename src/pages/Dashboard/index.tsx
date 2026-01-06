@@ -30,11 +30,13 @@ import { formatTelefoneWhatsApp, getWhatsAppLink } from '../../utils/masks'
 import { dashboardService, type DashboardResponse } from '../../services/dashboard'
 import { clienteService, type Cliente, type CodigoResgateResponse } from '../../services/clientes'
 import { getTenantSchema } from '../../utils/schema'
+import { useUserLojasGestoras } from '../../hooks/useUserLojasGestoras'
 import './style.css'
 
 const DashboardPage = () => {
   const navigate = useNavigate()
   const schema = getTenantSchema()
+  const { lojasGestoras, isAdmLoja } = useUserLojasGestoras()
   
   const [data, setData] = useState<DashboardResponse | null>(null)
   const [loading, setLoading] = useState(true)
@@ -65,7 +67,13 @@ const DashboardPage = () => {
     try {
       setLoading(true)
       setError(null)
-      const dashboardData = await dashboardService.getDashboard(schema)
+      
+      // Se o usuário for ADM-LOJA e tiver lojas gestoras, filtrar por todas as lojas
+      const lojaIds = isAdmLoja && lojasGestoras && lojasGestoras.length > 0 
+        ? lojasGestoras 
+        : undefined
+      
+      const dashboardData = await dashboardService.getDashboard(schema, lojaIds)
       setData(dashboardData)
     } catch (err: any) {
       console.error('Erro ao carregar dashboard:', err)
@@ -77,7 +85,7 @@ const DashboardPage = () => {
 
   useEffect(() => {
     loadDashboard()
-  }, [schema])
+  }, [schema, isAdmLoja, lojasGestoras])
 
   const formatCurrency = (value: string): string => {
     const numbers = value.replace(/\D/g, '')

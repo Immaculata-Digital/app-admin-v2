@@ -31,6 +31,18 @@ const normalizeCode = (value: string) => {
     .toUpperCase()
 }
 
+// Função para formatar o código durante a digitação (permite hífens)
+const formatCodeInput = (value: string) => {
+  if (!value) return ''
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // Remove acentos
+    .replace(/\s/g, '-') // Converte espaços em hífens
+    .replace(/[^a-zA-Z0-9-]/g, '') // Remove caracteres inválidos, mas mantém hífens
+    .replace(/-{2,}/g, '-') // Remove hífens duplicados
+    .toUpperCase()
+}
+
 // Mapear funcionalidades para opções do MultiSelectPicker
 const mapFeaturesToOptions = (features: Array<{ key: string; name: string; description: string }>) => {
   return features.map(feature => ({
@@ -223,7 +235,11 @@ const AccessGroupsPage = () => {
           <TextPicker
             label={field.label}
             value={typeof value === 'string' ? value : ''}
-            onChange={(text) => onChange(normalizeCode(text))}
+            onChange={(text) => {
+              // Formata o código permitindo hífens durante a digitação
+              const formatted = formatCodeInput(text)
+              onChange(formatted)
+            }}
             placeholder="OPERACOES-NORTE"
             fullWidth
             required

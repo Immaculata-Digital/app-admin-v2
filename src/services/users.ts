@@ -9,6 +9,7 @@ export type UserDTO = {
   groupIds: string[]
   allowFeatures: string[]
   deniedFeatures: string[]
+  lojasGestoras?: number[]
   createdAt: string
   createdBy: string
   updatedAt: string
@@ -23,6 +24,7 @@ export type CreateUserPayload = {
   groupIds?: string[]
   allowFeatures?: string[]
   deniedFeatures?: string[]
+  lojasGestoras?: number[]
   createdBy: string
 }
 
@@ -33,6 +35,7 @@ export type UpdateUserPayload = {
   groupIds?: string[]
   allowFeatures?: string[]
   deniedFeatures?: string[]
+  lojasGestoras?: number[]
   updatedBy: string
 }
 
@@ -40,6 +43,7 @@ export type UpdateUserBasicPayload = {
   fullName: string
   login: string
   email: string
+  lojasGestoras?: number[]
   updatedBy: string
 }
 
@@ -61,6 +65,7 @@ const getSchemaHeaders = () => {
 }
 
 const list = () => api.get<UserDTO[]>('/users', { headers: getSchemaHeaders() })
+const getById = (id: string) => api.get<UserDTO>(`/users/${id}`, { headers: getSchemaHeaders() })
 const create = (payload: CreateUserPayload) => api.post<UserDTO>('/users', payload, { headers: getSchemaHeaders() })
 const update = (id: string, payload: UpdateUserPayload) => api.put<UserDTO>(`/users/${id}`, payload, { headers: getSchemaHeaders() })
 const updateBasic = (id: string, payload: UpdateUserBasicPayload) => api.put<UserDTO>(`/users/${id}/basic`, payload, { headers: getSchemaHeaders() })
@@ -75,6 +80,7 @@ const requestPasswordReset = (email: string) =>
 
 export const userService = {
   list,
+  getById,
   create,
   update,
   updateBasic,

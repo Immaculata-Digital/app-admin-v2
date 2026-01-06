@@ -31,6 +31,7 @@ import { lojaService } from '../../services/lojas'
 import { useNavigate } from 'react-router-dom'
 import { formatTelefoneBR } from '../../utils/masks'
 import { AddCircleOutline, RemoveCircleOutline } from '@mui/icons-material'
+import { useUserLojasGestoras } from '../../hooks/useUserLojasGestoras'
 
 type ClienteRow = TableCardRow & ClienteDTO
 
@@ -53,6 +54,7 @@ const ClientesPage = () => {
   const { setFilters, setPlaceholder } = useSearch()
   const { permissions } = useAuth()
   const schema = getTenantSchema()
+  const { lojasGestoras, isAdmLoja } = useUserLojasGestoras()
 
   const canDelete = permissions.includes('erp:clientes:excluir')
   const canCreate = permissions.includes('erp:clientes:criar')
@@ -87,7 +89,17 @@ const ClientesPage = () => {
   const loadClientes = useCallback(async () => {
     try {
       setLoading(true)
-      const response = await clienteService.list(schema, { limit: 200, offset: 0 })
+      
+      // Se o usuário for ADM-LOJA e tiver lojas gestoras, filtrar por todas as lojas
+      const idLoja = isAdmLoja && lojasGestoras && lojasGestoras.length > 0 
+        ? (lojasGestoras.length === 1 ? lojasGestoras[0] : lojasGestoras)
+        : undefined
+      
+      const response = await clienteService.list(schema, { 
+        limit: 200, 
+        offset: 0,
+        id_loja: idLoja
+      })
       setClientes(response.data.map(mapClienteToRow))
     } catch (err: any) {
       console.error(err)
@@ -96,7 +108,7 @@ const ClientesPage = () => {
     } finally {
       setLoading(false)
     }
-  }, [schema])
+  }, [schema, isAdmLoja, lojasGestoras])
 
   useEffect(() => {
     loadClientes()

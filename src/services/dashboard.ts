@@ -29,8 +29,12 @@ export type DashboardResponse = {
   ultimos_resgates: DashboardResgate[]
 }
 
-const getDashboard = (schema: string, lojaId?: number) => {
-  const params = lojaId ? `?idLoja=${lojaId}` : ''
+const getDashboard = (schema: string, lojaIds?: number[]) => {
+  let params = ''
+  if (lojaIds && lojaIds.length > 0) {
+    // Se tiver múltiplas lojas, passar como vírgula separada
+    params = `?idLoja=${lojaIds.join(',')}`
+  }
   return adminApi.get<DashboardResponse>(`/${schema}/dashboard${params}`)
 }
 
