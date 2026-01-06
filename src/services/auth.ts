@@ -1,4 +1,5 @@
 import { api } from './api'
+import { getTenantSchema } from '../utils/schema'
 
 export interface LoginCredentials {
   loginOrEmail: string
@@ -32,8 +33,22 @@ export const authService = {
    * Realiza login e armazena tokens e dados do usuário
    */
   async login(credentials: LoginCredentials): Promise<LoginResponse> {
+    // Obter schema da URL
+    const schema = getTenantSchema()
+    console.log('[authService.login] Schema extraído para login:', schema)
+
     // skipAuth=true porque ainda não temos o token
-    const response = await api.post<LoginResponse>('/auth/login', credentials, { skipAuth: true })
+    // Enviar schema no header X-Schema
+    const response = await api.post<LoginResponse>(
+      '/auth/login', 
+      credentials, 
+      { 
+        skipAuth: true,
+        headers: {
+          'X-Schema': schema
+        }
+      }
+    )
 
     // Armazenar tokens e dados do usuário (Sempre localStorage)
     localStorage.setItem(TOKEN_KEY, response.accessToken)
