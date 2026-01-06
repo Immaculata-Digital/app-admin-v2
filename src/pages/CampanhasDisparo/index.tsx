@@ -325,7 +325,6 @@ const CampanhasDisparoPage = () => {
                 label="Tipo de Envio"
               >
                 <MenuItem value="manual">Manual</MenuItem>
-                <MenuItem value="agendado">Agendado</MenuItem>
                 {/* Só mostrar tipos padrão se estiver editando uma campanha que já é padrão */}
                 {mostrarTiposPadrao && (
                   <>
@@ -640,7 +639,7 @@ const CampanhasDisparoPage = () => {
         canDeleteRow={canDeleteCampanha}
         disableView={!canView}
         rowActions={(row: CampanhaDisparoRow) => {
-          if (row.tipo_envio === 'manual' || row.tipo_envio === 'agendado') {
+          if (row.tipo_envio === 'manual') {
             return [
               {
                 label: 'Enviar',
