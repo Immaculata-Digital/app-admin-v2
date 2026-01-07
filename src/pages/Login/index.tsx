@@ -65,11 +65,11 @@ const LoginPage = () => {
   return (
     <AuthTemplate
       visualTitle="Concordia ERP"
-      visualDescription="Gerencie seu negócio com eficiência e segurança."
+      visualDescription="Sistema completo de gestão e fidelidade para seu negócio."
       visualFeatures={[
-        'Painel de Controle Completo',
-        'Relatórios em Tempo Real',
-        'Gestão de Usuários e Permissões'
+        'Programa de Fidelidade e Pontos',
+        'Gestão de Clientes e Recompensas',
+        'Administração de Lojas e Usuários'
       ]}
       formTitle="Bem-vindo"
       formSubtitle="Insira suas credenciais para acessar sua conta."
@@ -78,10 +78,10 @@ const LoginPage = () => {
         <Stack spacing={3}>
           <Box>
             <Typography variant="caption" className="input-label-text">
-              E-mail
+              Login
             </Typography>
             <TextField
-              placeholder="exemplo@gmail.com"
+              placeholder="Digite seu login"
               type="text"
               value={credentials.loginOrEmail}
               onChange={(event) =>
@@ -100,8 +100,8 @@ const LoginPage = () => {
                   <InputAdornment position="start">
                     <Box sx={{ color: 'var(--input-label)', display: 'flex' }}>
                       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-                        <polyline points="22,6 12,13 2,6"/>
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
                       </svg>
                     </Box>
                   </InputAdornment>
