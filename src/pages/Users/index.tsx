@@ -62,6 +62,7 @@ const UsersPage = () => {
   const [detailUser, setDetailUser] = useState<UserRow | null>(null)
   const [toast, setToast] = useState<{ open: boolean; message: string }>({ open: false, message: '' })
   const [error, setError] = useState<string | null>(null)
+  const [currentUserGroups, setCurrentUserGroups] = useState<string[]>([])
   const [manageGroupsDialog, setManageGroupsDialog] = useState<{
     open: boolean
     userId: string | null
@@ -121,6 +122,8 @@ const UsersPage = () => {
 
   const loadGroups = async (): Promise<GroupDictionary> => {
     const list = await accessGroupService.list()
+    // Sempre armazenar todos os grupos no dicionário e nas opções
+    // O filtro será aplicado no useMemo filteredGroupOptions
     setGroupOptions(list.map((group) => ({ label: group.name, value: group.id })))
     const dictionary = list.reduce<GroupDictionary>((acc, group) => {
       acc[group.id] = { name: group.name, code: group.code, features: group.features }
@@ -143,10 +146,32 @@ const UsersPage = () => {
     }
   }
 
-  const loadUsers = async (dictionary: GroupDictionary = groupDictionary) => {
+  const loadUsers = useCallback(async (dictionary: GroupDictionary = groupDictionary, userGroups: string[] = currentUserGroups) => {
     const data = await userService.list()
-    setUsers(data.map((user) => mapUserToRow(user, dictionary)))
-  }
+    let filteredUsers = data.map((user) => mapUserToRow(user, dictionary))
+    
+    // Se o usuário logado está no grupo ADM-FRANQUIA, filtrar usuários do grupo ADM-TECH
+    const isAdmFranquia = userGroups.some((groupId) => {
+      const group = dictionary[groupId]
+      return group?.code === 'ADM-FRANQUIA'
+    })
+    
+    if (isAdmFranquia) {
+      // Encontrar o ID do grupo ADM-TECH
+      const admTechGroupId = Object.keys(dictionary).find(
+        (groupId) => dictionary[groupId]?.code === 'ADM-TECH'
+      )
+      
+      if (admTechGroupId) {
+        // Filtrar usuários que NÃO estão no grupo ADM-TECH
+        filteredUsers = filteredUsers.filter(
+          (user) => !user.groupIds.includes(admTechGroupId)
+        )
+      }
+    }
+    
+    setUsers(filteredUsers)
+  }, [currentUserGroups, mapUserToRow, groupDictionary])
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -155,7 +180,19 @@ const UsersPage = () => {
         await loadFeatures()
         const dictionary = await loadGroups()
         await loadLojas()
-        await loadUsers(dictionary)
+        // Carregar grupos do usuário logado primeiro
+        let userGroups: string[] = []
+        if (currentUser?.id) {
+          try {
+            const userData = await userService.getById(currentUser.id)
+            userGroups = userData.groupIds || []
+            setCurrentUserGroups(userGroups)
+          } catch (err) {
+            console.error('Erro ao carregar grupos do usuário logado:', err)
+          }
+        }
+        // Carregar usuários com os grupos do usuário logado
+        await loadUsers(dictionary, userGroups)
       } catch (err) {
         console.error(err)
         setError('Não foi possível carregar usuários')
@@ -165,7 +202,16 @@ const UsersPage = () => {
     }
     fetchAll()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [currentUser?.id])
+
+  // Recarregar usuários quando currentUserGroups ou groupDictionary mudar (para aplicar filtro)
+  useEffect(() => {
+    // Só recarregar se não estiver no carregamento inicial e ambos estiverem prontos
+    if (groupDictionary && Object.keys(groupDictionary).length > 0 && !loading && loadUsers) {
+      loadUsers(groupDictionary, currentUserGroups)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentUserGroups, groupDictionary, loadUsers])
 
   const mergeGroupFeatures = useCallback(
     (selectedGroupIds: string[], currentAllow: string[] = []) => {
@@ -401,6 +447,24 @@ const UsersPage = () => {
     [featureDictionary],
   )
 
+  // Filtrar opções de grupos se o usuário logado está em ADM-FRANQUIA
+  const filteredGroupOptions = useMemo(() => {
+    const isAdmFranquia = currentUserGroups.some((groupId) => {
+      const group = groupDictionary[groupId]
+      return group?.code === 'ADM-FRANQUIA'
+    })
+    
+    if (isAdmFranquia) {
+      // Filtrar o grupo ADM-TECH das opções
+      return groupOptions.filter((option) => {
+        const group = groupDictionary[option.value]
+        return group?.code !== 'ADM-TECH'
+      })
+    }
+    
+    return groupOptions
+  }, [groupOptions, groupDictionary, currentUserGroups])
+
   const userFormFields: TableCardFormField<UserRow>[] = useMemo(
     () => [
       {
@@ -479,7 +543,7 @@ const UsersPage = () => {
             label={field.label}
             value={Array.isArray(value) ? value : []}
             onChange={(selected) => onChange(selected)}
-            options={groupOptions}
+            options={filteredGroupOptions}
             placeholder="Selecione os grupos de acesso"
             fullWidth
             showSelectAll
@@ -520,7 +584,7 @@ const UsersPage = () => {
         },
       },
     ],
-    [groupOptions, lojaOptions, groupDictionary],
+    [filteredGroupOptions, lojaOptions, groupDictionary],
   )
 
   const rowActions: TableCardRowAction<UserRow>[] = useMemo(() => [
@@ -664,7 +728,7 @@ const UsersPage = () => {
                 label="Grupos"
                 value={detailUser.groupIds}
                 onChange={() => { }}
-                options={groupOptions}
+                options={filteredGroupOptions}
                 fullWidth
                 disabled
                 chipDisplay="block"
@@ -732,7 +796,7 @@ const UsersPage = () => {
                   allowFeatures: newFeatures
                 }))
               }}
-              options={groupOptions}
+              options={filteredGroupOptions}
               fullWidth
               placeholder="Selecione um ou mais grupos"
               showSelectAll
