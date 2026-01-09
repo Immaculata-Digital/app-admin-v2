@@ -325,6 +325,7 @@ const UsersPage = () => {
         deniedFeatures: Array.isArray(data.deniedFeatures) ? (data.deniedFeatures as string[]) : [],
         lojasGestoras: Array.isArray(data.lojasGestoras) ? (data.lojasGestoras as number[]) : undefined,
         createdBy: DEFAULT_USER,
+        web_url: window.location.origin, // URL base do front-end
       }
       
       // Só incluir password se não estiver vazio

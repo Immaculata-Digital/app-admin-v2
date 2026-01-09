@@ -26,6 +26,7 @@ export type CreateUserPayload = {
   deniedFeatures?: string[]
   lojasGestoras?: number[]
   createdBy: string
+  web_url?: string
 }
 
 export type UpdateUserPayload = {
