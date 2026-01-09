@@ -537,7 +537,7 @@ const UsersPage = () => {
       {
         key: 'groupIds',
         label: 'Grupos de Acesso',
-        required: false,
+        required: true,
         renderInput: ({ value, onChange, field, disabled }) => (
           <MultiSelectPicker
             label={field.label}
