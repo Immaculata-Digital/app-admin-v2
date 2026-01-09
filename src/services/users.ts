@@ -76,7 +76,10 @@ const resetPassword = (payload: { token: string; password: string; confirmPasswo
   api.post<void>('/users/password/reset', payload, { skipAuth: true })
 
 const requestPasswordReset = (email: string) =>
-  api.post<{ status: string; message: string }>('/users/password/reset-request', { email })
+  api.post<{ status: string; message: string }>('/users/password/reset-request', { 
+    email,
+    web_url: window.location.origin // URL base do front-end
+  })
 
 export const userService = {
   list,

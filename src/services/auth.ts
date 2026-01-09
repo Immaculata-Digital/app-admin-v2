@@ -64,7 +64,10 @@ export const authService = {
   async forgotPassword(email: string): Promise<{ status: string; message: string }> {
     return await api.post<{ status: string; message: string }>(
       '/users/password/reset-request',
-      { email },
+      { 
+        email,
+        web_url: window.location.origin // URL base do front-end
+      },
       { skipAuth: true }
     )
   },
