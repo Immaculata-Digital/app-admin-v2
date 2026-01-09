@@ -29,3 +29,6 @@ export const FaviconUpdater = () => {
   return null // Componente não renderiza nada
 }
 
+
+
+
