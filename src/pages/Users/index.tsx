@@ -315,17 +315,23 @@ const UsersPage = () => {
 
   const handleAddUser = async (data: Partial<UserRow>) => {
     try {
-      const payload = {
+      const passwordValue = (data as any).password
+      const payload: any = {
         fullName: (data.fullName as string) ?? '',
         login: (data.login as string) ?? '',
         email: (data.email as string) ?? '',
-        password: (data as any).password, // Campo opcional de senha
         groupIds: Array.isArray(data.groupIds) ? (data.groupIds as string[]) : [],
         allowFeatures: Array.isArray(data.allowFeatures) ? (data.allowFeatures as string[]) : [],
         deniedFeatures: Array.isArray(data.deniedFeatures) ? (data.deniedFeatures as string[]) : [],
         lojasGestoras: Array.isArray(data.lojasGestoras) ? (data.lojasGestoras as number[]) : undefined,
         createdBy: DEFAULT_USER,
       }
+      
+      // Só incluir password se não estiver vazio
+      if (passwordValue && passwordValue.trim() !== '') {
+        payload.password = passwordValue
+      }
+      
       await userService.create(payload)
       await loadUsers()
       setToast({ open: true, message: 'Usuário criado com sucesso' })
