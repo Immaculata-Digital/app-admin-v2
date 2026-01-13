@@ -25,7 +25,7 @@ interface AuthTemplateProps {
 }
 
 export const AuthTemplate = ({
-  visualTitle,
+  visualTitle: _visualTitle,
   visualDescription,
   visualFeatures,
   formTitle,

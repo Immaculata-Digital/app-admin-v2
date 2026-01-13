@@ -244,7 +244,7 @@ const ConfiguracoesPage = () => {
       // Se não existe configuração, cria uma nova
       if (!configuracao?.id_config_global) {
         const createData: ConfiguracaoCreate = {
-          logo_base64: dataToSend.logo_base64,
+          logo_base64: dataToSend.logo_base64 ?? undefined,
           cor_fundo: dataToSend.cor_fundo || DEFAULT_VALUES.cor_fundo,
           cor_card: dataToSend.cor_card || DEFAULT_VALUES.cor_card,
           cor_texto_card: dataToSend.cor_texto_card || DEFAULT_VALUES.cor_texto_card,
