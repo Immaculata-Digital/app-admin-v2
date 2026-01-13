@@ -283,6 +283,7 @@ function TableCard<T extends TableCardRow>({
       if (dialog.mode === 'edit' && dialog.row) {
         await onEdit?.(dialog.row.id, formValues)
       }
+      // Só fecha o modal se não houver erro (sucesso)
       closeDialog()
     } catch (error: any) {
       // Se for erro 422 (validação), não fechar a modal e mostrar erros

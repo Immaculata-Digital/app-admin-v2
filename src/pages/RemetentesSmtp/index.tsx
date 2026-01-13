@@ -232,15 +232,20 @@ const RemetentesSmtpPage = () => {
         await loadRemetentes()
       } catch (err: any) {
         console.error('Erro no handleCreate:', err, 'status:', err?.status)
-        // Se for erro 422, re-lançar para que o TableCard possa tratar
+        // Se for erro 422, re-lançar para que o TableCard possa tratar e não fechar o modal
         if (err?.status === 422) {
-          // Garantir que o erro mantenha o status ao ser re-lançado
-          const errorWithStatus: any = err instanceof Error ? err : new Error(err?.message || 'Erro de validação')
-          errorWithStatus.status = err?.status || 422
-          errorWithStatus.details = err?.details
-          throw errorWithStatus
+          // Criar um novo erro preservando todas as propriedades
+          const validationError: any = new Error(err?.message || 'Erro de validação')
+          validationError.status = 422
+          validationError.details = err?.details
+          // Preservar também response se existir
+          if (err?.response) {
+            validationError.response = err.response
+          }
+          throw validationError
         }
         setToast({ open: true, message: err.message || 'Erro ao criar remetente' })
+        throw err
       }
     },
     [user]
@@ -264,15 +269,20 @@ const RemetentesSmtpPage = () => {
         await loadRemetentes()
       } catch (err: any) {
         console.error('Erro no handleUpdate:', err, 'status:', err?.status)
-        // Se for erro 422, re-lançar para que o TableCard possa tratar
+        // Se for erro 422, re-lançar para que o TableCard possa tratar e não fechar o modal
         if (err?.status === 422) {
-          // Garantir que o erro mantenha o status ao ser re-lançado
-          const errorWithStatus: any = err instanceof Error ? err : new Error(err?.message || 'Erro de validação')
-          errorWithStatus.status = err?.status || 422
-          errorWithStatus.details = err?.details
-          throw errorWithStatus
+          // Criar um novo erro preservando todas as propriedades
+          const validationError: any = new Error(err?.message || 'Erro de validação')
+          validationError.status = 422
+          validationError.details = err?.details
+          // Preservar também response se existir
+          if (err?.response) {
+            validationError.response = err.response
+          }
+          throw validationError
         }
         setToast({ open: true, message: err.message || 'Erro ao atualizar remetente' })
+        throw err
       }
     },
     [user]
