@@ -61,21 +61,16 @@ async function request<TResponse>(path: string, options: RequestOptions = {}) {
   // Se receber 401 (não autorizado), pode ser token expirado ou inválido
   // 403 (Forbidden) significa que está autenticado mas sem permissão - não deve redirecionar
   if (response.status === 401 && !skipAuth) {
-    // Verificar se é uma requisição de menus ou outras rotas não críticas
-    // Se for, não limpar autenticação imediatamente para evitar loops
-    const isNonCriticalRoute = path.includes('/menus') || path.includes('/permissions')
+    // Sempre limpar autenticação quando receber 401 (token inválido ou expirado)
+    // Isso garante que o usuário seja deslogado automaticamente
+    clearAuth()
     
-    if (!isNonCriticalRoute) {
-      // Remover tokens e redirecionar para login apenas para rotas críticas
-      clearAuth()
-      if (typeof window !== 'undefined') {
-        // Evitar loop de redirecionamento se já estiver na página de login
-        if (window.location.pathname !== '/' && window.location.pathname !== '/login') {
-          window.location.href = '/'
-        }
+    if (typeof window !== 'undefined') {
+      // Evitar loop de redirecionamento se já estiver na página de login
+      if (window.location.pathname !== '/' && window.location.pathname !== '/login') {
+        window.location.href = '/'
       }
     }
-    // Para rotas não críticas, apenas lançar o erro sem limpar autenticação
   }
 
   if (!response.ok) {
