@@ -264,20 +264,21 @@ const LojasPage = () => {
 
   const handleCreate = useCallback(
     async (formData: Partial<LojaRow>) => {
-      try {
-        const responsaveisIds = Array.isArray(formData.responsaveis) ? formData.responsaveis as string[] : []
-        const primeiroResponsavel = responsaveisIds.length > 0 
-          ? responsavelOptions.find(opt => opt.value === responsaveisIds[0])
-          : null
+      const responsaveisIds = Array.isArray(formData.responsaveis) ? formData.responsaveis as string[] : []
+      const primeiroResponsavel = responsaveisIds.length > 0 
+        ? responsavelOptions.find(opt => opt.value === responsaveisIds[0])
+        : null
 
-        const payload: CreateLojaPayload = {
-          nome_loja: (formData.nome_loja as string) ?? '',
-          numero_identificador: (formData.numero_identificador as string) ?? '',
-          nome_responsavel: primeiroResponsavel?.label || '',
-          telefone_responsavel: '', // Campo removido, enviar vazio
-          cnpj: (formData.cnpj as string) ?? '',
-          endereco_completo: (formData.endereco_completo as string) ?? '',
-        }
+      const payload: CreateLojaPayload = {
+        nome_loja: (formData.nome_loja as string) ?? '',
+        numero_identificador: (formData.numero_identificador as string) ?? '',
+        nome_responsavel: primeiroResponsavel?.label || '',
+        telefone_responsavel: '', // Campo removido, enviar vazio
+        cnpj: (formData.cnpj as string) ?? '',
+        endereco_completo: (formData.endereco_completo as string) ?? '',
+      }
+      
+      try {
         const loja = await lojaService.create(getTenantSchema(), payload)
         
         // Atualizar vínculos de responsáveis na tabela user_lojas_gestoras
@@ -288,8 +289,12 @@ const LojasPage = () => {
         setToast({ open: true, message: 'Loja criada com sucesso!' })
         await loadLojas()
       } catch (err: any) {
+        console.error(err)
+        // Se for erro 422, re-lançar para que o TableCard possa tratar
+        if (err?.status === 422) {
+          throw err
+        }
         setToast({ open: true, message: err.message || 'Erro ao criar loja' })
-        throw err
       }
     },
     [responsavelOptions, loadLojas]
@@ -297,20 +302,21 @@ const LojasPage = () => {
 
   const handleUpdate = useCallback(
     async (id: LojaRow['id'], formData: Partial<LojaRow>) => {
-      try {
-        const responsaveisIds = Array.isArray(formData.responsaveis) ? formData.responsaveis as string[] : []
-        const primeiroResponsavel = responsaveisIds.length > 0 
-          ? responsavelOptions.find(opt => opt.value === responsaveisIds[0])
-          : null
+      const responsaveisIds = Array.isArray(formData.responsaveis) ? formData.responsaveis as string[] : []
+      const primeiroResponsavel = responsaveisIds.length > 0 
+        ? responsavelOptions.find(opt => opt.value === responsaveisIds[0])
+        : null
 
-        const payload: UpdateLojaPayload = {
-          nome_loja: formData.nome_loja as string | undefined,
-          numero_identificador: formData.numero_identificador as string | undefined,
-          nome_responsavel: primeiroResponsavel?.label,
-          telefone_responsavel: '', // Campo removido, enviar vazio
-          cnpj: formData.cnpj as string | undefined,
-          endereco_completo: formData.endereco_completo as string | undefined,
-        }
+      const payload: UpdateLojaPayload = {
+        nome_loja: formData.nome_loja as string | undefined,
+        numero_identificador: formData.numero_identificador as string | undefined,
+        nome_responsavel: primeiroResponsavel?.label,
+        telefone_responsavel: '', // Campo removido, enviar vazio
+        cnpj: formData.cnpj as string | undefined,
+        endereco_completo: formData.endereco_completo as string | undefined,
+      }
+      
+      try {
         await lojaService.update(getTenantSchema(), Number(id), payload)
         
         // Atualizar vínculos de responsáveis na tabela user_lojas_gestoras
@@ -319,8 +325,12 @@ const LojasPage = () => {
         setToast({ open: true, message: 'Loja atualizada com sucesso!' })
         await loadLojas()
       } catch (err: any) {
+        console.error(err)
+        // Se for erro 422, re-lançar para que o TableCard possa tratar
+        if (err?.status === 422) {
+          throw err
+        }
         setToast({ open: true, message: err.message || 'Erro ao atualizar loja' })
-        throw err
       }
     },
     [responsavelOptions, loadLojas]
@@ -416,6 +426,7 @@ const LojasPage = () => {
         onDelete={canDelete ? handleDelete : undefined}
         disableView={!canView}
         rowActions={rowActions}
+        onValidationError={(message) => setToast({ open: true, message })}
       />
 
       <Snackbar
