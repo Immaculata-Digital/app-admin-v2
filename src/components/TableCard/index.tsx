@@ -286,13 +286,15 @@ function TableCard<T extends TableCardRow>({
       closeDialog()
     } catch (error: any) {
       // Se for erro 422 (validação), não fechar a modal e mostrar erros
-      if (error?.status === 422 && error?.details) {
-        const details = error.details as { fieldErrors?: Record<string, string[]> }
+      if (error?.status === 422) {
         const validationErrors: Record<string, string[]> = {}
         
-        // Adicionar erros do backend
-        if (details.fieldErrors) {
-          Object.assign(validationErrors, details.fieldErrors)
+        // Adicionar erros do backend se existirem
+        if (error?.details) {
+          const details = error.details as { fieldErrors?: Record<string, string[]> }
+          if (details?.fieldErrors) {
+            Object.assign(validationErrors, details.fieldErrors)
+          }
         }
         
         // Verificar campos obrigatórios vazios (exceto senha)
