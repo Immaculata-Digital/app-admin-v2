@@ -216,22 +216,27 @@ const RemetentesSmtpPage = () => {
 
   const handleCreate = useCallback(
     async (formData: Partial<RemetenteSmtpRow>) => {
+      const payload: CreateRemetenteSmtpPayload = {
+        nome: (formData.nome as string) ?? '',
+        email: (formData.email as string) ?? '',
+        senha: (formData.senha as string) ?? '',
+        smtp_host: (formData.smtp_host as string) ?? '',
+        smtp_port: typeof formData.smtp_port === 'number' ? formData.smtp_port : parseInt(String(formData.smtp_port || 587)),
+        smtp_secure: formData.smtp_secure === true || (typeof formData.smtp_secure === 'string' && formData.smtp_secure === 'true') || (typeof formData.smtp_secure === 'number' && formData.smtp_secure === 1),
+        usu_cadastro: user?.id ? parseInt(user.id) : DEFAULT_USER_ID,
+      }
+      
       try {
-        const payload: CreateRemetenteSmtpPayload = {
-          nome: (formData.nome as string) ?? '',
-          email: (formData.email as string) ?? '',
-          senha: (formData.senha as string) ?? '',
-          smtp_host: (formData.smtp_host as string) ?? '',
-          smtp_port: typeof formData.smtp_port === 'number' ? formData.smtp_port : parseInt(String(formData.smtp_port || 587)),
-          smtp_secure: formData.smtp_secure === true || (typeof formData.smtp_secure === 'string' && formData.smtp_secure === 'true') || (typeof formData.smtp_secure === 'number' && formData.smtp_secure === 1),
-          usu_cadastro: user?.id ? parseInt(user.id) : DEFAULT_USER_ID,
-        }
         await comunicacoesService.remetentesSmtp.create(getTenantSchema(), payload)
         setToast({ open: true, message: 'Remetente criado com sucesso!' })
         await loadRemetentes()
       } catch (err: any) {
+        console.error(err)
+        // Se for erro 422, re-lançar para que o TableCard possa tratar
+        if (err?.status === 422) {
+          throw err
+        }
         setToast({ open: true, message: err.message || 'Erro ao criar remetente' })
-        throw err
       }
     },
     [user]
@@ -239,22 +244,27 @@ const RemetentesSmtpPage = () => {
 
   const handleUpdate = useCallback(
     async (id: RemetenteSmtpRow['id'], formData: Partial<RemetenteSmtpRow>) => {
+      const payload: UpdateRemetenteSmtpPayload = {
+        nome: formData.nome as string | undefined,
+        email: formData.email as string | undefined,
+        senha: formData.senha && String(formData.senha).trim() !== '' ? (formData.senha as string) : undefined,
+        smtp_host: formData.smtp_host as string | undefined,
+        smtp_port: typeof formData.smtp_port === 'number' ? formData.smtp_port : (formData.smtp_port ? parseInt(String(formData.smtp_port)) : undefined),
+        smtp_secure: formData.smtp_secure === true || (typeof formData.smtp_secure === 'string' && formData.smtp_secure === 'true') || (typeof formData.smtp_secure === 'number' && formData.smtp_secure === 1),
+        usu_altera: user?.id ? parseInt(user.id) : DEFAULT_USER_ID,
+      }
+      
       try {
-        const payload: UpdateRemetenteSmtpPayload = {
-          nome: formData.nome as string | undefined,
-          email: formData.email as string | undefined,
-          senha: formData.senha && String(formData.senha).trim() !== '' ? (formData.senha as string) : undefined,
-          smtp_host: formData.smtp_host as string | undefined,
-          smtp_port: typeof formData.smtp_port === 'number' ? formData.smtp_port : (formData.smtp_port ? parseInt(String(formData.smtp_port)) : undefined),
-          smtp_secure: formData.smtp_secure === true || (typeof formData.smtp_secure === 'string' && formData.smtp_secure === 'true') || (typeof formData.smtp_secure === 'number' && formData.smtp_secure === 1),
-          usu_altera: user?.id ? parseInt(user.id) : DEFAULT_USER_ID,
-        }
         await comunicacoesService.remetentesSmtp.update(getTenantSchema(), String(id), payload)
         setToast({ open: true, message: 'Remetente atualizado com sucesso!' })
         await loadRemetentes()
       } catch (err: any) {
+        console.error(err)
+        // Se for erro 422, re-lançar para que o TableCard possa tratar
+        if (err?.status === 422) {
+          throw err
+        }
         setToast({ open: true, message: err.message || 'Erro ao atualizar remetente' })
-        throw err
       }
     },
     [user]
@@ -310,6 +320,7 @@ const RemetentesSmtpPage = () => {
         onEdit={canEdit ? handleUpdate : undefined}
         onDelete={canDelete ? handleDelete : undefined}
         disableView={!canView}
+        onValidationError={(message) => setToast({ open: true, message })}
       />
 
       <Snackbar

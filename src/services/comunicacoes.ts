@@ -122,13 +122,18 @@ const comunicacoesRequest = async <T>(path: string, options: RequestInit = {}): 
 
     if (!response.ok) {
       let message = `Erro ${response.status}`
+      let details: unknown = undefined
       try {
         const data = await response.json()
         message = data?.message ?? message
+        details = data?.details
       } catch {
         // ignore parse error
       }
-      throw new Error(message)
+      const error: any = new Error(message)
+      error.status = response.status
+      error.details = details
+      throw error
     }
 
     if (response.status === 204) {
