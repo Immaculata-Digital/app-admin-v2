@@ -59,14 +59,17 @@ async function request<TResponse>(path: string, options: RequestOptions = {}) {
 
   if (!response.ok) {
     let message = `Erro ${response.status}`
+    let details: unknown = undefined
     try {
       const data = await response.json()
       message = data?.message ?? data?.error ?? message
+      details = data?.details
     } catch {
       // ignore parse error
     }
     const error: any = new Error(message)
     error.status = response.status
+    error.details = details
     throw error
   }
 

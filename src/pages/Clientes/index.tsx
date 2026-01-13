@@ -311,22 +311,27 @@ const ClientesPage = () => {
 
   const handleCreate = useCallback(
     async (formData: Partial<ClienteRow>) => {
+      const payload: CreateClientePayload = {
+        id_loja: Number(formData.id_loja),
+        nome_completo: formData.nome_completo || '',
+        email: formData.email || '',
+        whatsapp: formData.whatsapp || '',
+        cep: formData.cep || '',
+        sexo: (formData.sexo as 'M' | 'F') || 'M',
+        aceite_termos: true,
+        senha: '123456',
+      }
+      
       try {
-        const payload: CreateClientePayload = {
-          id_loja: Number(formData.id_loja),
-          nome_completo: formData.nome_completo || '',
-          email: formData.email || '',
-          whatsapp: formData.whatsapp || '',
-          cep: formData.cep || '',
-          sexo: (formData.sexo as 'M' | 'F') || 'M',
-          aceite_termos: true,
-          senha: '123456',
-        }
         await clienteService.create(schema, payload)
         setToast({ open: true, message: 'Cliente criado com sucesso!', severity: 'success' })
         loadClientes()
       } catch (err: any) {
         console.error(err)
+        // Se for erro 422, re-lançar para que o TableCard possa tratar
+        if (err?.status === 422) {
+          throw err
+        }
         setToast({ open: true, message: err.message || 'Erro ao criar cliente', severity: 'error' })
       }
     },
@@ -335,20 +340,25 @@ const ClientesPage = () => {
 
   const handleUpdate = useCallback(
     async (id: ClienteRow['id'], formData: Partial<ClienteRow>) => {
+      const payload: UpdateClientePayload = {
+        id_loja: formData.id_loja ? Number(formData.id_loja) : undefined,
+        nome_completo: formData.nome_completo,
+        email: formData.email,
+        whatsapp: formData.whatsapp,
+        cep: formData.cep,
+        sexo: formData.sexo as 'M' | 'F' | undefined,
+      }
+      
       try {
-        const payload: UpdateClientePayload = {
-          id_loja: formData.id_loja ? Number(formData.id_loja) : undefined,
-          nome_completo: formData.nome_completo,
-          email: formData.email,
-          whatsapp: formData.whatsapp,
-          cep: formData.cep,
-          sexo: formData.sexo as 'M' | 'F' | undefined,
-        }
         await clienteService.update(schema, Number(id), payload)
         setToast({ open: true, message: 'Cliente atualizado com sucesso!', severity: 'success' })
         loadClientes()
       } catch (err: any) {
         console.error(err)
+        // Se for erro 422, re-lançar para que o TableCard possa tratar
+        if (err?.status === 422) {
+          throw err
+        }
         setToast({ open: true, message: err.message || 'Erro ao atualizar cliente', severity: 'error' })
       }
     },
@@ -426,6 +436,7 @@ const ClientesPage = () => {
           disableView={!canView}
           rowActions={rowActions}
           onRowClick={(row) => navigate(`/clientes/${row.id}`)}
+          onValidationError={(message) => setToast({ open: true, message, severity: 'error' })}
         />
       )}
 
