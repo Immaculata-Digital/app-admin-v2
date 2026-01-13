@@ -15,13 +15,19 @@ import TableCard, {
 import { useSearch } from '../../context/SearchContext'
 import { useAuth } from '../../context/AuthContext'
 import TextPicker from '../../components/TextPicker'
-import PhonePicker from '../../components/PhonePicker'
 import CnpjPicker from '../../components/CnpjPicker'
+import MultiSelectPicker from '../../components/MultiSelectPicker'
 import { lojaService, type LojaDTO, type CreateLojaPayload, type UpdateLojaPayload } from '../../services/lojas'
+import { userService, type UserDTO } from '../../services/users'
+import { accessGroupService } from '../../services/accessGroups'
 import { getTenantSchema } from '../../utils/schema'
 import { downloadQRCodeClienteRegistro } from '../../utils/qrcode.utils'
 
-type LojaRow = TableCardRow & LojaDTO
+type LojaRow = TableCardRow & LojaDTO & {
+  responsaveis?: string[]
+}
+
+type GroupDictionary = Record<string, { name: string; code: string; features: string[] }>
 
 const LojasPage = () => {
   const navigate = useNavigate()
@@ -29,6 +35,7 @@ const LojasPage = () => {
   const [_loading, setLoading] = useState(true)
   const [toast, setToast] = useState<{ open: boolean; message: string }>({ open: false, message: '' })
   const [_error, setError] = useState<string | null>(null)
+  const [responsavelOptions, setResponsavelOptions] = useState<Array<{ label: string; value: string }>>([])
   const { setFilters, setPlaceholder, setQuery } = useSearch()
   const { permissions } = useAuth()
   const canDelete = permissions.includes('erp:lojas:excluir')
@@ -38,7 +45,7 @@ const LojasPage = () => {
   const canList = permissions.includes('erp:lojas:listar')
 
   useEffect(() => {
-    setPlaceholder('Buscar lojas por nome, número identificador, responsável ou CNPJ...')
+    setPlaceholder('Buscar lojas por nome, número identificador ou CNPJ...')
     const filters = [
       { id: 'nome_loja', label: 'Nome da Loja', field: 'nome_loja', type: 'text' as const, page: 'lojas' },
       { id: 'numero_identificador', label: 'Número Identificador', field: 'numero_identificador', type: 'text' as const, page: 'lojas' },
@@ -51,11 +58,86 @@ const LojasPage = () => {
     }
   }, [setFilters, setPlaceholder, setQuery])
 
-  const loadLojas = async () => {
+  // Carregar usuários do grupo ADM-LOJA
+  useEffect(() => {
+    const loadResponsaveis = async () => {
+      try {
+        // Carregar grupos de acesso
+        const groups = await accessGroupService.list()
+        const groupDictionary: GroupDictionary = groups.reduce<GroupDictionary>((acc, group) => {
+          acc[group.id] = { name: group.name, code: group.code, features: group.features }
+          return acc
+        }, {})
+
+        // Encontrar o ID do grupo ADM-LOJA
+        const admLojaGroupId = Object.keys(groupDictionary).find(
+          (groupId) => groupDictionary[groupId]?.code === 'ADM-LOJA'
+        )
+
+        if (!admLojaGroupId) {
+          console.warn('Grupo ADM-LOJA não encontrado')
+          setResponsavelOptions([])
+          return
+        }
+
+        // Carregar todos os usuários
+        const users = await userService.list()
+        
+        // Filtrar usuários que estão no grupo ADM-LOJA
+        const admLojaUsers = users.filter((user: UserDTO) => 
+          user.groupIds.includes(admLojaGroupId)
+        )
+
+        // Criar opções para o MultiSelectPicker
+        const options = admLojaUsers.map((user: UserDTO) => ({
+          label: user.fullName,
+          value: user.id,
+        }))
+
+        setResponsavelOptions(options)
+      } catch (err) {
+        console.error('Erro ao carregar responsáveis:', err)
+        setResponsavelOptions([])
+      }
+    }
+
+    loadResponsaveis()
+  }, [])
+
+  const mapLojaToRow = useCallback(async (loja: LojaDTO): Promise<LojaRow> => {
+    // Buscar responsáveis da tabela user_lojas_gestoras
+    let responsaveisIds: string[] = []
+    if (loja.id_loja) {
+      try {
+        const responsaveis = await lojaService.getResponsaveis(getTenantSchema(), loja.id_loja)
+        responsaveisIds = responsaveis.userIds || []
+      } catch (err) {
+        console.error('Erro ao buscar responsáveis da loja:', err)
+        // Fallback: tentar encontrar pelo nome_responsavel se houver
+        if (loja.nome_responsavel && responsavelOptions.length > 0) {
+          const responsavelEncontrado = responsavelOptions.find(
+            opt => opt.label === loja.nome_responsavel
+          )
+          if (responsavelEncontrado) {
+            responsaveisIds = [responsavelEncontrado.value]
+          }
+        }
+      }
+    }
+
+    return {
+      ...loja,
+      id: loja.id_loja?.toString() || '',
+      responsaveis: responsaveisIds,
+    } as LojaRow
+  }, [responsavelOptions])
+
+  const loadLojas = useCallback(async () => {
     try {
       setLoading(true)
       const response = await lojaService.list(getTenantSchema(), { limit: 200, offset: 0 })
-      setLojas(response.itens.map(mapLojaToRow))
+      const lojasComResponsaveis = await Promise.all(response.itens.map(mapLojaToRow))
+      setLojas(lojasComResponsaveis)
     } catch (err: any) {
       console.error(err)
       setError('Não foi possível carregar as lojas')
@@ -63,18 +145,20 @@ const LojasPage = () => {
     } finally {
       setLoading(false)
     }
-  }
+  }, [mapLojaToRow])
 
   useEffect(() => {
     if (canList) {
       loadLojas()
     }
-  }, [canList])
+  }, [canList, loadLojas])
 
-  const mapLojaToRow = (loja: LojaDTO): LojaRow => ({
-    ...loja,
-    id: loja.id_loja?.toString() || '',
-  })
+  // Recarregar lojas quando os responsáveis forem carregados para mapear corretamente
+  useEffect(() => {
+    if (canList && responsavelOptions.length > 0) {
+      loadLojas()
+    }
+  }, [canList, responsavelOptions.length, loadLojas])
 
   const columns: TableCardColumn<LojaRow>[] = useMemo(
     () => [
@@ -85,14 +169,6 @@ const LojasPage = () => {
       {
         key: 'numero_identificador',
         label: 'Número Identificador',
-      },
-      {
-        key: 'nome_responsavel',
-        label: 'Responsável',
-      },
-      {
-        key: 'telefone_responsavel',
-        label: 'Telefone',
       },
       {
         key: 'cnpj',
@@ -133,33 +209,24 @@ const LojasPage = () => {
         ),
       },
       {
-        key: 'nome_responsavel',
-        label: 'Nome do Responsável',
+        key: 'responsaveis',
+        label: 'Responsáveis',
         required: true,
-        renderInput: ({ value, onChange, disabled }) => (
-          <TextPicker
-            label="Nome do Responsável"
-            value={typeof value === 'string' ? value : ''}
-            onChange={(text) => onChange(text)}
-            fullWidth
-            disabled={disabled}
-          />
-        ),
-      },
-      {
-        key: 'telefone_responsavel',
-        label: 'Telefone do Responsável',
-        required: true,
-        renderInput: ({ value, onChange, disabled }) => (
-          <PhonePicker
-            label="Telefone do Responsável"
-            value={typeof value === 'string' ? value : ''}
-            onChange={(text) => onChange(text)}
-            fullWidth
-            placeholder="+55 (00) 0 0000-0000"
-            disabled={disabled}
-          />
-        ),
+        renderInput: ({ value, onChange, disabled }) => {
+          const selectedIds = Array.isArray(value) ? value : []
+          return (
+            <MultiSelectPicker
+              label="Responsáveis"
+              value={selectedIds}
+              onChange={(ids) => onChange(ids)}
+              options={responsavelOptions}
+              fullWidth
+              placeholder="Selecione os responsáveis"
+              disabled={disabled}
+              required
+            />
+          )
+        },
       },
       {
         key: 'cnpj',
@@ -192,21 +259,32 @@ const LojasPage = () => {
         ),
       },
     ],
-    []
+    [responsavelOptions]
   )
 
   const handleCreate = useCallback(
     async (formData: Partial<LojaRow>) => {
       try {
+        const responsaveisIds = Array.isArray(formData.responsaveis) ? formData.responsaveis as string[] : []
+        const primeiroResponsavel = responsaveisIds.length > 0 
+          ? responsavelOptions.find(opt => opt.value === responsaveisIds[0])
+          : null
+
         const payload: CreateLojaPayload = {
           nome_loja: (formData.nome_loja as string) ?? '',
           numero_identificador: (formData.numero_identificador as string) ?? '',
-          nome_responsavel: (formData.nome_responsavel as string) ?? '',
-          telefone_responsavel: (formData.telefone_responsavel as string) ?? '',
+          nome_responsavel: primeiroResponsavel?.label || '',
+          telefone_responsavel: '', // Campo removido, enviar vazio
           cnpj: (formData.cnpj as string) ?? '',
           endereco_completo: (formData.endereco_completo as string) ?? '',
         }
-        await lojaService.create(getTenantSchema(), payload)
+        const loja = await lojaService.create(getTenantSchema(), payload)
+        
+        // Atualizar vínculos de responsáveis na tabela user_lojas_gestoras
+        if (loja.id_loja && responsaveisIds.length > 0) {
+          await lojaService.updateResponsaveis(getTenantSchema(), loja.id_loja, responsaveisIds)
+        }
+        
         setToast({ open: true, message: 'Loja criada com sucesso!' })
         await loadLojas()
       } catch (err: any) {
@@ -214,21 +292,30 @@ const LojasPage = () => {
         throw err
       }
     },
-    []
+    [responsavelOptions, loadLojas]
   )
 
   const handleUpdate = useCallback(
     async (id: LojaRow['id'], formData: Partial<LojaRow>) => {
       try {
+        const responsaveisIds = Array.isArray(formData.responsaveis) ? formData.responsaveis as string[] : []
+        const primeiroResponsavel = responsaveisIds.length > 0 
+          ? responsavelOptions.find(opt => opt.value === responsaveisIds[0])
+          : null
+
         const payload: UpdateLojaPayload = {
           nome_loja: formData.nome_loja as string | undefined,
           numero_identificador: formData.numero_identificador as string | undefined,
-          nome_responsavel: formData.nome_responsavel as string | undefined,
-          telefone_responsavel: formData.telefone_responsavel as string | undefined,
+          nome_responsavel: primeiroResponsavel?.label,
+          telefone_responsavel: '', // Campo removido, enviar vazio
           cnpj: formData.cnpj as string | undefined,
           endereco_completo: formData.endereco_completo as string | undefined,
         }
         await lojaService.update(getTenantSchema(), Number(id), payload)
+        
+        // Atualizar vínculos de responsáveis na tabela user_lojas_gestoras
+        await lojaService.updateResponsaveis(getTenantSchema(), Number(id), responsaveisIds)
+        
         setToast({ open: true, message: 'Loja atualizada com sucesso!' })
         await loadLojas()
       } catch (err: any) {
@@ -236,7 +323,7 @@ const LojasPage = () => {
         throw err
       }
     },
-    []
+    [responsavelOptions, loadLojas]
   )
 
   const handleDelete = useCallback(

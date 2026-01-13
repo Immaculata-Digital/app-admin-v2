@@ -52,6 +52,8 @@ const getById = (schema: string, id: number) => adminApi.get<LojaDTO>(`/${schema
 const create = (schema: string, payload: CreateLojaPayload) => adminApi.post<LojaDTO>(`/${schema}/lojas`, payload)
 const update = (schema: string, id: number, payload: UpdateLojaPayload) => adminApi.put<LojaDTO>(`/${schema}/lojas/${id}`, payload)
 const remove = (schema: string, id: number) => adminApi.delete<void>(`/${schema}/lojas/${id}`)
+const getResponsaveis = (schema: string, id: number) => adminApi.get<{ userIds: string[] }>(`/${schema}/lojas/${id}/responsaveis`)
+const updateResponsaveis = (schema: string, id: number, userIds: string[]) => adminApi.put<{ message: string }>(`/${schema}/lojas/${id}/responsaveis`, { userIds })
 
 export const lojaService = {
   list,
@@ -59,5 +61,7 @@ export const lojaService = {
   create,
   update,
   remove,
+  getResponsaveis,
+  updateResponsaveis,
 }
 
