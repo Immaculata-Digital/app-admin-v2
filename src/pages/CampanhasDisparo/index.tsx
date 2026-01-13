@@ -500,6 +500,19 @@ const CampanhasDisparoPage = () => {
         setToast({ open: true, message: 'Campanha criada com sucesso!' })
         await loadCampanhas()
       } catch (err: any) {
+        console.error('Erro no handleCreate:', err, 'status:', err?.status)
+        // Se for erro 422, re-lançar para que o TableCard possa tratar e não fechar o modal
+        if (err?.status === 422) {
+          // Criar um novo erro preservando todas as propriedades
+          const validationError: any = new Error(err?.message || 'Erro de validação')
+          validationError.status = 422
+          validationError.details = err?.details
+          // Preservar também response se existir
+          if (err?.response) {
+            validationError.response = err.response
+          }
+          throw validationError
+        }
         setToast({ open: true, message: err.message || 'Erro ao criar campanha' })
         throw err
       }
@@ -552,6 +565,19 @@ const CampanhasDisparoPage = () => {
         setToast({ open: true, message: 'Campanha atualizada com sucesso!' })
         await loadCampanhas()
       } catch (err: any) {
+        console.error('Erro no handleUpdate:', err, 'status:', err?.status)
+        // Se for erro 422, re-lançar para que o TableCard possa tratar e não fechar o modal
+        if (err?.status === 422) {
+          // Criar um novo erro preservando todas as propriedades
+          const validationError: any = new Error(err?.message || 'Erro de validação')
+          validationError.status = 422
+          validationError.details = err?.details
+          // Preservar também response se existir
+          if (err?.response) {
+            validationError.response = err.response
+          }
+          throw validationError
+        }
         if (!err.message?.includes('Não é possível')) {
           setToast({ open: true, message: err.message || 'Erro ao atualizar campanha' })
         }
