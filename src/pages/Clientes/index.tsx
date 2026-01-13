@@ -227,6 +227,7 @@ const ClientesPage = () => {
             options={lojas.map(l => ({ value: String(l.id), label: l.label }))}
             fullWidth
             disabled={disabled}
+            required
           />
         ),
       },
@@ -241,6 +242,7 @@ const ClientesPage = () => {
             onChange={(text) => onChange(text)}
             fullWidth
             disabled={disabled}
+            required
           />
         ),
       },
@@ -255,6 +257,7 @@ const ClientesPage = () => {
             onChange={(text) => onChange(text)}
             fullWidth
             disabled={disabled}
+            required
           />
         ),
       },
@@ -270,6 +273,7 @@ const ClientesPage = () => {
             fullWidth
             placeholder="+55 (00) 0 0000-0000"
             disabled={disabled}
+            required
           />
         ),
       },
@@ -284,6 +288,7 @@ const ClientesPage = () => {
             onChange={(text) => onChange(text)}
             fullWidth
             disabled={disabled}
+            required
           />
         ),
       },
@@ -302,6 +307,7 @@ const ClientesPage = () => {
             ]}
             fullWidth
             disabled={disabled}
+            required
           />
         ),
       },

@@ -23,6 +23,7 @@ import TableCard, {
 import { useSearch } from '../../context/SearchContext'
 import { useAuth } from '../../context/AuthContext'
 import TextPicker from '../../components/TextPicker'
+import SelectPicker from '../../components/SelectPicker'
 import { EmailEditor } from '../../components/EmailEditor'
 import { comunicacoesService, type CampanhaDisparoDTO, type CreateCampanhaDisparoPayload, type UpdateCampanhaDisparoPayload, type RemetenteSmtpDTO } from '../../services/comunicacoes'
 import { getTenantSchema } from '../../utils/schema'
@@ -215,6 +216,7 @@ const CampanhasDisparoPage = () => {
               fullWidth
               disabled={disabled || isEspecial}
               helperText={isEspecial ? 'Esta campanha é padrão do sistema e não pode ser editada' : ''}
+              required
             />
           )
         },
@@ -230,6 +232,7 @@ const CampanhasDisparoPage = () => {
             onChange={(text) => onChange(text)}
             fullWidth
             disabled={disabled}
+            required
           />
         ),
       },
@@ -267,26 +270,18 @@ const CampanhasDisparoPage = () => {
         label: 'Remetente',
         required: true,
         renderInput: ({ value, onChange, disabled }) => (
-          <FormControl fullWidth disabled={disabled} required error={!value}>
-            <InputLabel required error={!value}>Remetente *</InputLabel>
-            <Select
-              value={value || ''}
-              onChange={(e) => onChange(e.target.value)}
-              label="Remetente *"
-              error={!value}
-            >
-              {remetentes.map((remetente) => (
-                <MenuItem key={remetente.id_remetente} value={remetente.id_remetente}>
-                  {remetente.nome} ({remetente.email})
-                </MenuItem>
-              ))}
-            </Select>
-            {!value && (
-              <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 1.75 }}>
-                O campo remetente é obrigatório e não pode estar vazio
-              </Typography>
-            )}
-          </FormControl>
+          <SelectPicker
+            label="Remetente"
+            value={value ? String(value) : ''}
+            onChange={(val) => onChange(val ? String(val) : '')}
+            options={remetentes.map((remetente) => ({
+              value: String(remetente.id_remetente),
+              label: `${remetente.nome} (${remetente.email})`,
+            }))}
+            fullWidth
+            disabled={disabled}
+            required
+          />
         ),
       },
       {
@@ -303,8 +298,8 @@ const CampanhasDisparoPage = () => {
           // Ao criar nova campanha, os tipos padrão não devem aparecer
           const mostrarTiposPadrao = isEditMode && campanhaOriginal && isEspecial
           return (
-            <FormControl fullWidth disabled={disabled || isEspecial}>
-              <InputLabel>Tipo de Envio</InputLabel>
+            <FormControl fullWidth disabled={disabled || isEspecial} required>
+              <InputLabel required>Tipo de Envio</InputLabel>
               <Select
                 value={tipoEnvio}
                 onChange={(e) => {
@@ -410,8 +405,8 @@ const CampanhasDisparoPage = () => {
           const tipoDestinatario = value || 'todos'
           return (
             <Box>
-              <FormControl fullWidth disabled={disabled}>
-                <InputLabel>Destinatários</InputLabel>
+              <FormControl fullWidth disabled={disabled} required>
+                <InputLabel required>Destinatários</InputLabel>
                 <Select
                   value={tipoDestinatario}
                   onChange={(e) => {

@@ -191,6 +191,7 @@ const LojasPage = () => {
             onChange={(text) => onChange(text)}
             fullWidth
             disabled={disabled}
+            required
           />
         ),
       },
@@ -205,6 +206,7 @@ const LojasPage = () => {
             onChange={(text) => onChange(text)}
             fullWidth
             disabled={disabled}
+            required
           />
         ),
       },
@@ -239,6 +241,7 @@ const LojasPage = () => {
             onChange={(text) => onChange(text)}
             fullWidth
             disabled={disabled}
+            required
           />
         ),
       },
@@ -255,6 +258,7 @@ const LojasPage = () => {
             multiline
             rows={3}
             disabled={disabled}
+            required
           />
         ),
       },

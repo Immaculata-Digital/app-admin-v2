@@ -21,6 +21,7 @@ type PhonePickerProps = {
   disabled?: boolean
   error?: boolean
   helperText?: string
+  required?: boolean
 }
 
 type Country = {
@@ -107,6 +108,7 @@ const PhonePicker = ({
   disabled = false,
   error = false,
   helperText,
+  required = false,
 }: PhonePickerProps) => {
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
@@ -180,6 +182,7 @@ const PhonePicker = ({
         error={error}
         helperText={helperText}
         type="tel"
+        required={required}
         InputProps={{
           startAdornment: (
             <InputAdornment position="start">

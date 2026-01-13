@@ -534,6 +534,7 @@ const UsersPage = () => {
             fullWidth
             placeholder="usuario@empresa.com"
             disabled={disabled}
+            required
           />
         ),
       },
@@ -572,6 +573,7 @@ const UsersPage = () => {
             showSelectAll
             chipDisplay="block"
             disabled={disabled}
+            required
           />
         ),
       },

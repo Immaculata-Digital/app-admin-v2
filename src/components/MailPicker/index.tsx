@@ -12,6 +12,7 @@ type MailPickerProps = {
   disabled?: boolean
   error?: boolean
   helperText?: string
+  required?: boolean
 }
 
 const isValidEmail = (email: string): boolean => {
@@ -29,6 +30,7 @@ const MailPicker = ({
   disabled = false,
   error = false,
   helperText,
+  required = false,
 }: MailPickerProps) => {
   const [touched, setTouched] = useState(false)
 
@@ -55,6 +57,7 @@ const MailPicker = ({
       error={emailError}
       helperText={helperText || (touched && value && !isValidEmail(value) ? 'Email inválido' : '')}
       type="email"
+      required={required}
       InputProps={{
         endAdornment: (
           <IconButton

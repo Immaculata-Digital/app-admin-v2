@@ -121,6 +121,7 @@ const RemetentesSmtpPage = () => {
             onChange={(text) => onChange(text)}
             fullWidth
             disabled={disabled}
+            required
           />
         ),
       },
@@ -136,6 +137,7 @@ const RemetentesSmtpPage = () => {
             fullWidth
             type="email"
             disabled={disabled}
+            required
           />
         ),
       },
@@ -167,6 +169,7 @@ const RemetentesSmtpPage = () => {
             onChange={(text) => onChange(text)}
             fullWidth
             disabled={disabled}
+            required
           />
         ),
       },
@@ -182,6 +185,7 @@ const RemetentesSmtpPage = () => {
             fullWidth
             type="number"
             disabled={disabled}
+            required
           />
         ),
       },
