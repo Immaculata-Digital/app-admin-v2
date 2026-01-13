@@ -306,6 +306,20 @@ const RemetentesSmtpPage = () => {
     []
   )
 
+  const handleBulkDelete = useCallback(
+    async (ids: RemetenteSmtpRow['id'][]) => {
+      try {
+        await Promise.all(ids.map((id) => comunicacoesService.remetentesSmtp.delete(getTenantSchema(), String(id))))
+        setToast({ open: true, message: 'Remetentes excluídos com sucesso!' })
+        await loadRemetentes()
+      } catch (err: any) {
+        setToast({ open: true, message: err.message || 'Erro ao excluir remetentes' })
+        throw err
+      }
+    },
+    []
+  )
+
   if (!canList) {
     return (
       <Box className="remetentes-smtp-page">
@@ -341,6 +355,7 @@ const RemetentesSmtpPage = () => {
         onAdd={canCreate ? handleCreate : undefined}
         onEdit={canEdit ? handleUpdate : undefined}
         onDelete={canDelete ? handleDelete : undefined}
+        onBulkDelete={canDelete ? handleBulkDelete : undefined}
         disableView={!canView}
         onValidationError={(message) => setToast({ open: true, message })}
       />

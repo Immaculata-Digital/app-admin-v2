@@ -362,6 +362,20 @@ const LojasPage = () => {
     []
   )
 
+  const handleBulkDelete = useCallback(
+    async (ids: LojaRow['id'][]) => {
+      try {
+        await Promise.all(ids.map((id) => lojaService.remove(getTenantSchema(), Number(id))))
+        setToast({ open: true, message: 'Lojas excluídas com sucesso!' })
+        await loadLojas()
+      } catch (err: any) {
+        setToast({ open: true, message: err.message || 'Erro ao excluir lojas' })
+        throw err
+      }
+    },
+    []
+  )
+
   const handleDownloadQRCode = useCallback(
     async (loja: LojaRow) => {
       try {
@@ -436,6 +450,7 @@ const LojasPage = () => {
         onAdd={canCreate ? handleCreate : undefined}
         onEdit={canEdit ? handleUpdate : undefined}
         onDelete={canDelete ? handleDelete : undefined}
+        onBulkDelete={canDelete ? handleBulkDelete : undefined}
         disableView={!canView}
         rowActions={rowActions}
         onValidationError={(message) => setToast({ open: true, message })}

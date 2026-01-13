@@ -393,6 +393,20 @@ const ClientesPage = () => {
     [schema, loadClientes]
   )
 
+  const handleBulkDelete = useCallback(
+    async (ids: ClienteRow['id'][]) => {
+      try {
+        await Promise.all(ids.map((id) => clienteService.remove(schema, Number(id))))
+        setToast({ open: true, message: 'Clientes excluídos com sucesso!', severity: 'success' })
+        loadClientes()
+      } catch (err: any) {
+        console.error(err)
+        setToast({ open: true, message: err.message || 'Erro ao excluir clientes', severity: 'error' })
+      }
+    },
+    [schema, loadClientes]
+  )
+
   // Custom row actions
   const rowActions: TableCardRowAction<ClienteRow>[] = useMemo(() => {
     const actions: TableCardRowAction<ClienteRow>[] = []
@@ -447,6 +461,7 @@ const ClientesPage = () => {
           onAdd={canCreate ? handleCreate : undefined}
           onEdit={(id, data) => handleUpdate(id, data)}
           onDelete={canDelete ? handleDelete : undefined}
+          onBulkDelete={canDelete ? handleBulkDelete : undefined}
           disableView={!canView}
           rowActions={rowActions}
           onRowClick={(row) => navigate(`/clientes/${row.id}`)}

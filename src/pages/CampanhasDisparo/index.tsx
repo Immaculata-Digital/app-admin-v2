@@ -609,6 +609,40 @@ const CampanhasDisparoPage = () => {
     [campanhas]
   )
 
+  const handleBulkDelete = useCallback(
+    async (ids: CampanhaDisparoRow['id'][]) => {
+      try {
+        // Filtrar apenas campanhas que podem ser excluídas
+        const campanhasParaExcluir = ids
+          .map((id) => getCampanhaById(id))
+          .filter((campanha): campanha is CampanhaDisparoRow => 
+            campanha !== null && canDeleteCampanha(campanha)
+          )
+        
+        if (campanhasParaExcluir.length === 0) {
+          setToast({ open: true, message: 'Nenhuma campanha pode ser excluída (campanhas padrão do sistema não podem ser excluídas)' })
+          return
+        }
+        
+        if (campanhasParaExcluir.length < ids.length) {
+          setToast({ open: true, message: `${ids.length - campanhasParaExcluir.length} campanha(s) padrão do sistema foram ignoradas` })
+        }
+        
+        await Promise.all(
+          campanhasParaExcluir.map((campanha) => 
+            comunicacoesService.campanhasDisparo.delete(getTenantSchema(), String(campanha.id_campanha))
+          )
+        )
+        setToast({ open: true, message: `${campanhasParaExcluir.length} campanha(s) excluída(s) com sucesso!` })
+        await loadCampanhas()
+      } catch (err: any) {
+        setToast({ open: true, message: err.message || 'Erro ao excluir campanhas' })
+        throw err
+      }
+    },
+    [campanhas]
+  )
+
   const handleEnviar = useCallback(
     async (row: CampanhaDisparoRow) => {
       try {
@@ -657,6 +691,7 @@ const CampanhasDisparoPage = () => {
         onAdd={canCreate ? handleCreate : undefined}
         onEdit={canEdit ? handleUpdate : undefined}
         onDelete={canDelete ? handleDelete : undefined}
+        onBulkDelete={canDelete ? handleBulkDelete : undefined}
         canDeleteRow={canDeleteCampanha}
         disableView={!canView}
         rowActions={(row: CampanhaDisparoRow) => {

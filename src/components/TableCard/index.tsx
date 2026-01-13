@@ -925,7 +925,7 @@ function TableCard<T extends TableCardRow>({
                     <IconButton
                       color="primary"
                       onClick={handleBulkDelete}
-                      disabled={!onBulkDelete}
+                      disabled={!onBulkDelete || selectedIds.length === 0}
                       aria-label="Excluir selecionados"
                     >
                       <DeleteOutline />

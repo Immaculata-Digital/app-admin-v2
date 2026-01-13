@@ -284,6 +284,20 @@ const ItensRecompensaPage = () => {
     []
   )
 
+  const handleBulkDelete = useCallback(
+    async (ids: ItemRecompensaRow['id'][]) => {
+      try {
+        await Promise.all(ids.map((id) => itemRecompensaService.remove(getTenantSchema(), Number(id))))
+        setToast({ open: true, message: 'Itens de recompensa excluídos com sucesso!' })
+        await loadItens()
+      } catch (err: any) {
+        setToast({ open: true, message: err.message || 'Erro ao excluir itens de recompensa' })
+        throw err
+      }
+    },
+    []
+  )
+
   if (!canList) {
     return (
       <Box className="itens-recompensa-page">
@@ -304,6 +318,7 @@ const ItensRecompensaPage = () => {
         onAdd={canCreate ? handleCreate : undefined}
         onEdit={canEdit ? handleUpdate : undefined}
         onDelete={canDelete ? handleDelete : undefined}
+        onBulkDelete={canDelete ? handleBulkDelete : undefined}
         disableView={!canView}
         onValidationError={(message) => setToast({ open: true, message })}
       />
