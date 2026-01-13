@@ -314,51 +314,59 @@ const UsersPage = () => {
   }
 
   const handleAddUser = async (data: Partial<UserRow>) => {
+    const passwordValue = (data as any).password
+    const payload: any = {
+      fullName: (data.fullName as string) ?? '',
+      login: (data.login as string) ?? '',
+      email: (data.email as string) ?? '',
+      groupIds: Array.isArray(data.groupIds) ? (data.groupIds as string[]) : [],
+      allowFeatures: Array.isArray(data.allowFeatures) ? (data.allowFeatures as string[]) : [],
+      deniedFeatures: Array.isArray(data.deniedFeatures) ? (data.deniedFeatures as string[]) : [],
+      lojasGestoras: Array.isArray(data.lojasGestoras) ? (data.lojasGestoras as number[]) : undefined,
+      createdBy: DEFAULT_USER,
+      web_url: window.location.origin, // URL base do front-end
+    }
+    
+    // Só incluir password se não estiver vazio
+    if (passwordValue && passwordValue.trim() !== '') {
+      payload.password = passwordValue
+    }
+    
     try {
-      const passwordValue = (data as any).password
-      const payload: any = {
-        fullName: (data.fullName as string) ?? '',
-        login: (data.login as string) ?? '',
-        email: (data.email as string) ?? '',
-        groupIds: Array.isArray(data.groupIds) ? (data.groupIds as string[]) : [],
-        allowFeatures: Array.isArray(data.allowFeatures) ? (data.allowFeatures as string[]) : [],
-        deniedFeatures: Array.isArray(data.deniedFeatures) ? (data.deniedFeatures as string[]) : [],
-        lojasGestoras: Array.isArray(data.lojasGestoras) ? (data.lojasGestoras as number[]) : undefined,
-        createdBy: DEFAULT_USER,
-        web_url: window.location.origin, // URL base do front-end
-      }
-      
-      // Só incluir password se não estiver vazio
-      if (passwordValue && passwordValue.trim() !== '') {
-        payload.password = passwordValue
-      }
-      
       await userService.create(payload)
       await loadUsers()
       setToast({ open: true, message: 'Usuário criado com sucesso' })
-    } catch (err) {
+    } catch (err: any) {
       console.error(err)
+      // Se for erro 422, re-lançar para que o TableCard possa tratar
+      if (err?.status === 422) {
+        throw err
+      }
       setToast({ open: true, message: err instanceof Error ? err.message : 'Erro ao criar usuário' })
     }
   }
 
   const handleEditUser = async (id: UserRow['id'], data: Partial<UserRow>) => {
+    const payload = {
+      fullName: data.fullName as string,
+      login: data.login as string,
+      email: data.email as string,
+      lojasGestoras: Array.isArray(data.lojasGestoras) ? (data.lojasGestoras as number[]) : undefined,
+      updatedBy: DEFAULT_USER,
+    }
     try {
-      const payload = {
-        fullName: data.fullName as string,
-        login: data.login as string,
-        email: data.email as string,
-        lojasGestoras: Array.isArray(data.lojasGestoras) ? (data.lojasGestoras as number[]) : undefined,
-        updatedBy: DEFAULT_USER,
-      }
       const updated = await userService.updateBasic(id as string, payload)
       setUsers((prev) => prev.map((user) => (user.id === id ? mapUserToRow(updated) : user)))
       setToast({ open: true, message: 'Usuário atualizado' })
       if (currentUser?.id === id) {
         await refreshPermissions()
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err)
+      // Se for erro 422, re-lançar para que o TableCard possa tratar
+      if (err?.status === 422) {
+        throw err
+      }
       setToast({ open: true, message: err instanceof Error ? err.message : 'Erro ao atualizar' })
     }
   }
@@ -702,6 +710,7 @@ const UsersPage = () => {
           disableDelete={!hasPermission('erp:usuarios:excluir')}
           disableEdit={!hasPermission('erp:usuarios:editar')}
           disableView={!hasPermission('erp:usuarios:visualizar')}
+          onValidationError={(message) => setToast({ open: true, message })}
         />
       )}
 {/* ... keep existing dialogs ... */}

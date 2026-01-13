@@ -3,10 +3,12 @@ const API_BASE_URL = import.meta.env.VITE_API_USUARIOS_V2_URL ?? 'http://localho
 export class ApiError extends Error {
   message: string
   status: number
-  constructor(message: string, status: number) {
+  details?: unknown
+  constructor(message: string, status: number, details?: unknown) {
     super(message)
     this.message = message
     this.status = status
+    this.details = details
   }
 }
 
@@ -78,13 +80,15 @@ async function request<TResponse>(path: string, options: RequestOptions = {}) {
 
   if (!response.ok) {
     let message = `Erro ${response.status}`
+    let details: unknown = undefined
     try {
       const data = await response.json()
       message = data?.message ?? message
+      details = data?.details
     } catch {
       // ignore parse error
     }
-    throw new ApiError(message, response.status)
+    throw new ApiError(message, response.status, details)
   }
 
   if (!parseJson || response.status === 204) {

@@ -43,6 +43,8 @@ export type TableCardFieldRenderProps<T extends TableCardRow> = {
   setFieldValue: (key: keyof T, value: any) => void
   disabled: boolean
   isEditMode?: boolean
+  error?: boolean
+  helperText?: string
 }
 
 export type TableCardFormField<T extends TableCardRow> = TableCardColumn<T> & {
@@ -98,6 +100,7 @@ type TableCardProps<T extends TableCardRow> = {
   disableEdit?: boolean
   disableView?: boolean
   onRowClick?: (row: T) => void
+  onValidationError?: (message: string) => void
 }
 
 type DialogState<T extends TableCardRow> =
@@ -105,7 +108,7 @@ type DialogState<T extends TableCardRow> =
   | { mode: 'edit'; open: true; row: T }
   | { mode: null; open: false; row?: undefined }
 
-const TableCard = <T extends TableCardRow>({
+function TableCard<T extends TableCardRow>({
   title,
   columns,
   rows,
@@ -121,7 +124,8 @@ const TableCard = <T extends TableCardRow>({
   disableEdit = false,
   disableView = false,
   onRowClick,
-}: TableCardProps<T>) => {
+  onValidationError,
+}: TableCardProps<T>) {
   const { query, selectedFilter } = useSearch()
   // const theme = useTheme()
   const isDesktop = useMediaQuery('(min-width:900px)')
@@ -157,6 +161,7 @@ const TableCard = <T extends TableCardRow>({
     open: false,
   })
   const [formValues, setFormValues] = useState<Partial<T>>({})
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({})
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const [menuRow, setMenuRow] = useState<T | null>(null)
 
@@ -250,6 +255,7 @@ const TableCard = <T extends TableCardRow>({
   }
 
   const openDialog = (mode: 'add' | 'edit', row?: T) => {
+    setFieldErrors({})
     if (mode === 'add') {
       setDialog({ mode: 'add', open: true })
       setFormValues(buildFormValues())
@@ -265,16 +271,65 @@ const TableCard = <T extends TableCardRow>({
   const closeDialog = () => {
     setDialog({ mode: null, open: false })
     setFormValues({})
+    setFieldErrors({})
   }
 
-  const handleSubmit = () => {
-    if (dialog.mode === 'add') {
-      onAdd?.(formValues)
+  const handleSubmit = async () => {
+    try {
+      setFieldErrors({})
+      if (dialog.mode === 'add') {
+        await onAdd?.(formValues)
+      }
+      if (dialog.mode === 'edit' && dialog.row) {
+        await onEdit?.(dialog.row.id, formValues)
+      }
+      closeDialog()
+    } catch (error: any) {
+      // Se for erro 422 (validação), não fechar a modal e mostrar erros
+      if (error?.status === 422 && error?.details) {
+        const details = error.details as { fieldErrors?: Record<string, string[]> }
+        const validationErrors: Record<string, string[]> = {}
+        
+        // Adicionar erros do backend
+        if (details.fieldErrors) {
+          Object.assign(validationErrors, details.fieldErrors)
+        }
+        
+        // Verificar campos obrigatórios vazios (exceto senha)
+        if (formFields) {
+          formFields.forEach((field) => {
+            const fieldKey = String(field.key)
+            const isPasswordField = fieldKey.toLowerCase().includes('senha') || 
+              fieldKey.toLowerCase().includes('password') ||
+              field.inputType === 'password'
+            
+            // Se o campo é obrigatório e não é senha
+            if (field.required && !isPasswordField) {
+              const value = formValues[field.key]
+              const isEmpty = value === '' || value === null || value === undefined || 
+                (Array.isArray(value) && value.length === 0)
+              
+              // Se estiver vazio e não tiver erro já definido, adicionar erro
+              if (isEmpty && !validationErrors[fieldKey]) {
+                validationErrors[fieldKey] = [`O campo ${field.label} é obrigatório`]
+              }
+            }
+          })
+        }
+        
+        setFieldErrors(validationErrors)
+        
+        // Mostrar mensagem de erro
+        if (onValidationError) {
+          onValidationError('Campos inválidos. Verifique os campos obrigatórios.')
+        }
+        
+        // Não fechar a modal
+        return
+      }
+      // Para outros erros, re-lançar para que o componente pai possa tratar
+      throw error
     }
-    if (dialog.mode === 'edit' && dialog.row) {
-      onEdit?.(dialog.row.id, formValues)
-    }
-    closeDialog()
   }
 
   const handleOpenMenu = (
@@ -313,18 +368,49 @@ const TableCard = <T extends TableCardRow>({
     const value = formValues[field.key] ?? ''
     const inputType =
       'inputType' in field && field.inputType ? field.inputType : field.dataType ?? 'text'
+    const fieldKey = String(field.key)
+    const fieldErrorMessages = fieldErrors[fieldKey] || []
+    const hasBackendError = fieldErrorMessages.length > 0
+    
+    // Verificar se o campo está vazio
+    const isEmpty = value === '' || value === null || value === undefined || 
+      (Array.isArray(value) && value.length === 0)
+    const isPasswordField = inputType === 'password' || 
+      (fieldKey.toLowerCase().includes('senha') || fieldKey.toLowerCase().includes('password'))
+    
+    // Verificar se é obrigatório
+    const isRequired = 'required' in field && field.required === true
+    
+    // Mostrar erro se:
+    // 1. Tem erro do backend E (é senha não vazia OU não é senha e está vazio)
+    // 2. OU é obrigatório, não é senha, está vazio E há erros de validação (indicando que houve tentativa de submit)
+    const hasValidationErrors = Object.keys(fieldErrors).length > 0
+    const shouldShowError = hasBackendError && (isPasswordField ? !isEmpty : isEmpty) ||
+      (isRequired && !isPasswordField && isEmpty && hasValidationErrors)
 
     if ('renderInput' in field && field.renderInput) {
       return (
-        <Box key={String(field.key)}>
+        <Box key={fieldKey}>
           {field.renderInput({
             value,
-            onChange: (newValue) => handleFieldChange(field.key, newValue),
+            onChange: (newValue) => {
+              handleFieldChange(field.key, newValue)
+              // Limpar erro do campo quando o usuário começar a digitar
+              if (fieldErrors[fieldKey]) {
+                setFieldErrors((prev) => {
+                  const newErrors = { ...prev }
+                  delete newErrors[fieldKey]
+                  return newErrors
+                })
+              }
+            },
             field: field as TableCardFormField<T>,
             formValues,
             setFieldValue: (key, newValue) => handleFieldChange(key, newValue),
             disabled: ('disabled' in field ? field.disabled : false) || (dialog.mode === 'edit' && disableEdit),
             isEditMode: dialog.mode === 'edit',
+            error: shouldShowError,
+            helperText: shouldShowError ? (fieldErrorMessages[0] || `${field.label} é obrigatório`) : ('helperText' in field ? field.helperText : undefined),
           })}
         </Box>
       )
@@ -335,16 +421,31 @@ const TableCard = <T extends TableCardRow>({
         'options' in field && field.options
           ? field.options
           : []
+      const isPasswordFieldSelect = fieldKey.toLowerCase().includes('senha') || fieldKey.toLowerCase().includes('password')
+      const isRequiredSelect = 'required' in field && field.required === true
+      const hasValidationErrorsSelect = Object.keys(fieldErrors).length > 0
+      const shouldShowErrorSelect = hasBackendError && (isPasswordFieldSelect ? !isEmpty : isEmpty) ||
+        (isRequiredSelect && !isPasswordFieldSelect && isEmpty && hasValidationErrorsSelect)
 
       return (
         <TextField
-          key={String(field.key)}
+          key={fieldKey}
           select
           label={field.label}
           value={value}
-          onChange={(event) => handleFieldChange(field.key, event.target.value)}
+          onChange={(event) => {
+            handleFieldChange(field.key, event.target.value)
+            if (fieldErrors[fieldKey]) {
+              setFieldErrors((prev) => {
+                const newErrors = { ...prev }
+                delete newErrors[fieldKey]
+                return newErrors
+              })
+            }
+          }}
           fullWidth
-          helperText={'helperText' in field ? field.helperText : undefined}
+          error={shouldShowErrorSelect}
+          helperText={shouldShowErrorSelect ? (fieldErrorMessages[0] || `${field.label} é obrigatório`) : ('helperText' in field ? field.helperText : undefined)}
           required={'required' in field ? field.required : undefined}
           placeholder={'placeholder' in field ? field.placeholder : undefined}
           disabled={('disabled' in field ? field.disabled : undefined) || (dialog.mode === 'edit' && disableEdit)}
@@ -364,6 +465,12 @@ const TableCard = <T extends TableCardRow>({
           ? field.options
           : []
       const multiValue = Array.isArray(value) ? value : []
+      const isEmptyMulti = multiValue.length === 0
+      const isPasswordFieldMulti = fieldKey.toLowerCase().includes('senha') || fieldKey.toLowerCase().includes('password')
+      const isRequiredMulti = 'required' in field && field.required === true
+      const hasValidationErrorsMulti = Object.keys(fieldErrors).length > 0
+      const shouldShowErrorMulti = hasBackendError && (isPasswordFieldMulti ? !isEmptyMulti : isEmptyMulti) ||
+        (isRequiredMulti && !isPasswordFieldMulti && isEmptyMulti && hasValidationErrorsMulti)
 
       const handleMultiSelectChange = (event: SelectChangeEvent<string[]>) => {
         const selected = event.target.value
@@ -371,11 +478,18 @@ const TableCard = <T extends TableCardRow>({
           field.key,
           typeof selected === 'string' ? selected.split(',') : selected,
         )
+        if (fieldErrors[fieldKey]) {
+          setFieldErrors((prev) => {
+            const newErrors = { ...prev }
+            delete newErrors[fieldKey]
+            return newErrors
+          })
+        }
       }
 
       return (
         <TextField
-          key={String(field.key)}
+          key={fieldKey}
           select
           label={field.label}
           value={multiValue}
@@ -385,7 +499,8 @@ const TableCard = <T extends TableCardRow>({
             multiple: true,
             renderValue: (selected) => (selected as (string | number)[]).map(String).join(', '),
           }}
-          helperText={'helperText' in field ? field.helperText : undefined}
+          error={shouldShowErrorMulti}
+          helperText={shouldShowErrorMulti ? (fieldErrorMessages[0] || `${field.label} é obrigatório`) : ('helperText' in field ? field.helperText : undefined)}
           required={'required' in field ? field.required : undefined}
           placeholder={'placeholder' in field ? field.placeholder : undefined}
           disabled={('disabled' in field ? field.disabled : undefined) || (dialog.mode === 'edit' && disableEdit)}
@@ -410,16 +525,32 @@ const TableCard = <T extends TableCardRow>({
             : inputType === 'date'
               ? 'date'
               : 'text'
+    const isPasswordFieldText = inputType === 'password' || 
+      fieldKey.toLowerCase().includes('senha') || fieldKey.toLowerCase().includes('password')
+    const isRequiredText = 'required' in field && field.required === true
+    const hasValidationErrorsText = Object.keys(fieldErrors).length > 0
+    const shouldShowErrorText = hasBackendError && (isPasswordFieldText ? !isEmpty : isEmpty) ||
+      (isRequiredText && !isPasswordFieldText && isEmpty && hasValidationErrorsText)
 
     return (
       <TextField
-        key={String(field.key)}
+        key={fieldKey}
         label={field.label}
         type={textFieldType}
         value={value}
-        onChange={(event) => handleFieldChange(field.key, event.target.value)}
+        onChange={(event) => {
+          handleFieldChange(field.key, event.target.value)
+          if (fieldErrors[fieldKey]) {
+            setFieldErrors((prev) => {
+              const newErrors = { ...prev }
+              delete newErrors[fieldKey]
+              return newErrors
+            })
+          }
+        }}
         fullWidth
-        helperText={'helperText' in field ? field.helperText : undefined}
+        error={shouldShowErrorText}
+        helperText={shouldShowErrorText ? (fieldErrorMessages[0] || `${field.label} é obrigatório`) : ('helperText' in field ? field.helperText : undefined)}
         required={'required' in field ? field.required : undefined}
         placeholder={'placeholder' in field ? field.placeholder : undefined}
         disabled={('disabled' in field ? field.disabled : undefined) || (dialog.mode === 'edit' && disableEdit)}
