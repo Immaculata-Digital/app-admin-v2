@@ -141,10 +141,17 @@ const comunicacoesRequest = async <T>(path: string, options: RequestInit = {}): 
     }
 
     return (await response.json()) as T
-  } catch (error) {
+  } catch (error: any) {
     // Se for erro de conexão (API não está rodando), lança erro específico
     if (error instanceof TypeError && error.message.includes('fetch')) {
       throw new Error('Não foi possível conectar à API de comunicações. Verifique se o servidor está rodando.')
+    }
+    // Preservar status e details se existirem
+    if (error?.status || error?.details) {
+      const preservedError: any = new Error(error.message || 'Erro na requisição')
+      preservedError.status = error.status
+      preservedError.details = error.details
+      throw preservedError
     }
     throw error
   }

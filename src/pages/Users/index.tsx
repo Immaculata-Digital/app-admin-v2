@@ -337,10 +337,14 @@ const UsersPage = () => {
       await loadUsers()
       setToast({ open: true, message: 'Usuário criado com sucesso' })
     } catch (err: any) {
-      console.error(err)
+      console.error('Erro no handleAddUser:', err, 'status:', err?.status)
       // Se for erro 422, re-lançar para que o TableCard possa tratar
       if (err?.status === 422) {
-        throw err
+        // Garantir que o erro mantenha o status ao ser re-lançado
+        const errorWithStatus: any = err instanceof Error ? err : new Error(err?.message || 'Erro de validação')
+        errorWithStatus.status = err?.status || 422
+        errorWithStatus.details = err?.details
+        throw errorWithStatus
       }
       setToast({ open: true, message: err instanceof Error ? err.message : 'Erro ao criar usuário' })
     }
@@ -362,10 +366,14 @@ const UsersPage = () => {
         await refreshPermissions()
       }
     } catch (err: any) {
-      console.error(err)
+      console.error('Erro no handleEditUser:', err, 'status:', err?.status)
       // Se for erro 422, re-lançar para que o TableCard possa tratar
       if (err?.status === 422) {
-        throw err
+        // Garantir que o erro mantenha o status ao ser re-lançado
+        const errorWithStatus: any = err instanceof Error ? err : new Error(err?.message || 'Erro de validação')
+        errorWithStatus.status = err?.status || 422
+        errorWithStatus.details = err?.details
+        throw errorWithStatus
       }
       setToast({ open: true, message: err instanceof Error ? err.message : 'Erro ao atualizar' })
     }

@@ -327,10 +327,14 @@ const ClientesPage = () => {
         setToast({ open: true, message: 'Cliente criado com sucesso!', severity: 'success' })
         loadClientes()
       } catch (err: any) {
-        console.error(err)
+        console.error('Erro no handleCreate:', err, 'status:', err?.status)
         // Se for erro 422, re-lançar para que o TableCard possa tratar
         if (err?.status === 422) {
-          throw err
+          // Garantir que o erro mantenha o status ao ser re-lançado
+          const errorWithStatus: any = err instanceof Error ? err : new Error(err?.message || 'Erro de validação')
+          errorWithStatus.status = err?.status || 422
+          errorWithStatus.details = err?.details
+          throw errorWithStatus
         }
         setToast({ open: true, message: err.message || 'Erro ao criar cliente', severity: 'error' })
       }
@@ -354,10 +358,14 @@ const ClientesPage = () => {
         setToast({ open: true, message: 'Cliente atualizado com sucesso!', severity: 'success' })
         loadClientes()
       } catch (err: any) {
-        console.error(err)
+        console.error('Erro no handleUpdate:', err, 'status:', err?.status)
         // Se for erro 422, re-lançar para que o TableCard possa tratar
         if (err?.status === 422) {
-          throw err
+          // Garantir que o erro mantenha o status ao ser re-lançado
+          const errorWithStatus: any = err instanceof Error ? err : new Error(err?.message || 'Erro de validação')
+          errorWithStatus.status = err?.status || 422
+          errorWithStatus.details = err?.details
+          throw errorWithStatus
         }
         setToast({ open: true, message: err.message || 'Erro ao atualizar cliente', severity: 'error' })
       }

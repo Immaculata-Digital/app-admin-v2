@@ -286,7 +286,9 @@ function TableCard<T extends TableCardRow>({
       closeDialog()
     } catch (error: any) {
       // Se for erro 422 (validação), não fechar a modal e mostrar erros
-      if (error?.status === 422) {
+      // Verificar status diretamente no erro ou na propriedade status
+      const errorStatus = error?.status || (error?.response?.status) || (error?.statusCode)
+      if (errorStatus === 422) {
         const validationErrors: Record<string, string[]> = {}
         
         // Adicionar erros do backend se existirem
@@ -467,7 +469,7 @@ function TableCard<T extends TableCardRow>({
           ? field.options
           : []
       const multiValue = Array.isArray(value) ? value : []
-      const isEmptyMulti = multiValue.length === 0
+      const isEmptyMulti = (multiValue as any[]).length === 0
       const isPasswordFieldMulti = fieldKey.toLowerCase().includes('senha') || fieldKey.toLowerCase().includes('password')
       const isRequiredMulti = 'required' in field && field.required === true
       const hasValidationErrorsMulti = Object.keys(fieldErrors).length > 0
