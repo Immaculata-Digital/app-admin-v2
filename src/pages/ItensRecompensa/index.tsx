@@ -183,7 +183,8 @@ const ItensRecompensaPage = () => {
             maxSizeMB={5}
             maxWidth={800}
             maxHeight={800}
-            helperText="Faça upload de uma imagem para o item de recompensa"
+            forceExactSize={true}
+            helperText="Recomendado: imagem quadrada de 800x800 pixels. A imagem será automaticamente redimensionada para esta dimensão."
           />
         ),
       },

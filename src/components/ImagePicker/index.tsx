@@ -25,9 +25,10 @@ type ImagePickerProps = {
   maxSizeMB?: number
   maxWidth?: number
   maxHeight?: number
+  forceExactSize?: boolean
 }
 
-const compressImage = (file: File, maxWidth: number = 800, maxHeight: number = 800): Promise<string> => {
+const compressImage = (file: File, targetWidth: number = 800, targetHeight: number = 800, forceExactSize: boolean = false): Promise<string> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
     reader.readAsDataURL(file)
@@ -36,22 +37,8 @@ const compressImage = (file: File, maxWidth: number = 800, maxHeight: number = 8
       img.src = event.target?.result as string
       img.onload = () => {
         const canvas = document.createElement('canvas')
-        let width = img.width
-        let height = img.height
-
-        // Redimensionar se for muito grande
-        if (width > maxWidth || height > maxHeight) {
-          if (width > height) {
-            height = (height / width) * maxWidth
-            width = maxWidth
-          } else {
-            width = (width / height) * maxHeight
-            height = maxHeight
-          }
-        }
-
-        canvas.width = width
-        canvas.height = height
+        canvas.width = targetWidth
+        canvas.height = targetHeight
 
         const ctx = canvas.getContext('2d')
         if (!ctx) {
@@ -59,7 +46,55 @@ const compressImage = (file: File, maxWidth: number = 800, maxHeight: number = 8
           return
         }
 
-        ctx.drawImage(img, 0, 0, width, height)
+        if (forceExactSize) {
+          // Redimensionar para tamanho exato usando crop centralizado
+          const imgAspect = img.width / img.height
+          const targetAspect = targetWidth / targetHeight
+
+          let sourceX = 0
+          let sourceY = 0
+          let sourceWidth = img.width
+          let sourceHeight = img.height
+
+          // Calcular área de crop para manter proporção
+          if (imgAspect > targetAspect) {
+            // Imagem é mais larga - crop nas laterais
+            sourceHeight = img.height
+            sourceWidth = img.height * targetAspect
+            sourceX = (img.width - sourceWidth) / 2
+          } else {
+            // Imagem é mais alta - crop no topo/baixo
+            sourceWidth = img.width
+            sourceHeight = img.width / targetAspect
+            sourceY = (img.height - sourceHeight) / 2
+          }
+
+          // Desenhar a imagem com crop centralizado
+          ctx.drawImage(
+            img,
+            sourceX, sourceY, sourceWidth, sourceHeight,
+            0, 0, targetWidth, targetHeight
+          )
+        } else {
+          // Comportamento original: redimensionar mantendo proporção
+          let width = img.width
+          let height = img.height
+
+          if (width > targetWidth || height > targetHeight) {
+            if (width > height) {
+              height = (height / width) * targetWidth
+              width = targetWidth
+            } else {
+              width = (width / height) * targetHeight
+              height = targetHeight
+            }
+          }
+
+          canvas.width = width
+          canvas.height = height
+
+          ctx.drawImage(img, 0, 0, width, height)
+        }
 
         // Gerar base64 - usar JPEG para melhor compressão, PNG para transparência
         const originalType = file.type || 'image/png'
@@ -92,6 +127,7 @@ const ImagePicker = ({
   maxSizeMB = 5,
   maxWidth = 800,
   maxHeight = 800,
+  forceExactSize = false,
 }: ImagePickerProps) => {
   const [preview, setPreview] = useState<string | null>(value || null)
   const [loading, setLoading] = useState(false)
@@ -124,7 +160,7 @@ const ImagePicker = ({
 
     try {
       // Comprimir e redimensionar a imagem
-      const compressedBase64 = await compressImage(file, maxWidth, maxHeight)
+      const compressedBase64 = await compressImage(file, maxWidth, maxHeight, forceExactSize)
       setPreview(compressedBase64)
       onChange(compressedBase64)
     } catch (err) {
