@@ -111,7 +111,7 @@ const ItensRecompensaPage = () => {
       },
       {
         key: 'nao_retirar_loja',
-        label: 'Não Retirar na Loja',
+        label: 'Sob aprovação da franquia',
         render: (value: boolean) => (value ? 'Sim' : 'Não'),
       },
     ],
@@ -131,6 +131,7 @@ const ItensRecompensaPage = () => {
             onChange={(text) => onChange(text)}
             fullWidth
             disabled={disabled}
+            required
           />
         ),
       },
@@ -147,6 +148,7 @@ const ItensRecompensaPage = () => {
             multiline
             rows={3}
             disabled={disabled}
+            required
           />
         ),
       },
@@ -163,6 +165,7 @@ const ItensRecompensaPage = () => {
             type="integer"
             min={0}
             disabled={disabled}
+            required
           />
         ),
       },
@@ -186,7 +189,7 @@ const ItensRecompensaPage = () => {
       },
       {
         key: 'nao_retirar_loja',
-        label: 'Não Retirar na Loja',
+        label: 'Sob aprovação da franquia',
         required: false,
         renderInput: ({ value, onChange, disabled }) => (
           <Box display="flex" alignItems="center">
@@ -197,7 +200,7 @@ const ItensRecompensaPage = () => {
               disabled={disabled}
             />
             <Typography variant="body2" sx={{ ml: 1 }}>
-              Não Retirar na Loja
+              Sob aprovação da franquia
             </Typography>
           </Box>
         ),
