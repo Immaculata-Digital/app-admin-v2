@@ -13,7 +13,7 @@ import {
   MenuItem,
   InputAdornment,
 } from '@mui/material'
-import { Upload, Palette, TextFields } from '@mui/icons-material'
+import { Upload, Palette, TextFields, RestartAlt } from '@mui/icons-material'
 import { configuracoesService, type ConfiguracaoGlobal, type ConfiguracaoUpdate, type ConfiguracaoCreate } from '../../services/configuracoes'
 import { getTenantSchema } from '../../utils/schema'
 import { useAuth } from '../../context/AuthContext'
@@ -116,6 +116,65 @@ const ConfiguracoesPage = () => {
     reader.readAsDataURL(file)
   }
 
+  // Valores padrão de fábrica
+  const DEFAULT_VALUES = {
+    cor_fundo: '#f8fafc',
+    cor_card: '#ffffff',
+    cor_texto_card: '#000000',
+    cor_valor_card: '#000000',
+    cor_botao: '#3b82f6',
+    cor_texto_botao: '#ffffff',
+    fonte_titulos: 'Arial',
+    fonte_textos: 'Arial',
+  }
+
+  const handleResetToDefault = async () => {
+    if (!user?.id) {
+      setToast({ open: true, message: 'Usuário não autenticado' })
+      return
+    }
+
+    if (!configuracao?.id_config_global) {
+      setToast({ open: true, message: 'Não há configurações para resetar' })
+      return
+    }
+
+    try {
+      setSaving(true)
+      
+      // Atualiza com valores padrão e remove a logo
+      const dataToSend: ConfiguracaoUpdate = {
+        logo_base64: null, // Remove a logo
+        ...DEFAULT_VALUES,
+      }
+
+      const updated = await configuracoesService.update(
+        getTenantSchema(),
+        configuracao.id_config_global,
+        dataToSend
+      )
+
+      // Atualiza o estado local
+      setConfiguracao(updated)
+      setFormData(DEFAULT_VALUES)
+      setLogoPreview(null)
+      setLogoFile(null)
+
+      setToast({
+        open: true,
+        message: 'Configurações restauradas para o padrão de fábrica',
+      })
+    } catch (err: any) {
+      console.error(err)
+      setToast({
+        open: true,
+        message: err.message || 'Erro ao restaurar configurações padrão',
+      })
+    } finally {
+      setSaving(false)
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -140,14 +199,14 @@ const ConfiguracoesPage = () => {
       if (!configuracao?.id_config_global) {
         const createData: ConfiguracaoCreate = {
           logo_base64: dataToSend.logo_base64,
-          cor_fundo: dataToSend.cor_fundo || '#f8fafc',
-          cor_card: dataToSend.cor_card || '#ffffff',
-          cor_texto_card: dataToSend.cor_texto_card || '#000000',
-          cor_valor_card: dataToSend.cor_valor_card || '#000000',
-          cor_botao: dataToSend.cor_botao || '#3b82f6',
-          cor_texto_botao: dataToSend.cor_texto_botao || '#ffffff',
-          fonte_titulos: dataToSend.fonte_titulos || 'Arial',
-          fonte_textos: dataToSend.fonte_textos || 'Arial',
+          cor_fundo: dataToSend.cor_fundo || DEFAULT_VALUES.cor_fundo,
+          cor_card: dataToSend.cor_card || DEFAULT_VALUES.cor_card,
+          cor_texto_card: dataToSend.cor_texto_card || DEFAULT_VALUES.cor_texto_card,
+          cor_valor_card: dataToSend.cor_valor_card || DEFAULT_VALUES.cor_valor_card,
+          cor_botao: dataToSend.cor_botao || DEFAULT_VALUES.cor_botao,
+          cor_texto_botao: dataToSend.cor_texto_botao || DEFAULT_VALUES.cor_texto_botao,
+          fonte_titulos: dataToSend.fonte_titulos || DEFAULT_VALUES.fonte_titulos,
+          fonte_textos: dataToSend.fonte_textos || DEFAULT_VALUES.fonte_textos,
           usu_cadastro: parseInt(user.id, 10),
         }
         updated = await configuracoesService.create(getTenantSchema(), createData)
@@ -559,6 +618,16 @@ const ConfiguracoesPage = () => {
           {/* Botão de Salvar */}
           <Grid size={{ xs: 12 }}>
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+              <Button
+                variant="outlined"
+                color="warning"
+                disabled={saving || !configuracao?.id_config_global}
+                onClick={handleResetToDefault}
+                startIcon={<RestartAlt />}
+                size="large"
+              >
+                Voltar ao Padrão
+              </Button>
               <Button type="submit" variant="contained" disabled={saving} size="large">
                 {saving ? (
                   <>

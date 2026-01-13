@@ -18,7 +18,7 @@ export type ConfiguracaoGlobal = {
 }
 
 export type ConfiguracaoUpdate = {
-  logo_base64?: string
+  logo_base64?: string | null
   cor_fundo?: string
   cor_card?: string
   cor_texto_card?: string
