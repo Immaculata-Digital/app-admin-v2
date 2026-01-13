@@ -208,20 +208,25 @@ const ItensRecompensaPage = () => {
 
   const handleCreate = useCallback(
     async (formData: Partial<ItemRecompensaRow>) => {
+      const payload: CreateItemRecompensaPayload = {
+        nome_item: (formData.nome_item as string) ?? '',
+        descricao: (formData.descricao as string) ?? '',
+        quantidade_pontos: Number(formData.quantidade_pontos) || 0,
+        imagem_item: (formData.imagem_item as string | null) || null,
+        nao_retirar_loja: formData.nao_retirar_loja === true || (typeof formData.nao_retirar_loja === 'string' && formData.nao_retirar_loja === 'true'),
+      }
+      
       try {
-        const payload: CreateItemRecompensaPayload = {
-          nome_item: (formData.nome_item as string) ?? '',
-          descricao: (formData.descricao as string) ?? '',
-          quantidade_pontos: Number(formData.quantidade_pontos) || 0,
-          imagem_item: (formData.imagem_item as string | null) || null,
-          nao_retirar_loja: formData.nao_retirar_loja === true || (typeof formData.nao_retirar_loja === 'string' && formData.nao_retirar_loja === 'true'),
-        }
         await itemRecompensaService.create(getTenantSchema(), payload)
         setToast({ open: true, message: 'Item de recompensa criado com sucesso!' })
         await loadItens()
       } catch (err: any) {
+        console.error(err)
+        // Se for erro 422, re-lançar para que o TableCard possa tratar
+        if (err?.status === 422) {
+          throw err
+        }
         setToast({ open: true, message: err.message || 'Erro ao criar item de recompensa' })
-        throw err
       }
     },
     []
@@ -229,20 +234,25 @@ const ItensRecompensaPage = () => {
 
   const handleUpdate = useCallback(
     async (id: ItemRecompensaRow['id'], formData: Partial<ItemRecompensaRow>) => {
+      const payload: UpdateItemRecompensaPayload = {
+        nome_item: formData.nome_item as string | undefined,
+        descricao: formData.descricao as string | undefined,
+        quantidade_pontos: formData.quantidade_pontos ? Number(formData.quantidade_pontos) : undefined,
+        imagem_item: formData.imagem_item !== undefined ? (formData.imagem_item as string | null) : undefined,
+        nao_retirar_loja: formData.nao_retirar_loja !== undefined ? (formData.nao_retirar_loja === true || (typeof formData.nao_retirar_loja === 'string' && formData.nao_retirar_loja === 'true')) : undefined,
+      }
+      
       try {
-        const payload: UpdateItemRecompensaPayload = {
-          nome_item: formData.nome_item as string | undefined,
-          descricao: formData.descricao as string | undefined,
-          quantidade_pontos: formData.quantidade_pontos ? Number(formData.quantidade_pontos) : undefined,
-          imagem_item: formData.imagem_item !== undefined ? (formData.imagem_item as string | null) : undefined,
-          nao_retirar_loja: formData.nao_retirar_loja !== undefined ? (formData.nao_retirar_loja === true || (typeof formData.nao_retirar_loja === 'string' && formData.nao_retirar_loja === 'true')) : undefined,
-        }
         await itemRecompensaService.update(getTenantSchema(), Number(id), payload)
         setToast({ open: true, message: 'Item de recompensa atualizado com sucesso!' })
         await loadItens()
       } catch (err: any) {
+        console.error(err)
+        // Se for erro 422, re-lançar para que o TableCard possa tratar
+        if (err?.status === 422) {
+          throw err
+        }
         setToast({ open: true, message: err.message || 'Erro ao atualizar item de recompensa' })
-        throw err
       }
     },
     []
@@ -283,6 +293,7 @@ const ItensRecompensaPage = () => {
         onEdit={canEdit ? handleUpdate : undefined}
         onDelete={canDelete ? handleDelete : undefined}
         disableView={!canView}
+        onValidationError={(message) => setToast({ open: true, message })}
       />
 
       <Snackbar
