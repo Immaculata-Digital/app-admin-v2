@@ -33,8 +33,11 @@ export const AuthTemplate = ({
   children,
   showThemeSwitcher = true,
 }: AuthTemplateProps) => {
-  const [logoBase64, setLogoBase64] = useState<string | undefined>(undefined)
-  const appName = 'Concordia ERP'
+  // Logo fixa do Concordia no lado esquerdo
+  const concordiaLogoPath = '/images/completa_branca.png'
+  
+  // Logo do cliente no lado direito (acima do formulário)
+  const [clientLogoBase64, setClientLogoBase64] = useState<string | undefined>(undefined)
 
   useEffect(() => {
     const fetchConfig = async () => {
@@ -42,10 +45,8 @@ export const AuthTemplate = ({
         const schema = getTenantSchema()
         const config = await configuracoesService.getFirst(schema, { skipAuth: true })
         
-        if (config) {
-          if (config.logo_base64) {
-            setLogoBase64(config.logo_base64)
-          }
+        if (config?.logo_base64) {
+          setClientLogoBase64(config.logo_base64)
         }
       } catch (err) {
         console.error('Failed to load config:', err)
@@ -60,23 +61,8 @@ export const AuthTemplate = ({
       <Box className="auth-visual-side">
         <Box className="auth-visual-overlay" />
         <Box className="auth-feature-card">
-           <Box className="auth-feature-icon" sx={{ bgcolor: 'var(--brand-primary)' }}>
-             {logoBase64 ? (
-               <img src={logoBase64} alt="Logo" style={{ maxHeight: 60, maxWidth: '100%' }} />
-             ) : (
-               <Box sx={{ p: 1.5, bgcolor: 'var(--brand-primary)', borderRadius: '12px', display: 'inline-flex' }}>
-                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  <path d="M2 17L12 22L22 17" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  <path d="M2 12L12 17L22 12" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-               </Box>
-             )}
-            </Box>
-          <Typography variant="h4" fontWeight="bold" sx={{ color: 'white', mb: 2, fontFamily: 'Poppins, sans-serif' }}>
-            {visualTitle || appName}
-          </Typography>
-          <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.7)', mb: 3, lineHeight: 1.6 }}>
+           <img src={concordiaLogoPath} alt="Logo Concordia" style={{ width: '100%', marginBottom: '12px' }} />
+          <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.7)', mb: 2, lineHeight: 1.6 }}>
              {visualDescription}
           </Typography>
           
@@ -110,8 +96,8 @@ export const AuthTemplate = ({
 
         <Box className="auth-form-container">
           <Box className="login-logo-wrapper" sx={{ mb: 4, justifyContent: 'flex-start' }}>
-             {logoBase64 ? (
-               <img src={logoBase64} alt="Logo" style={{ maxHeight: 60, maxWidth: '100%' }} />
+             {clientLogoBase64 ? (
+               <img src={clientLogoBase64} alt="Logo" style={{ maxHeight: 60, maxWidth: '100%' }} />
              ) : (
                <Box sx={{ p: 1.5, bgcolor: 'var(--brand-primary)', borderRadius: '12px', display: 'inline-flex' }}>
                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">

@@ -13,7 +13,7 @@ import {
   MenuItem,
   InputAdornment,
 } from '@mui/material'
-import { Upload, Palette, TextFields, RestartAlt } from '@mui/icons-material'
+import { Upload, Palette, TextFields, RestartAlt, Delete } from '@mui/icons-material'
 import { configuracoesService, type ConfiguracaoGlobal, type ConfiguracaoUpdate, type ConfiguracaoCreate } from '../../services/configuracoes'
 import { getTenantSchema } from '../../utils/schema'
 import { useAuth } from '../../context/AuthContext'
@@ -114,6 +114,52 @@ const ConfiguracoesPage = () => {
       setLogoFile(base64)
     }
     reader.readAsDataURL(file)
+  }
+
+  const handleDeleteLogo = async () => {
+    if (!user?.id) {
+      setToast({ open: true, message: 'Usuário não autenticado' })
+      return
+    }
+
+    if (!configuracao?.id_config_global) {
+      // Se não há configuração, apenas limpa o preview local
+      setLogoPreview(null)
+      setLogoFile(null)
+      setToast({ open: true, message: 'Logo removida' })
+      return
+    }
+
+    try {
+      setSaving(true)
+      const dataToSend: ConfiguracaoUpdate = {
+        ...formData,
+        logo_base64: null,
+      }
+
+      const updated = await configuracoesService.update(
+        getTenantSchema(),
+        configuracao.id_config_global,
+        dataToSend
+      )
+
+      setConfiguracao(updated)
+      setLogoPreview(null)
+      setLogoFile(null)
+
+      setToast({
+        open: true,
+        message: 'Logo excluída com sucesso',
+      })
+    } catch (err: any) {
+      console.error(err)
+      setToast({
+        open: true,
+        message: err.message || 'Erro ao excluir logo',
+      })
+    } finally {
+      setSaving(false)
+    }
   }
 
   // Valores padrão de fábrica
@@ -280,17 +326,35 @@ const ConfiguracoesPage = () => {
                   <Box
                     sx={{
                       display: 'flex',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      p: 2,
+                      flexDirection: 'column',
+                      gap: 2,
                       mb: 2,
-                      border: '1px solid',
-                      borderColor: 'divider',
-                      borderRadius: 1,
-                      bgcolor: 'action.hover',
                     }}
                   >
-                    <img src={logoPreview} alt="Logo preview" style={{ maxHeight: '128px', objectFit: 'contain' }} />
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        p: 2,
+                        border: '1px solid',
+                        borderColor: 'divider',
+                        borderRadius: 1,
+                        bgcolor: 'action.hover',
+                      }}
+                    >
+                      <img src={logoPreview} alt="Logo preview" style={{ maxHeight: '128px', objectFit: 'contain' }} />
+                    </Box>
+                    <Button
+                      variant="outlined"
+                      color="error"
+                      startIcon={<Delete />}
+                      onClick={handleDeleteLogo}
+                      disabled={saving}
+                      fullWidth
+                    >
+                      Excluir Logo
+                    </Button>
                   </Box>
                 )}
                 <label htmlFor="logo-upload">
