@@ -489,7 +489,7 @@ const CampanhasDisparoPage = () => {
           tipo_destinatario: isTipoAutomatico ? 'todos' : ((formData.tipo_destinatario as 'todos' | 'lojas_especificas' | 'clientes_especificos') || 'todos'),
           lojas_ids: isTipoAutomatico ? null : (formData.tipo_destinatario === 'lojas_especificas' ? (formData.lojas_ids as string | null) || null : null),
           clientes_ids: isTipoAutomatico ? null : (formData.tipo_destinatario === 'clientes_especificos' ? (formData.clientes_ids as string | null) || null : null),
-          usu_cadastro: user?.id ? parseInt(user.id) : DEFAULT_USER_ID,
+          usu_cadastro: (user?.id && !isNaN(parseInt(user.id))) ? parseInt(user.id) : DEFAULT_USER_ID,
         }
         await comunicacoesService.campanhasDisparo.create(getTenantSchema(), payload)
         setToast({ open: true, message: 'Campanha criada com sucesso!' })
@@ -554,7 +554,7 @@ const CampanhasDisparoPage = () => {
           tipo_destinatario: isTipoAutomatico ? 'todos' : tipoDestinatario,
           lojas_ids: isTipoAutomatico ? null : (tipoDestinatario === 'lojas_especificas' ? (formData.lojas_ids as string | null) || null : null),
           clientes_ids: isTipoAutomatico ? null : (tipoDestinatario === 'clientes_especificos' ? (formData.clientes_ids as string | null) || null : null),
-          usu_altera: user?.id ? parseInt(user.id) : DEFAULT_USER_ID,
+          usu_altera: (user?.id && !isNaN(parseInt(user.id))) ? parseInt(user.id) : DEFAULT_USER_ID,
         }
         await comunicacoesService.campanhasDisparo.update(getTenantSchema(), String(id), payload)
         setToast({ open: true, message: 'Campanha atualizada com sucesso!' })
@@ -731,7 +731,7 @@ const CampanhasDisparoPage = () => {
                 String(currentCampanhaId),
                 {
                   html,
-                  usu_altera: user?.id ? parseInt(user.id) : DEFAULT_USER_ID,
+                  usu_altera: (user?.id && !isNaN(parseInt(user.id))) ? parseInt(user.id) : DEFAULT_USER_ID,
                 }
               )
               setToast({ open: true, message: 'HTML atualizado com sucesso!' })
