@@ -1,11 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import {
   Box,
   Snackbar,
   Typography,
 } from '@mui/material'
-import { QrCode, People, Person } from '@mui/icons-material'
+import { QrCode } from '@mui/icons-material'
 import TableCard, {
   type TableCardColumn,
   type TableCardFormField,
@@ -30,7 +29,6 @@ type LojaRow = TableCardRow & LojaDTO & {
 type GroupDictionary = Record<string, { name: string; code: string; features: string[] }>
 
 const LojasPage = () => {
-  const navigate = useNavigate()
   const [lojas, setLojas] = useState<LojaRow[]>([])
   const [_loading, setLoading] = useState(true)
   const [toast, setToast] = useState<{ open: boolean; message: string }>({ open: false, message: '' })
@@ -393,22 +391,6 @@ const LojasPage = () => {
     []
   )
 
-  const handleVerClientes = useCallback(
-    (loja: LojaRow) => {
-      if (!loja.nome_loja) return
-      navigate(`/clientes?loja=${encodeURIComponent(loja.nome_loja)}`)
-    },
-    [navigate]
-  )
-
-  const handleVerUsuarios = useCallback(
-    (loja: LojaRow) => {
-      if (!loja.id_loja) return
-      navigate(`/usuarios?loja=${loja.id_loja}`)
-    },
-    [navigate]
-  )
-
   const rowActions: TableCardRowAction<LojaRow>[] = useMemo(
     () => [
       {
@@ -416,18 +398,8 @@ const LojasPage = () => {
         icon: <QrCode fontSize="small" />,
         onClick: handleDownloadQRCode,
       },
-      {
-        label: 'Ver Clientes',
-        icon: <People fontSize="small" />,
-        onClick: handleVerClientes,
-      },
-      {
-        label: 'Ver Usuários',
-        icon: <Person fontSize="small" />,
-        onClick: handleVerUsuarios,
-      },
     ],
-    [handleDownloadQRCode, handleVerClientes, handleVerUsuarios]
+    [handleDownloadQRCode]
   )
 
   if (!canList) {

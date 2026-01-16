@@ -150,6 +150,18 @@ const UsersPage = () => {
     const data = await userService.list()
     let filteredUsers = data.map((user) => mapUserToRow(user, dictionary))
     
+    // Sempre filtrar usuários que estão no grupo CLIENTES
+    const clientesGroupId = Object.keys(dictionary).find(
+      (groupId) => dictionary[groupId]?.code === 'CLIENTES'
+    )
+    
+    if (clientesGroupId) {
+      // Remover usuários que estão no grupo CLIENTES
+      filteredUsers = filteredUsers.filter(
+        (user) => !user.groupIds.includes(clientesGroupId)
+      )
+    }
+    
     // Se o usuário logado está no grupo ADM-FRANQUIA, filtrar usuários do grupo ADM-TECH
     const isAdmFranquia = userGroups.some((groupId) => {
       const group = dictionary[groupId]
@@ -470,8 +482,14 @@ const UsersPage = () => {
     [featureDictionary],
   )
 
-  // Filtrar opções de grupos se o usuário logado está em ADM-FRANQUIA
+  // Filtrar opções de grupos: sempre remover CLIENTES, e remover ADM-TECH se usuário estiver em ADM-FRANQUIA
   const filteredGroupOptions = useMemo(() => {
+    let filtered = groupOptions.filter((option) => {
+      const group = groupDictionary[option.value]
+      // Sempre filtrar o grupo CLIENTES
+      return group?.code !== 'CLIENTES'
+    })
+    
     const isAdmFranquia = currentUserGroups.some((groupId) => {
       const group = groupDictionary[groupId]
       return group?.code === 'ADM-FRANQUIA'
@@ -479,13 +497,13 @@ const UsersPage = () => {
     
     if (isAdmFranquia) {
       // Filtrar o grupo ADM-TECH das opções
-      return groupOptions.filter((option) => {
+      filtered = filtered.filter((option) => {
         const group = groupDictionary[option.value]
         return group?.code !== 'ADM-TECH'
       })
     }
     
-    return groupOptions
+    return filtered
   }, [groupOptions, groupDictionary, currentUserGroups])
 
   const userFormFields: TableCardFormField<UserRow>[] = useMemo(
