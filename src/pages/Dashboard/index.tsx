@@ -31,12 +31,16 @@ import { dashboardService, type DashboardResponse } from '../../services/dashboa
 import { clienteService, type Cliente, type CodigoResgateResponse } from '../../services/clientes'
 import { getTenantSchema } from '../../utils/schema'
 import { useUserLojasGestoras } from '../../hooks/useUserLojasGestoras'
+import { useAuth } from '../../context/AuthContext'
 import './style.css'
 
 const DashboardPage = () => {
   const navigate = useNavigate()
   const schema = getTenantSchema()
   const { lojasGestoras, isAdmLoja } = useUserLojasGestoras()
+  const { permissions } = useAuth()
+  
+  const hasPermission = (permission: string) => permissions.includes(permission)
   
   const [data, setData] = useState<DashboardResponse | null>(null)
   const [loading, setLoading] = useState(true)
@@ -247,16 +251,17 @@ const DashboardPage = () => {
     <Box className="dashboard-page" sx={{ p: 3 }}>
       {/* Busca de Código */}
       <Grid container spacing={3} sx={{ mb: 3 }}>
-        <Grid size={{ xs: 12, md: 6 }}>
-          <Card className="glass-effect">
-            <CardContent>
-              <Box display="flex" flexDirection="column" gap={2}>
-                <Box display="flex" alignItems="center" gap={1}>
-                  <People sx={{ color: 'success.main', fontSize: 20 }} />
-                  <Typography variant="body2" fontWeight={500} sx={{ color: 'success.main' }}>
-                    Acrescentar pontos ao Cliente
-                  </Typography>
-                </Box>
+        {hasPermission('erp:dashboard:acrescentar-pontos') && (
+          <Grid size={{ xs: 12, md: 6 }}>
+            <Card className="glass-effect">
+              <CardContent>
+                <Box display="flex" flexDirection="column" gap={2}>
+                  <Box display="flex" alignItems="center" gap={1}>
+                    <People sx={{ color: 'success.main', fontSize: 20 }} />
+                    <Typography variant="body2" fontWeight={500} sx={{ color: 'success.main' }}>
+                      Acrescentar pontos ao Cliente
+                    </Typography>
+                  </Box>
                 <Box>
                   <TextField
                     value={`CLI-${codigoClienteBusca}`}
@@ -296,20 +301,22 @@ const DashboardPage = () => {
                     {isBuscandoCliente ? 'Consultando...' : 'Acrescentar Pontos'}
                   </Button>
                 </Box>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid size={{ xs: 12, md: 6 }}>
-          <Card className="glass-effect">
-            <CardContent>
-              <Box display="flex" flexDirection="column" gap={2}>
-                <Box display="flex" alignItems="center" gap={1}>
-                  <QrCode sx={{ color: 'error.main', fontSize: 20 }} />
-                  <Typography variant="body2" fontWeight={500} sx={{ color: 'error.main' }}>
-                    Consultar Código de Resgate
-                  </Typography>
                 </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+        )}
+        {hasPermission('erp:dashboard:consultar-codigo-resgate') && (
+          <Grid size={{ xs: 12, md: 6 }}>
+            <Card className="glass-effect">
+              <CardContent>
+                <Box display="flex" flexDirection="column" gap={2}>
+                  <Box display="flex" alignItems="center" gap={1}>
+                    <QrCode sx={{ color: 'error.main', fontSize: 20 }} />
+                    <Typography variant="body2" fontWeight={500} sx={{ color: 'error.main' }}>
+                      Consultar Código de Resgate
+                    </Typography>
+                  </Box>
                 <Box>
                   <TextField
                     value={codigoBusca}
@@ -350,64 +357,74 @@ const DashboardPage = () => {
                     {isBuscandoCodigo ? 'Consultando...' : 'Utilizar Pontos'}
                   </Button>
                 </Box>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+        )}
       </Grid>
 
       {/* KPIs Grid */}
       <Grid container spacing={3} sx={{ mb: 3 }}>
-        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <KPICard
-            title="Total de Clientes"
-            value={data?.clientes_total.toLocaleString('pt-BR') || '0'}
-            subtitle="Todos os tempos"
-            onClick={() => navigate('/clientes')}
-            loading={loading}
-            icon={<People sx={{ fontSize: 24 }} />}
-          />
-        </Grid>
+        {hasPermission('erp:dashboard:card-total-clientes') && (
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            <KPICard
+              title="Total de Clientes"
+              value={data?.clientes_total.toLocaleString('pt-BR') || '0'}
+              subtitle="Todos os tempos"
+              onClick={() => navigate('/clientes')}
+              loading={loading}
+              icon={<People sx={{ fontSize: 24 }} />}
+            />
+          </Grid>
+        )}
         
-        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <KPICard
-            title="Novos Clientes"
-            value={data?.clientes_7d || 0}
-            subtitle="Últimos 7 dias"
-            variacao={data?.clientes_7d_variacao}
-            onClick={() => navigate('/clientes')}
-            loading={loading}
-            icon={<TrendingUp sx={{ fontSize: 24 }} />}
-          />
-        </Grid>
+        {hasPermission('erp:dashboard:card-novos-clientes') && (
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            <KPICard
+              title="Novos Clientes"
+              value={data?.clientes_7d || 0}
+              subtitle="Últimos 7 dias"
+              variacao={data?.clientes_7d_variacao}
+              onClick={() => navigate('/clientes')}
+              loading={loading}
+              icon={<TrendingUp sx={{ fontSize: 24 }} />}
+            />
+          </Grid>
+        )}
         
-        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <KPICard
-            title="Pontos Creditados"
-            value={data?.pontos_creditados_7d.toLocaleString('pt-BR') || '0'}
-            subtitle="Últimos 7 dias"
-            loading={loading}
-            icon={<CardGiftcard sx={{ fontSize: 24 }} />}
-          />
-        </Grid>
+        {hasPermission('erp:dashboard:card-pontos-creditados') && (
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            <KPICard
+              title="Pontos Creditados"
+              value={data?.pontos_creditados_7d.toLocaleString('pt-BR') || '0'}
+              subtitle="Últimos 7 dias"
+              loading={loading}
+              icon={<CardGiftcard sx={{ fontSize: 24 }} />}
+            />
+          </Grid>
+        )}
         
-        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <KPICard
-            title="Pontos Resgatados"
-            value={data?.pontos_resgatados_7d.toLocaleString('pt-BR') || '0'}
-            subtitle="Últimos 7 dias"
-            loading={loading}
-            icon={<CardGiftcard sx={{ fontSize: 24 }} />}
-          />
-        </Grid>
+        {hasPermission('erp:dashboard:card-pontos-resgatados') && (
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            <KPICard
+              title="Pontos Resgatados"
+              value={data?.pontos_resgatados_7d.toLocaleString('pt-BR') || '0'}
+              subtitle="Últimos 7 dias"
+              loading={loading}
+              icon={<CardGiftcard sx={{ fontSize: 24 }} />}
+            />
+          </Grid>
+        )}
       </Grid>
 
       {/* Listas Rápidas */}
       <Grid container spacing={3}>
-        <Grid size={{ xs: 12, lg: 6 }}>
-          <SimpleTable
-            title="Novos Clientes (7 dias)"
-            data={data?.novos_clientes_7d || []}
+        {hasPermission('erp:dashboard:tabela-novos-clientes') && (
+          <Grid size={{ xs: 12, lg: 6 }}>
+            <SimpleTable
+              title="Novos Clientes (7 dias)"
+              data={data?.novos_clientes_7d || []}
             columns={[
               {
                 key: 'nome',
@@ -457,15 +474,17 @@ const DashboardPage = () => {
               label: 'Ver',
               onClick: (item) => navigate(`/clientes/${item.id_cliente}`),
             }}
-            emptyMessage="Nenhum cliente cadastrado no período."
-            loading={loading}
-          />
-        </Grid>
+              emptyMessage="Nenhum cliente cadastrado no período."
+              loading={loading}
+            />
+          </Grid>
+        )}
 
-        <Grid size={{ xs: 12, lg: 6 }}>
-          <SimpleTable
-            title="Últimos Resgates"
-            data={data?.ultimos_resgates || []}
+        {hasPermission('erp:dashboard:tabela-ultimos-resgates') && (
+          <Grid size={{ xs: 12, lg: 6 }}>
+            <SimpleTable
+              title="Últimos Resgates"
+              data={data?.ultimos_resgates || []}
             columns={[
               {
                 key: 'cliente_nome',
@@ -527,10 +546,11 @@ const DashboardPage = () => {
               label: 'Ver',
               onClick: (item) => navigate(`/resgates/${item.id_resgate}`),
             }}
-            emptyMessage="Nenhum resgate no período."
-            loading={loading}
-          />
-        </Grid>
+              emptyMessage="Nenhum resgate no período."
+              loading={loading}
+            />
+          </Grid>
+        )}
       </Grid>
 
       {/* Credit Points Modal */}

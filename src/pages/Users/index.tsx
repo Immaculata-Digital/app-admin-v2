@@ -63,6 +63,8 @@ const UsersPage = () => {
   const [toast, setToast] = useState<{ open: boolean; message: string }>({ open: false, message: '' })
   const [error, setError] = useState<string | null>(null)
   const [currentUserGroups, setCurrentUserGroups] = useState<string[]>([])
+  const [currentUserLojasGestoras, setCurrentUserLojasGestoras] = useState<number[]>([])
+  const [isAdmLoja, setIsAdmLoja] = useState(false)
   const [manageGroupsDialog, setManageGroupsDialog] = useState<{
     open: boolean
     userId: string | null
@@ -133,18 +135,6 @@ const UsersPage = () => {
     return dictionary
   }
 
-  const loadLojas = async () => {
-    try {
-      const schema = getTenantSchema()
-      const response = await lojaService.list(schema, { limit: 200, offset: 0 })
-      setLojaOptions(response.itens.map((loja) => ({ 
-        label: loja.nome_loja, 
-        value: loja.id_loja ?? 0 
-      })))
-    } catch (err) {
-      console.error('Erro ao carregar lojas:', err)
-    }
-  }
 
   const loadUsers = useCallback(async (dictionary: GroupDictionary = groupDictionary, userGroups: string[] = currentUserGroups) => {
     const data = await userService.list()
@@ -182,6 +172,26 @@ const UsersPage = () => {
       }
     }
     
+    // Se o usuário logado está no grupo ADM-LOJA, mostrar apenas usuários do grupo OPR-LOJA
+    const isAdmLoja = userGroups.some((groupId) => {
+      const group = dictionary[groupId]
+      return group?.code === 'ADM-LOJA'
+    })
+    
+    if (isAdmLoja) {
+      // Encontrar o ID do grupo OPR-LOJA
+      const oprLojaGroupId = Object.keys(dictionary).find(
+        (groupId) => dictionary[groupId]?.code === 'OPR-LOJA'
+      )
+      
+      if (oprLojaGroupId) {
+        // Filtrar para mostrar apenas usuários que estão no grupo OPR-LOJA
+        filteredUsers = filteredUsers.filter(
+          (user) => user.groupIds.includes(oprLojaGroupId)
+        )
+      }
+    }
+    
     setUsers(filteredUsers)
   }, [currentUserGroups, mapUserToRow, groupDictionary])
 
@@ -191,17 +201,49 @@ const UsersPage = () => {
       try {
         await loadFeatures()
         const dictionary = await loadGroups()
-        await loadLojas()
-        // Carregar grupos do usuário logado primeiro
+        // Carregar grupos e lojas gestoras do usuário logado primeiro
         let userGroups: string[] = []
+        let userLojasGestoras: number[] = []
         if (currentUser?.id) {
           try {
             const userData = await userService.getById(currentUser.id)
             userGroups = userData.groupIds || []
+            userLojasGestoras = userData.lojasGestoras || []
             setCurrentUserGroups(userGroups)
+            setCurrentUserLojasGestoras(userLojasGestoras)
+            
+            // Verificar se o usuário está no grupo ADM-LOJA ou OPR-LOJA
+            const isAdmLojaUser = userGroups.some((groupId) => {
+              const group = dictionary[groupId]
+              return group?.code === 'ADM-LOJA' || group?.code === 'OPR-LOJA'
+            })
+            setIsAdmLoja(isAdmLojaUser)
+            
+            // Carregar lojas após definir isAdmLoja e currentUserLojasGestoras
+            const schema = getTenantSchema()
+            const response = await lojaService.list(schema, { limit: 200, offset: 0 })
+            let lojas = response.itens.map((loja) => ({ 
+              label: loja.nome_loja, 
+              value: loja.id_loja ?? 0 
+            }))
+            
+            // Se o usuário é administrador de loja, filtrar apenas suas lojas gestoras
+            if (isAdmLojaUser && userLojasGestoras.length > 0) {
+              lojas = lojas.filter((loja) => userLojasGestoras.includes(loja.value))
+            }
+            
+            setLojaOptions(lojas)
           } catch (err) {
             console.error('Erro ao carregar grupos do usuário logado:', err)
           }
+        } else {
+          // Se não há usuário logado, carregar todas as lojas
+          const schema = getTenantSchema()
+          const response = await lojaService.list(schema, { limit: 200, offset: 0 })
+          setLojaOptions(response.itens.map((loja) => ({ 
+            label: loja.nome_loja, 
+            value: loja.id_loja ?? 0 
+          })))
         }
         // Carregar usuários com os grupos do usuário logado
         await loadUsers(dictionary, userGroups)
@@ -224,6 +266,27 @@ const UsersPage = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUserGroups, groupDictionary, loadUsers])
+
+  // Recarregar lojas quando isAdmLoja ou currentUserLojasGestoras mudar
+  useEffect(() => {
+    if (!loading && isAdmLoja && currentUserLojasGestoras.length > 0) {
+      const schema = getTenantSchema()
+      lojaService.list(schema, { limit: 200, offset: 0 })
+        .then((response) => {
+          const lojas = response.itens
+            .map((loja) => ({ 
+              label: loja.nome_loja, 
+              value: loja.id_loja ?? 0 
+            }))
+            .filter((loja) => currentUserLojasGestoras.includes(loja.value))
+          setLojaOptions(lojas)
+        })
+        .catch((err) => {
+          console.error('Erro ao recarregar lojas:', err)
+        })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAdmLoja, currentUserLojasGestoras])
 
   const mergeGroupFeatures = useCallback(
     (selectedGroupIds: string[], currentAllow: string[] = []) => {
@@ -261,10 +324,10 @@ const UsersPage = () => {
       }
       const updated = await userService.updateGroups(manageGroupsDialog.userId, payload)
       
-      // Atualizar lojas gestoras se o grupo ADM-LOJA estiver selecionado
+      // Atualizar lojas gestoras se o grupo ADM-LOJA ou OPR-LOJA estiver selecionado
       const hasAdmLojaGroup = manageGroupsDialog.groupIds.some((groupId) => {
         const group = groupDictionary[groupId]
-        return group?.code === 'ADM-LOJA'
+        return group?.code === 'ADM-LOJA' || group?.code === 'OPR-LOJA'
       })
       
       if (hasAdmLojaGroup) {
@@ -483,6 +546,7 @@ const UsersPage = () => {
   )
 
   // Filtrar opções de grupos: sempre remover CLIENTES, e remover ADM-TECH se usuário estiver em ADM-FRANQUIA
+  // Se for administrador de loja (ADM-LOJA ou OPR-LOJA), mostrar apenas OPR-LOJA
   const filteredGroupOptions = useMemo(() => {
     let filtered = groupOptions.filter((option) => {
       const group = groupDictionary[option.value]
@@ -503,8 +567,16 @@ const UsersPage = () => {
       })
     }
     
+    // Se for administrador de loja (ADM-LOJA ou OPR-LOJA), mostrar apenas OPR-LOJA
+    if (isAdmLoja) {
+      filtered = filtered.filter((option) => {
+        const group = groupDictionary[option.value]
+        return group?.code === 'OPR-LOJA'
+      })
+    }
+    
     return filtered
-  }, [groupOptions, groupDictionary, currentUserGroups])
+  }, [groupOptions, groupDictionary, currentUserGroups, isAdmLoja])
 
   const userFormFields: TableCardFormField<UserRow>[] = useMemo(
     () => [
@@ -599,16 +671,20 @@ const UsersPage = () => {
         key: 'lojasGestoras',
         label: 'Lojas Gestoras',
         required: false,
-        helperText: 'Selecione as lojas das quais este usuário é gestor (apenas para grupo ADM-LOJA)',
+        helperText: 'Selecione as lojas das quais este usuário é gestor (apenas para grupos ADM-LOJA ou OPR-LOJA)',
         renderInput: ({ value, onChange, field, disabled, formValues }) => {
-          // Verificar se algum grupo selecionado é ADM-LOJA
+          // Verificar se algum grupo selecionado é ADM-LOJA ou OPR-LOJA
           const selectedGroupIds = Array.isArray(formValues.groupIds) ? formValues.groupIds : []
           const hasAdmLojaGroup = selectedGroupIds.some((groupId) => {
             const group = groupDictionary[groupId]
-            return group?.code === 'ADM-LOJA'
+            return group?.code === 'ADM-LOJA' || group?.code === 'OPR-LOJA'
+          })
+          const hasOprLojaGroup = selectedGroupIds.some((groupId) => {
+            const group = groupDictionary[groupId]
+            return group?.code === 'OPR-LOJA'
           })
 
-          // Só mostrar se o grupo ADM-LOJA estiver selecionado
+          // Só mostrar se o grupo ADM-LOJA ou OPR-LOJA estiver selecionado
           if (!hasAdmLojaGroup) return null
 
           return (
@@ -622,6 +698,7 @@ const UsersPage = () => {
               showSelectAll
               chipDisplay="block"
               disabled={disabled}
+              required={hasOprLojaGroup}
             />
           )
         },
@@ -728,7 +805,7 @@ const UsersPage = () => {
           title="Usuários"
           columns={tableColumns}
           rows={users}
-          onAdd={hasPermission('erp:usuarios:criar') ? handleAddUser : undefined}
+          onAdd={(hasPermission('erp:usuarios:criar') || isAdmLoja) ? handleAddUser : undefined}
           onEdit={handleEditUser}
           onDelete={handleDeleteUser}
           onBulkDelete={hasPermission('erp:usuarios:excluir') ? handleBulkDelete : undefined}
@@ -859,7 +936,7 @@ const UsersPage = () => {
             />
             {manageGroupsDialog.groupIds.some((groupId) => {
               const group = groupDictionary[groupId]
-              return group?.code === 'ADM-LOJA'
+              return group?.code === 'ADM-LOJA' || group?.code === 'OPR-LOJA'
             }) && (
               <MultiSelectPicker
                 label="Lojas Gestoras"
