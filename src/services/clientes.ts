@@ -309,6 +309,12 @@ export const clienteService = {
       ...(data.observacao ? { observacao: data.observacao } : {}),
     }
 
+    console.log('[clienteService.creditarPontos] Payload enviado:', {
+      endpoint: `/clientes/${schema}/${clienteId}/creditar-pontos`,
+      payload,
+      id_loja_from_data: data.id_loja,
+    })
+
     // Usa API v2 agora que o endpoint foi criado
     const response = await request<{
       movimentacao: {
@@ -348,7 +354,8 @@ export const clienteService = {
   marcarCodigoComoUtilizado: async (
     schema: string,
     idCliente: number,
-    codigoResgate: string
+    codigoResgate: string,
+    id_loja?: number
   ): Promise<{
     status: string
     codigo_resgate: string
@@ -364,6 +371,17 @@ export const clienteService = {
       throw new Error('Código de resgate deve ter 5 caracteres')
     }
 
+    const payload: { id_loja?: number } = {}
+    if (id_loja) {
+      payload.id_loja = id_loja
+    }
+
+    console.log('[clienteService.marcarCodigoComoUtilizado] Payload enviado:', {
+      endpoint: `/clientes/${schema}/${clienteId}/pontos/${codigoUpper}`,
+      payload,
+      id_loja_from_param: id_loja,
+    })
+
     return request<{
       status: string
       codigo_resgate: string
@@ -373,6 +391,7 @@ export const clienteService = {
       id_movimentacao: number | null
     }>(`/clientes/${schema}/${clienteId}/pontos/${codigoUpper}`, {
       method: 'PUT',
+      body: Object.keys(payload).length > 0 ? JSON.stringify(payload) : undefined,
     })
   },
 

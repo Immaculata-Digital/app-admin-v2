@@ -14,6 +14,7 @@ export interface LoginResponse {
     fullName: string
     login: string
     email: string
+    id_loja?: number
   }
 }
 
@@ -22,6 +23,7 @@ export interface AuthUser {
   fullName: string
   login: string
   email: string
+  id_loja?: number
 }
 
 const TOKEN_KEY = 'concordia_access_token'

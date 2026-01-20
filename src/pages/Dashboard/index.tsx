@@ -32,6 +32,7 @@ import { clienteService, type Cliente, type CodigoResgateResponse } from '../../
 import { getTenantSchema } from '../../utils/schema'
 import { useUserLojasGestoras } from '../../hooks/useUserLojasGestoras'
 import { useAuth } from '../../context/AuthContext'
+import { authService } from '../../services/auth'
 import './style.css'
 
 const DashboardPage = () => {
@@ -157,10 +158,22 @@ const DashboardPage = () => {
     }
 
     try {
+      // Obter id_loja do usuário logado do localStorage (concordia_user)
+      const user = authService.getUser()
+      const idLoja = user?.id_loja
+
+      console.log('[Dashboard] Marcando código como utilizado - localStorage:', {
+        userFromStorage: user,
+        idLojaFromStorage: idLoja,
+        clienteIdLoja: selectedCliente.id_loja
+      })
+
+      // Sempre usar o id_loja do localStorage do usuário logado
       await clienteService.marcarCodigoComoUtilizado(
         schema,
         selectedCliente.id_cliente,
-        codigoResgate.trim()
+        codigoResgate.trim(),
+        idLoja
       )
       
       setToast({ open: true, message: 'Código marcado como utilizado com sucesso!', severity: 'success' })
@@ -190,10 +203,21 @@ const DashboardPage = () => {
 
     setIsCreditando(true)
     try {
+      // Obter id_loja do usuário logado do localStorage (concordia_user)
+      const user = authService.getUser()
+      const idLoja = user?.id_loja
+
+      console.log('[Dashboard] Creditando pontos - localStorage:', {
+        userFromStorage: user,
+        idLojaFromStorage: idLoja,
+        clienteIdLoja: clienteParaCredito.id_loja
+      })
+
+      // Sempre usar o id_loja do localStorage do usuário logado
       await clienteService.creditarPontos(schema, clienteParaCredito.id_cliente, {
         valor_reais: creditData.valor_reais,
         origem: 'MANUAL',
-        id_loja: clienteParaCredito.id_loja || undefined,
+        id_loja: idLoja, // Usa o id_loja do localStorage (concordia_user)
         observacao: 'Acréscimo por compra do cliente',
       })
       setCodigoClienteBusca('')

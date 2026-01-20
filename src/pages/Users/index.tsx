@@ -25,6 +25,7 @@ import { useAuth } from '../../context/AuthContext'
 import TextPicker from '../../components/TextPicker'
 import PasswordPicker from '../../components/PasswordPicker'
 import MultiSelectPicker from '../../components/MultiSelectPicker'
+import SelectPicker from '../../components/SelectPicker'
 import MailPicker from '../../components/MailPicker'
 import { accessGroupService } from '../../services/accessGroups'
 import { userService, type UserDTO } from '../../services/users'
@@ -136,7 +137,7 @@ const UsersPage = () => {
   }
 
 
-  const loadUsers = useCallback(async (dictionary: GroupDictionary = groupDictionary, userGroups: string[] = currentUserGroups) => {
+  const loadUsers = useCallback(async (dictionary: GroupDictionary = groupDictionary, userGroups: string[] = currentUserGroups, userLojasGestoras: number[] = currentUserLojasGestoras) => {
     const data = await userService.list()
     let filteredUsers = data.map((user) => mapUserToRow(user, dictionary))
     
@@ -170,6 +171,18 @@ const UsersPage = () => {
           (user) => !user.groupIds.includes(admTechGroupId)
         )
       }
+      
+      // Encontrar o ID do grupo OPR-LOJA (Operador de Loja)
+      const oprLojaGroupId = Object.keys(dictionary).find(
+        (groupId) => dictionary[groupId]?.code === 'OPR-LOJA'
+      )
+      
+      if (oprLojaGroupId) {
+        // Filtrar usuários que NÃO estão no grupo OPR-LOJA
+        filteredUsers = filteredUsers.filter(
+          (user) => !user.groupIds.includes(oprLojaGroupId)
+        )
+      }
     }
     
     // Se o usuário logado está no grupo ADM-LOJA, mostrar apenas usuários do grupo OPR-LOJA
@@ -189,11 +202,26 @@ const UsersPage = () => {
         filteredUsers = filteredUsers.filter(
           (user) => user.groupIds.includes(oprLojaGroupId)
         )
+        
+        // Filtrar apenas operadores de loja que estão vinculados às lojas que o ADM-LOJA administra
+        if (userLojasGestoras && userLojasGestoras.length > 0) {
+          filteredUsers = filteredUsers.filter((user) => {
+            // Se o operador não tem lojas gestoras, não mostrar
+            if (!user.lojasGestoras || user.lojasGestoras.length === 0) {
+              return false
+            }
+            // Verificar se há interseção entre as lojas gestoras do ADM-LOJA e as do operador
+            const hasIntersection = user.lojasGestoras.some((lojaId) =>
+              userLojasGestoras.includes(lojaId)
+            )
+            return hasIntersection
+          })
+        }
       }
     }
     
     setUsers(filteredUsers)
-  }, [currentUserGroups, mapUserToRow, groupDictionary])
+  }, [currentUserGroups, currentUserLojasGestoras, mapUserToRow, groupDictionary])
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -245,8 +273,8 @@ const UsersPage = () => {
             value: loja.id_loja ?? 0 
           })))
         }
-        // Carregar usuários com os grupos do usuário logado
-        await loadUsers(dictionary, userGroups)
+        // Carregar usuários com os grupos e lojas gestoras do usuário logado
+        await loadUsers(dictionary, userGroups, userLojasGestoras)
       } catch (err) {
         console.error(err)
         setError('Não foi possível carregar usuários')
@@ -262,10 +290,10 @@ const UsersPage = () => {
   useEffect(() => {
     // Só recarregar se não estiver no carregamento inicial e ambos estiverem prontos
     if (groupDictionary && Object.keys(groupDictionary).length > 0 && !loading && loadUsers) {
-      loadUsers(groupDictionary, currentUserGroups)
+      loadUsers(groupDictionary, currentUserGroups, currentUserLojasGestoras)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentUserGroups, groupDictionary, loadUsers])
+  }, [currentUserGroups, currentUserLojasGestoras, groupDictionary, loadUsers])
 
   // Recarregar lojas quando isAdmLoja ou currentUserLojasGestoras mudar
   useEffect(() => {
@@ -687,6 +715,30 @@ const UsersPage = () => {
           // Só mostrar se o grupo ADM-LOJA ou OPR-LOJA estiver selecionado
           if (!hasAdmLojaGroup) return null
 
+          // Se for OPR-LOJA, usar SelectPicker (seleção única)
+          if (hasOprLojaGroup) {
+            // Converter array para valor único (pegar o primeiro valor ou null)
+            const singleValue = Array.isArray(value) && value.length > 0 ? value[0] : null
+            
+            return (
+              <SelectPicker
+                label={field.label}
+                value={singleValue}
+                onChange={(selected) => {
+                  // Converter valor único para array (ou array vazio se null)
+                  onChange(selected !== null ? [selected as number] : [])
+                }}
+                options={lojaOptions.map(opt => ({ value: opt.value, label: opt.label }))}
+                placeholder="Selecione a loja gestora"
+                fullWidth
+                disabled={disabled}
+                required={hasOprLojaGroup}
+                multiple={false}
+              />
+            )
+          }
+
+          // Se for apenas ADM-LOJA, usar MultiSelectPicker (seleção múltipla)
           return (
             <MultiSelectPicker
               label={field.label}
@@ -698,7 +750,7 @@ const UsersPage = () => {
               showSelectAll
               chipDisplay="block"
               disabled={disabled}
-              required={hasOprLojaGroup}
+              required={false}
             />
           )
         },
@@ -937,24 +989,58 @@ const UsersPage = () => {
             {manageGroupsDialog.groupIds.some((groupId) => {
               const group = groupDictionary[groupId]
               return group?.code === 'ADM-LOJA' || group?.code === 'OPR-LOJA'
-            }) && (
-              <MultiSelectPicker
-                label="Lojas Gestoras"
-                value={manageGroupsDialog.lojasGestoras}
-                onChange={(selected) => {
-                  setManageGroupsDialog(prev => ({
-                    ...prev,
-                    lojasGestoras: selected as number[]
-                  }))
-                }}
-                options={lojaOptions}
-                fullWidth
-                placeholder="Selecione as lojas das quais este usuário é gestor"
-                showSelectAll
-                chipDisplay="block"
-                disabled={!hasPermission('erp:usuarios:atribuir-grupos')}
-              />
-            )}
+            }) && (() => {
+              const hasOprLojaGroup = manageGroupsDialog.groupIds.some((groupId) => {
+                const group = groupDictionary[groupId]
+                return group?.code === 'OPR-LOJA'
+              })
+              
+              // Se for OPR-LOJA, usar SelectPicker (seleção única)
+              if (hasOprLojaGroup) {
+                const singleValue = Array.isArray(manageGroupsDialog.lojasGestoras) && manageGroupsDialog.lojasGestoras.length > 0 
+                  ? manageGroupsDialog.lojasGestoras[0] 
+                  : null
+                
+                return (
+                  <SelectPicker
+                    label="Loja Gestora"
+                    value={singleValue}
+                    onChange={(selected) => {
+                      setManageGroupsDialog(prev => ({
+                        ...prev,
+                        lojasGestoras: selected !== null ? [selected as number] : []
+                      }))
+                    }}
+                    options={lojaOptions.map(opt => ({ value: opt.value, label: opt.label }))}
+                    fullWidth
+                    placeholder="Selecione a loja da qual este usuário é gestor"
+                    disabled={!hasPermission('erp:usuarios:atribuir-grupos')}
+                    multiple={false}
+                    required
+                  />
+                )
+              }
+              
+              // Se for apenas ADM-LOJA, usar MultiSelectPicker (seleção múltipla)
+              return (
+                <MultiSelectPicker
+                  label="Lojas Gestoras"
+                  value={manageGroupsDialog.lojasGestoras}
+                  onChange={(selected) => {
+                    setManageGroupsDialog(prev => ({
+                      ...prev,
+                      lojasGestoras: selected as number[]
+                    }))
+                  }}
+                  options={lojaOptions}
+                  fullWidth
+                  placeholder="Selecione as lojas das quais este usuário é gestor"
+                  showSelectAll
+                  chipDisplay="block"
+                  disabled={!hasPermission('erp:usuarios:atribuir-grupos')}
+                />
+              )
+            })()}
           </Stack>
         </DialogContent>
         <DialogActions>

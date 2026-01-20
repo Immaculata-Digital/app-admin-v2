@@ -40,6 +40,7 @@ import { clienteService, type ClienteDTO } from '../../services/clientes'
 import { getTenantSchema } from '../../utils/schema'
 import { formatTelefoneWhatsApp, getWhatsAppLink } from '../../utils/masks'
 import { lojaService } from '../../services/lojas'
+import { authService } from '../../services/auth'
 import TableCard, { type TableCardColumn, type TableCardRow } from '../../components/TableCard'
 import './style.css'
 
@@ -96,6 +97,7 @@ const ClienteDetalhesPage = () => {
     }
     loadLojas()
   }, [schema])
+
 
   useEffect(() => {
     if (!id) {
@@ -179,10 +181,21 @@ const ClienteDetalhesPage = () => {
 
     setIsCreditando(true)
     try {
+      // Obter id_loja do usuário logado do localStorage (concordia_user)
+      const user = authService.getUser()
+      const idLoja = user?.id_loja
+
+      console.log('[ClienteDetalhes] Creditando pontos - localStorage:', {
+        userFromStorage: user,
+        idLojaFromStorage: idLoja,
+        clienteIdLoja: cliente.id_loja
+      })
+
+      // Sempre usar o id_loja do localStorage do usuário logado
       await clienteService.creditarPontos(schema, cliente.id_cliente, {
         valor_reais: creditData.valor_reais,
         origem: 'MANUAL',
-        id_loja: cliente.id_loja,
+        id_loja: idLoja, // Usa o id_loja do localStorage (concordia_user)
         observacao: 'Acréscimo por compra do cliente',
       })
       setToast({ open: true, message: 'Pontos creditados com sucesso!', severity: 'success' })
@@ -215,7 +228,18 @@ const ClienteDetalhesPage = () => {
     }
 
     try {
-      await clienteService.marcarCodigoComoUtilizado(schema, cliente.id_cliente, codigoResgate.trim())
+      // Obter id_loja do usuário logado do localStorage (concordia_user)
+      const user = authService.getUser()
+      const idLoja = user?.id_loja
+
+      console.log('[ClienteDetalhes] Marcando código como utilizado - localStorage:', {
+        userFromStorage: user,
+        idLojaFromStorage: idLoja,
+        clienteIdLoja: cliente.id_loja
+      })
+
+      // Sempre usar o id_loja do localStorage do usuário logado
+      await clienteService.marcarCodigoComoUtilizado(schema, cliente.id_cliente, codigoResgate.trim(), idLoja)
       setToast({ open: true, message: 'Código marcado como utilizado com sucesso!', severity: 'success' })
       setIsDebitModalOpen(false)
       setCodigoResgate('')
