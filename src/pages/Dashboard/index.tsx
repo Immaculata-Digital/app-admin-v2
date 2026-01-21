@@ -26,6 +26,7 @@ import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { KPICard } from '../../components/dashboard/KPICard'
 import { SimpleTable } from '../../components/dashboard/SimpleTable'
+import { RewardItemsCarousel } from '../../components/dashboard/RewardItemsCarousel'
 import { formatTelefoneWhatsApp, getWhatsAppLink } from '../../utils/masks'
 import { dashboardService, type DashboardResponse } from '../../services/dashboard'
 import { clienteService, type Cliente, type CodigoResgateResponse } from '../../services/clientes'
@@ -508,7 +509,7 @@ const DashboardPage = () => {
           <Grid size={{ xs: 12, lg: 6 }}>
             <SimpleTable
               title="Últimos Resgates"
-              data={data?.ultimos_resgates || []}
+              data={(data?.ultimos_resgates || []).slice(0, 3)}
             columns={[
               {
                 key: 'cliente_nome',
@@ -576,6 +577,13 @@ const DashboardPage = () => {
           </Grid>
         )}
       </Grid>
+
+      {/* Carrossel de Itens de Recompensa */}
+      {hasPermission('erp:itens-recompensa:listar') && (
+        <Box sx={{ mt: 3 }}>
+          <RewardItemsCarousel />
+        </Box>
+      )}
 
       {/* Credit Points Modal */}
       <Dialog open={isCreditModalOpen} onClose={resetCreditModal} maxWidth="sm" fullWidth>
