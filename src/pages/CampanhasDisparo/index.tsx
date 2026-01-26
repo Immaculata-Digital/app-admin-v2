@@ -472,7 +472,11 @@ const CampanhasDisparoPage = () => {
   const handleCreate = useCallback(
     async (formData: Partial<CampanhaDisparoRow>) => {
       try {
-        const tipoEnvio = (formData.tipo_envio as 'manual' | 'agendado' | 'boas_vindas' | 'atualizacao_pontos' | 'resgate' | 'reset_senha' | 'resgate_nao_retirar_loja') ?? 'manual'
+        const tipoEnvioValue = formData.tipo_envio as 'manual' | 'agendado' | 'boas_vindas' | 'atualizacao_pontos' | 'resgate' | 'reset_senha' | 'resgate_nao_retirar_loja' | string | undefined
+        const tipoEnvio: 'manual' | 'agendado' | 'boas_vindas' | 'atualizacao_pontos' | 'resgate' | 'reset_senha' | 'resgate_nao_retirar_loja' = 
+          (tipoEnvioValue && typeof tipoEnvioValue === 'string' && tipoEnvioValue.trim() !== '') 
+            ? (tipoEnvioValue as 'manual' | 'agendado' | 'boas_vindas' | 'atualizacao_pontos' | 'resgate' | 'reset_senha' | 'resgate_nao_retirar_loja')
+            : 'manual'
         const tiposAutomaticos = ['boas_vindas', 'atualizacao_pontos', 'resgate', 'reset_senha', 'resgate_nao_retirar_loja']
         const isTipoAutomatico = tiposAutomaticos.includes(tipoEnvio)
         

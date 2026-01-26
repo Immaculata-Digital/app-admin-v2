@@ -24,8 +24,8 @@ const getClientesV1ApiUrl = () => {
 const API_CLIENTES_BASE_URL = getClientesApiUrl()
 const API_CLIENTES_V1_BASE_URL = getClientesV1ApiUrl()
 
-// Constante para conversão de pontos: 100 pontos por 1 real
-const PONTOS_POR_REAL = 100
+// Constante para conversão de pontos: 10 pontos por 1 real
+const PONTOS_POR_REAL = 10
 
 const getAccessToken = (): string | null => {
   return localStorage.getItem('concordia_access_token')

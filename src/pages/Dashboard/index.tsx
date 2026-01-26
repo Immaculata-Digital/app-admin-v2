@@ -605,7 +605,7 @@ const DashboardPage = () => {
             />
             {creditData.valor_reais > 0 && (
               <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                Serão creditados <strong>{Math.floor(creditData.valor_reais * 100)} pontos</strong>
+                Serão creditados <strong>{Math.floor(creditData.valor_reais * 10)} pontos</strong>
               </Typography>
             )}
             <DialogActions>
