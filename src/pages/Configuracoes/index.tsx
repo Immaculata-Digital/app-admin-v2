@@ -1,22 +1,10 @@
 import { useState, useEffect } from 'react'
-import {
-  Box,
-  Button,
-  Card,
-  CardContent,
-  CardHeader,
-  CircularProgress,
-  Grid,
-  TextField,
-  Typography,
-  Snackbar,
-  MenuItem,
-  InputAdornment,
-} from '@mui/material'
-import { Upload, Palette, TextFields, RestartAlt, Delete } from '@mui/icons-material'
+import { Box, Button, Card, CardContent, CardHeader, CircularProgress, Grid, TextField, Typography, Snackbar, MenuItem, InputAdornment } from '@mui/material'
+import { Upload, Palette, TextFields, RestartAlt, Delete, QrCode2 } from '@mui/icons-material'
 import { configuracoesService, type ConfiguracaoGlobal, type ConfiguracaoUpdate, type ConfiguracaoCreate } from '../../services/configuracoes'
 import { getTenantSchema } from '../../utils/schema'
 import { useAuth } from '../../context/AuthContext'
+import { downloadQRCodeClienteRegistroPNG } from '../../utils/qrcode.utils'
 import './style.css'
 
 // Opções de fontes disponíveis
@@ -682,6 +670,29 @@ const ConfiguracoesPage = () => {
           {/* Botão de Salvar */}
           <Grid size={{ xs: 12 }}>
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+              <Button
+                variant="outlined"
+                color="primary"
+                onClick={async () => {
+                  try {
+                    await downloadQRCodeClienteRegistroPNG(0)
+                    setToast({
+                      open: true,
+                      message: 'QR Code baixado com sucesso!',
+                    })
+                  } catch (err: any) {
+                    console.error('Erro ao gerar QR Code:', err)
+                    setToast({
+                      open: true,
+                      message: err?.message || 'Erro ao gerar QR Code',
+                    })
+                  }
+                }}
+                startIcon={<QrCode2 />}
+                size="large"
+              >
+                Baixar QR Code
+              </Button>
               <Button
                 variant="outlined"
                 color="warning"

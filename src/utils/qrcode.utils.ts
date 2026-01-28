@@ -73,6 +73,30 @@ export async function generateQRCodeDataUrl(url: string): Promise<string> {
 }
 
 /**
+ * Gera e faz download de um QR Code em PNG para cadastro de cliente
+ * @param idLoja ID da loja (use 0 para QR Code genérico)
+ */
+export async function downloadQRCodeClienteRegistroPNG(idLoja: number): Promise<void> {
+  const url = getClienteRegistroUrl(idLoja)
+  const qrCodeDataUrl = await generateQRCodeDataUrl(url)
+
+  // Converte data URL para Blob
+  const response = await fetch(qrCodeDataUrl)
+  const blob = await response.blob()
+
+  // Cria link de download
+  const link = document.createElement('a')
+  const objectUrl = URL.createObjectURL(blob)
+  link.href = objectUrl
+  const filename = idLoja === 0 ? 'qrcode_cadastro_generico.png' : `qrcode_cadastro_loja_${idLoja}.png`
+  link.download = filename
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  URL.revokeObjectURL(objectUrl)
+}
+
+/**
  * Gera e faz download de um PDF A4 com QR Code para cadastro de cliente
  * @param idLoja ID da loja
  * @param nomeLoja Nome da loja (para nomear o arquivo e exibir no PDF)
