@@ -83,7 +83,7 @@ const FONT_WEIGHT_OPTIONS = [
 // Função para converter cores para formato HEX
 const normalizeColorToHex = (color: string | undefined): string => {
   if (!color) return '#000000'
-  
+
   // Se já é um HEX válido, retornar
   if (/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(color)) {
     // Converter formato curto (#fff) para formato longo (#ffffff)
@@ -92,7 +92,7 @@ const normalizeColorToHex = (color: string | undefined): string => {
     }
     return color.toUpperCase()
   }
-  
+
   // Mapeamento de cores nomeadas comuns
   const namedColors: Record<string, string> = {
     'black': '#000000',
@@ -115,12 +115,12 @@ const normalizeColorToHex = (color: string | undefined): string => {
     'fuchsia': '#FF00FF',
     'purple': '#800080',
   }
-  
+
   const lowerColor = color.toLowerCase().trim()
   if (namedColors[lowerColor]) {
     return namedColors[lowerColor]
   }
-  
+
   // Tentar converter RGB/RGBA para HEX
   const rgbMatch = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*[\d.]+)?\)/)
   if (rgbMatch) {
@@ -129,12 +129,12 @@ const normalizeColorToHex = (color: string | undefined): string => {
     const b = parseInt(rgbMatch[3]).toString(16).padStart(2, '0')
     return `#${r}${g}${b}`.toUpperCase()
   }
-  
+
   // Se não conseguir converter, retornar padrão
   return '#000000'
 }
 
-export type EmailElement = 
+export type EmailElement =
   | { type: 'text'; id: string; content: string; styles?: { fontSize?: string; color?: string; fontWeight?: string } }
   | { type: 'image'; id: string; src: string; alt: string; width?: string }
   | { type: 'button'; id: string; text: string; url: string; styles?: { backgroundColor?: string; color?: string } }
@@ -145,9 +145,10 @@ type EmailEditorProps = {
   onClose: () => void
   onSave: (html: string) => void
   initialHtml?: string
+  campaignType?: string
 }
 
-const SortableItem = ({ element, onEdit, onDelete }: { 
+const SortableItem = ({ element, onEdit, onDelete }: {
   element: EmailElement
   onEdit: (element: EmailElement) => void
   onDelete: (id: string) => void
@@ -249,7 +250,7 @@ const SortableItem = ({ element, onEdit, onDelete }: {
   )
 }
 
-const ElementPalette = ({ onAdd, onAddResetButton }: { 
+const ElementPalette = ({ onAdd, onAddResetButton }: {
   onAdd: (type: EmailElement['type']) => void
   onAddResetButton: () => void
 }) => {
@@ -296,15 +297,17 @@ const ElementEditor = ({
   open,
   onClose,
   onSave,
+  campaignType,
 }: {
   element: EmailElement | null
   open: boolean
   onClose: () => void
   onSave: (element: EmailElement) => void
+  campaignType?: string
 }) => {
   const [editedElement, setEditedElement] = useState<EmailElement | null>(null)
   const [textFieldRef, setTextFieldRef] = useState<HTMLTextAreaElement | null>(null)
-  
+
   // Estados para tamanho de fonte dividido
   const [fontSizeNumber, setFontSizeNumber] = useState<string>('16')
   const [fontSizeUnit, setFontSizeUnit] = useState<string>('px')
@@ -324,7 +327,7 @@ const ElementEditor = ({
           color: normalizeColorToHex(element.styles?.color || '#000000'),
         }
         setEditedElement({ ...element, styles: normalizedStyles })
-        
+
         // Parsear tamanho de fonte
         if (element.styles?.fontSize) {
           const fontSize = element.styles.fontSize
@@ -356,15 +359,15 @@ const ElementEditor = ({
 
   const insertVariable = (variable: string) => {
     if (!editedElement || editedElement.type !== 'text' || !textFieldRef) return
-    
+
     const textarea = textFieldRef
     const start = textarea.selectionStart
     const end = textarea.selectionEnd
     const currentContent = editedElement.content
     const newContent = currentContent.substring(0, start) + variable + currentContent.substring(end)
-    
+
     setEditedElement({ ...editedElement, content: newContent } as EmailElement)
-    
+
     // Restaurar o foco e posição do cursor após a variável inserida
     setTimeout(() => {
       textarea.focus()
@@ -388,7 +391,13 @@ const ElementEditor = ({
                 Variáveis do Cliente
               </Typography>
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
-                {CLIENTE_VARIABLES.map((variable) => (
+                {CLIENTE_VARIABLES.filter(variable => {
+                  if (campaignType === 'reset_senha') {
+                    // Para reset de senha, permitir apenas Nome Completo
+                    return variable.label === 'Nome Completo'
+                  }
+                  return true
+                }).map((variable) => (
                   <Button
                     key={variable.value}
                     size="small"
@@ -652,7 +661,7 @@ const ElementEditor = ({
   )
 }
 
-export const EmailEditor = ({ open, onClose, onSave, initialHtml }: EmailEditorProps) => {
+export const EmailEditor = ({ open, onClose, onSave, initialHtml, campaignType }: EmailEditorProps) => {
   const [elements, setElements] = useState<EmailElement[]>([])
   const [activeId, setActiveId] = useState<string | null>(null)
   const [editingElement, setEditingElement] = useState<EmailElement | null>(null)
@@ -667,7 +676,7 @@ export const EmailEditor = ({ open, onClose, onSave, initialHtml }: EmailEditorP
   // Função para parsear HTML e converter em elementos
   const parseHTMLToElements = useCallback((html: string): EmailElement[] => {
     if (!html || html.trim() === '') return []
-    
+
     try {
       const parser = new DOMParser()
       const doc = parser.parseFromString(html, 'text/html')
@@ -694,7 +703,7 @@ export const EmailEditor = ({ open, onClose, onSave, initialHtml }: EmailEditorP
             const color = normalizeColorToHex(colorRaw)
             const fontWeight = style.match(/font-weight:\s*([^;]+)/)?.[1]?.trim() || 'normal'
             const content = element.textContent?.trim() || ''
-            
+
             if (content) {
               elements.push({
                 type: 'text',
@@ -713,12 +722,12 @@ export const EmailEditor = ({ open, onClose, onSave, initialHtml }: EmailEditorP
                 return // Não processar aqui para evitar duplicação
               }
             }
-            
+
             const src = element.getAttribute('src') || ''
             const alt = element.getAttribute('alt') || ''
             const style = element.getAttribute('style') || ''
             const width = style.match(/max-width:\s*([^;]+)/)?.[1]?.trim() || '100%'
-            
+
             if (src) {
               elements.push({
                 type: 'image',
@@ -734,7 +743,7 @@ export const EmailEditor = ({ open, onClose, onSave, initialHtml }: EmailEditorP
             const img = element.querySelector('img')
             const divStyle = element.getAttribute('style') || ''
             const isCentered = divStyle.includes('text-align') && divStyle.includes('center')
-            
+
             if (link) {
               // Extrair estilos do link dentro da div (botão)
               const linkElement = link as HTMLElement
@@ -756,7 +765,7 @@ export const EmailEditor = ({ open, onClose, onSave, initialHtml }: EmailEditorP
                 }
               }
               const color = normalizeColorToHex(colorRaw)
-              
+
               // Aceitar botão se tiver texto (URL pode estar vazia)
               if (text) {
                 elements.push({
@@ -775,7 +784,7 @@ export const EmailEditor = ({ open, onClose, onSave, initialHtml }: EmailEditorP
               const alt = imgElement.getAttribute('alt') || ''
               const style = imgElement.getAttribute('style') || ''
               const width = style.match(/max-width:\s*([^;]+)/)?.[1]?.trim() || '100%'
-              
+
               if (src) {
                 elements.push({
                   type: 'image',
@@ -827,7 +836,7 @@ export const EmailEditor = ({ open, onClose, onSave, initialHtml }: EmailEditorP
     if (open) {
       // Resetar sempre que o modal abrir
       setElements([])
-      
+
       if (initialHtml && initialHtml.trim() !== '') {
         const parsedElements = parseHTMLToElements(initialHtml)
         if (parsedElements.length > 0) {
@@ -836,7 +845,7 @@ export const EmailEditor = ({ open, onClose, onSave, initialHtml }: EmailEditorP
       }
     }
   }, [open, initialHtml, parseHTMLToElements])
-  
+
   // Resetar elementos quando o modal fechar
   useEffect(() => {
     if (!open) {
@@ -868,21 +877,21 @@ export const EmailEditor = ({ open, onClose, onSave, initialHtml }: EmailEditorP
     const newElement: EmailElement = (() => {
       switch (type) {
         case 'text':
-          return { 
-            type: 'text', 
-            id: `text-${Date.now()}`, 
+          return {
+            type: 'text',
+            id: `text-${Date.now()}`,
             content: 'Novo texto',
             styles: { color: '#000000', fontSize: '16px', fontWeight: 'normal' }
           }
         case 'image':
           return { type: 'image', id: `image-${Date.now()}`, src: '', alt: '' }
         case 'button':
-          return { 
-            type: 'button', 
-            id: `button-${Date.now()}`, 
-            text: 'Clique aqui', 
-            url: '', 
-            styles: { backgroundColor: '#1976D2', color: '#FFFFFF' } 
+          return {
+            type: 'button',
+            id: `button-${Date.now()}`,
+            text: 'Clique aqui',
+            url: '',
+            styles: { backgroundColor: '#1976D2', color: '#FFFFFF' }
           }
         case 'divider':
           return { type: 'divider', id: `divider-${Date.now()}` }
@@ -966,7 +975,7 @@ export const EmailEditor = ({ open, onClose, onSave, initialHtml }: EmailEditorP
         <DialogContent sx={{ minHeight: 'calc(100vh - 80px)', display: 'flex', flexDirection: 'column', pt: 2 }}>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <ElementPalette onAdd={handleAddElement} onAddResetButton={handleAddResetButton} />
-            
+
             <Box sx={{ display: 'flex', gap: 2, flex: 1, minHeight: 0 }}>
               <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
                 <Typography variant="h6" gutterBottom>
@@ -1013,9 +1022,9 @@ export const EmailEditor = ({ open, onClose, onSave, initialHtml }: EmailEditorP
                 <Typography variant="h6" gutterBottom>
                   Pré-visualização
                 </Typography>
-                <Paper 
-                  sx={{ 
-                    p: 2, 
+                <Paper
+                  sx={{
+                    p: 2,
                     flex: 1,
                     bgcolor: '#ffffff',
                     border: '1px solid #e0e0e0',
@@ -1055,8 +1064,8 @@ export const EmailEditor = ({ open, onClose, onSave, initialHtml }: EmailEditorP
         open={!!editingElement}
         onClose={() => setEditingElement(null)}
         onSave={handleSaveElement}
+        campaignType={campaignType}
       />
     </>
   )
 }
-

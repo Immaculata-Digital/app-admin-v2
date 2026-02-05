@@ -48,6 +48,7 @@ const CampanhasDisparoPage = () => {
   const [currentHtml, setCurrentHtml] = useState<string>('')
   const [htmlUpdateCallback, setHtmlUpdateCallback] = useState<((html: string) => void) | null>(null)
   const [currentCampanhaId, setCurrentCampanhaId] = useState<CampanhaDisparoRow['id'] | null>(null)
+  const [currentTipoEnvio, setCurrentTipoEnvio] = useState<string>('manual')
   const { setFilters, setPlaceholder, setQuery } = useSearch()
   const { permissions, user } = useAuth()
   const canDelete = permissions.includes('erp:campanhas-disparo:excluir')
@@ -55,19 +56,19 @@ const CampanhasDisparoPage = () => {
   const canCreate = permissions.includes('erp:campanhas-disparo:criar')
   const canView = permissions.includes('erp:campanhas-disparo:visualizar')
   const canList = permissions.includes('erp:campanhas-disparo:listar')
-  
+
   // Função auxiliar para verificar se a campanha pode ser excluída
   const canDeleteCampanha = (campanha: CampanhaDisparoRow) => {
     return canDelete && campanha.cliente_pode_excluir !== false
   }
-  
+
   // Função auxiliar para verificar se é uma campanha especial (padrão do sistema)
   const isCampanhaEspecial = (campanha: CampanhaDisparoRow | null | undefined) => {
     if (!campanha) return false
     // Verificar se tem o campo cliente_pode_excluir e se é false
     return campanha.cliente_pode_excluir === false
   }
-  
+
   // Função auxiliar para buscar campanha por ID
   const getCampanhaById = (id: CampanhaDisparoRow['id'] | null | undefined): CampanhaDisparoRow | null => {
     if (!id) return null
@@ -252,6 +253,11 @@ const CampanhasDisparoPage = () => {
                 // Detectar se estamos editando (se há um ID no formValues)
                 const campanhaId = formValues?.id || null
                 setCurrentCampanhaId(campanhaId)
+
+                // Definir o tipo de envio atual para o editor
+                const tipoEnvio = formValues?.tipo_envio || 'manual'
+                setCurrentTipoEnvio(String(tipoEnvio))
+
                 setHtmlUpdateCallback(() => (html: string) => {
                   onChange(html)
                 })
@@ -363,7 +369,7 @@ const CampanhasDisparoPage = () => {
               dateValue = value
             }
           }
-          
+
           return (
             <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
               <DateTimePicker
@@ -401,7 +407,7 @@ const CampanhasDisparoPage = () => {
           if (tiposAutomaticos.includes(tipoEnvio as string)) {
             return null
           }
-          
+
           const tipoDestinatario = value || 'todos'
           return (
             <Box>
@@ -426,7 +432,7 @@ const CampanhasDisparoPage = () => {
                   <MenuItem value="clientes_especificos">Clientes específicos</MenuItem>
                 </Select>
               </FormControl>
-              
+
               {tipoDestinatario === 'lojas_especificas' && (
                 <Box sx={{ mt: 2 }}>
                   <MultiSelectPicker
@@ -443,7 +449,7 @@ const CampanhasDisparoPage = () => {
                   />
                 </Box>
               )}
-              
+
               {tipoDestinatario === 'clientes_especificos' && (
                 <Box sx={{ mt: 2 }}>
                   <MultiSelectPicker
@@ -473,13 +479,13 @@ const CampanhasDisparoPage = () => {
     async (formData: Partial<CampanhaDisparoRow>) => {
       try {
         const tipoEnvioValue = formData.tipo_envio as 'manual' | 'agendado' | 'boas_vindas' | 'atualizacao_pontos' | 'resgate' | 'reset_senha' | 'resgate_nao_retirar_loja' | string | undefined
-        const tipoEnvio: 'manual' | 'agendado' | 'boas_vindas' | 'atualizacao_pontos' | 'resgate' | 'reset_senha' | 'resgate_nao_retirar_loja' = 
-          (tipoEnvioValue && typeof tipoEnvioValue === 'string' && tipoEnvioValue.trim() !== '') 
+        const tipoEnvio: 'manual' | 'agendado' | 'boas_vindas' | 'atualizacao_pontos' | 'resgate' | 'reset_senha' | 'resgate_nao_retirar_loja' =
+          (tipoEnvioValue && typeof tipoEnvioValue === 'string' && tipoEnvioValue.trim() !== '')
             ? (tipoEnvioValue as 'manual' | 'agendado' | 'boas_vindas' | 'atualizacao_pontos' | 'resgate' | 'reset_senha' | 'resgate_nao_retirar_loja')
             : 'manual'
         const tiposAutomaticos = ['boas_vindas', 'atualizacao_pontos', 'resgate', 'reset_senha', 'resgate_nao_retirar_loja']
         const isTipoAutomatico = tiposAutomaticos.includes(tipoEnvio)
-        
+
         const payload: CreateCampanhaDisparoPayload = {
           tipo: 'email',
           descricao: (formData.descricao as string) ?? '',
@@ -529,7 +535,7 @@ const CampanhasDisparoPage = () => {
         // Buscar a campanha original para verificar se é especial
         const campanhaOriginal = getCampanhaById(id)
         const isEspecial = isCampanhaEspecial(campanhaOriginal)
-        
+
         if (isEspecial) {
           // Bloquear alteração de tipo_envio e descricao para campanhas especiais
           if (formData.tipo_envio !== undefined && formData.tipo_envio !== campanhaOriginal?.tipo_envio) {
@@ -541,12 +547,12 @@ const CampanhasDisparoPage = () => {
             throw new Error('Não é possível alterar a descrição de campanhas padrão do sistema')
           }
         }
-        
+
         const tipoEnvio = formData.tipo_envio as 'manual' | 'agendado' | 'boas_vindas' | 'atualizacao_pontos' | 'resgate' | 'reset_senha' | 'resgate_nao_retirar_loja' | undefined
         const tiposAutomaticos = ['boas_vindas', 'atualizacao_pontos', 'resgate', 'reset_senha', 'resgate_nao_retirar_loja']
         const isTipoAutomatico = tipoEnvio && tiposAutomaticos.includes(tipoEnvio)
         const tipoDestinatario = formData.tipo_destinatario as 'todos' | 'lojas_especificas' | 'clientes_especificos' | undefined
-        
+
         const payload: UpdateCampanhaDisparoPayload = {
           // Para campanhas especiais, manter os valores originais de tipo_envio e descricao
           // Para campanhas normais, permitir alterações
@@ -602,12 +608,12 @@ const CampanhasDisparoPage = () => {
           setToast({ open: true, message: 'Campanha não encontrada' })
           return
         }
-        
+
         if (!canDeleteCampanha(campanha)) {
           setToast({ open: true, message: 'Esta campanha não pode ser excluída pois é padrão do sistema' })
           throw new Error('Esta campanha não pode ser excluída pois é padrão do sistema')
         }
-        
+
         await comunicacoesService.campanhasDisparo.delete(getTenantSchema(), String(id))
         setToast({ open: true, message: 'Campanha excluída com sucesso!' })
         await loadCampanhas()
@@ -627,21 +633,21 @@ const CampanhasDisparoPage = () => {
         // Filtrar apenas campanhas que podem ser excluídas
         const campanhasParaExcluir = ids
           .map((id) => getCampanhaById(id))
-          .filter((campanha): campanha is CampanhaDisparoRow => 
+          .filter((campanha): campanha is CampanhaDisparoRow =>
             campanha !== null && canDeleteCampanha(campanha)
           )
-        
+
         if (campanhasParaExcluir.length === 0) {
           setToast({ open: true, message: 'Nenhuma campanha pode ser excluída (campanhas padrão do sistema não podem ser excluídas)' })
           return
         }
-        
+
         if (campanhasParaExcluir.length < ids.length) {
           setToast({ open: true, message: `${ids.length - campanhasParaExcluir.length} campanha(s) padrão do sistema foram ignoradas` })
         }
-        
+
         await Promise.all(
-          campanhasParaExcluir.map((campanha) => 
+          campanhasParaExcluir.map((campanha) =>
             comunicacoesService.campanhasDisparo.delete(getTenantSchema(), String(campanha.id_campanha))
           )
         )
@@ -753,7 +759,7 @@ const CampanhasDisparoPage = () => {
               setToast({ open: true, message: 'HTML atualizado com sucesso!' })
               await loadCampanhas()
             }
-            
+
             // Atualizar o formulário também
             if (htmlUpdateCallback) {
               htmlUpdateCallback(html)
@@ -775,6 +781,7 @@ const CampanhasDisparoPage = () => {
           }
         }}
         initialHtml={currentHtml}
+        campaignType={currentTipoEnvio}
       />
     </Box>
   )
