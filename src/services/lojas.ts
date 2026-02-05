@@ -3,6 +3,7 @@ import { adminApi } from './admin-api'
 export type LojaDTO = {
   id_loja?: number
   nome_loja: string
+  nome_loja_publico?: string
   numero_identificador: string
   nome_responsavel: string
   telefone_responsavel: string
@@ -16,6 +17,7 @@ export type LojaDTO = {
 
 export type CreateLojaPayload = {
   nome_loja: string
+  nome_loja_publico?: string
   numero_identificador: string
   nome_responsavel: string
   telefone_responsavel: string
@@ -26,6 +28,7 @@ export type CreateLojaPayload = {
 
 export type UpdateLojaPayload = {
   nome_loja?: string
+  nome_loja_publico?: string
   numero_identificador?: string
   nome_responsavel?: string
   telefone_responsavel?: string
