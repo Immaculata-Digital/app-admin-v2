@@ -11,6 +11,8 @@ export type ConfiguracaoGlobal = {
   cor_texto_botao?: string
   fonte_titulos?: string
   fonte_textos?: string
+  arquivo_politica_privacidade?: string
+  arquivo_termos_uso?: string
   dt_cadastro: string
   usu_cadastro: number
   dt_altera?: string | null
@@ -27,6 +29,8 @@ export type ConfiguracaoUpdate = {
   cor_texto_botao?: string
   fonte_titulos?: string
   fonte_textos?: string
+  arquivo_politica_privacidade?: string | null
+  arquivo_termos_uso?: string | null
 }
 
 export type ConfiguracaoCreate = {
@@ -39,6 +43,8 @@ export type ConfiguracaoCreate = {
   cor_texto_botao?: string
   fonte_titulos?: string
   fonte_textos?: string
+  arquivo_politica_privacidade?: string
+  arquivo_termos_uso?: string
   usu_cadastro: number
 }
 

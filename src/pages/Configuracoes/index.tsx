@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Box, Button, Card, CardContent, CardHeader, CircularProgress, Grid, TextField, Typography, Snackbar, MenuItem, InputAdornment } from '@mui/material'
-import { Upload, Palette, TextFields, RestartAlt, Delete, QrCode2 } from '@mui/icons-material'
+import { Upload, Palette, TextFields, RestartAlt, Delete, QrCode2, Description } from '@mui/icons-material'
 import { configuracoesService, type ConfiguracaoGlobal, type ConfiguracaoUpdate, type ConfiguracaoCreate } from '../../services/configuracoes'
 import { getTenantSchema } from '../../utils/schema'
 import { useAuth } from '../../context/AuthContext'
@@ -39,10 +39,16 @@ const ConfiguracoesPage = () => {
     cor_texto_botao: '',
     fonte_titulos: '',
     fonte_textos: '',
+    arquivo_politica_privacidade: '',
+    arquivo_termos_uso: '',
   })
 
   const [logoPreview, setLogoPreview] = useState<string | null>(null)
   const [logoFile, setLogoFile] = useState<string | null>(null)
+  const [politicaFile, setPoliticaFile] = useState<string | null>(null)
+  const [termosFile, setTermosFile] = useState<string | null>(null)
+  const [politicaNome, setPoliticaNome] = useState<string | null>(null)
+  const [termosNome, setTermosNome] = useState<string | null>(null)
 
   useEffect(() => {
     loadConfiguracao()
@@ -59,9 +65,17 @@ const ConfiguracoesPage = () => {
         cor_texto_botao: configuracao.cor_texto_botao || '',
         fonte_titulos: configuracao.fonte_titulos || '',
         fonte_textos: configuracao.fonte_textos || '',
+        // arquivo_politica_privacidade e arquivo_termos_uso não são carregados no formData para evitar payload gigante
+        // eles só serão enviados se houver upload de um novo arquivo (politicaFile/termosFile)
       })
       if (configuracao.logo_base64) {
         setLogoPreview(configuracao.logo_base64)
+      }
+      if (configuracao.arquivo_politica_privacidade) {
+        setPoliticaNome('Politica_de_Privacidade.pdf')
+      }
+      if (configuracao.arquivo_termos_uso) {
+        setTermosNome('Termos_de_Uso.pdf')
       }
     }
   }, [configuracao])
@@ -104,7 +118,41 @@ const ConfiguracoesPage = () => {
     reader.readAsDataURL(file)
   }
 
+  const handlePdfChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'politica' | 'termos') => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Validar tipo de arquivo
+    if (file.type !== 'application/pdf') {
+      setToast({ open: true, message: 'Por favor, selecione um arquivo PDF válido' })
+      return
+    }
+
+    // Validar tamanho (máx 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setToast({ open: true, message: 'O arquivo deve ter no máximo 5MB' })
+      return
+    }
+
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      const base64 = reader.result as string
+      if (type === 'politica') {
+        setPoliticaFile(base64)
+        setPoliticaNome(file.name)
+      } else {
+        setTermosFile(base64)
+        setTermosNome(file.name)
+      }
+    }
+    reader.readAsDataURL(file)
+  }
+
   const handleDeleteLogo = async () => {
+    await handleDeleteFile('logo')
+  }
+
+  const handleDeleteFile = async (type: 'logo' | 'politica' | 'termos') => {
     if (!user?.id) {
       setToast({ open: true, message: 'Usuário não autenticado' })
       return
@@ -112,9 +160,17 @@ const ConfiguracoesPage = () => {
 
     if (!configuracao?.id_config_global) {
       // Se não há configuração, apenas limpa o preview local
-      setLogoPreview(null)
-      setLogoFile(null)
-      setToast({ open: true, message: 'Logo removida' })
+      if (type === 'logo') {
+        setLogoPreview(null)
+        setLogoFile(null)
+      } else if (type === 'politica') {
+        setPoliticaNome(null)
+        setPoliticaFile(null)
+      } else {
+        setTermosNome(null)
+        setTermosFile(null)
+      }
+      setToast({ open: true, message: 'Arquivo removido' })
       return
     }
 
@@ -122,8 +178,11 @@ const ConfiguracoesPage = () => {
       setSaving(true)
       const dataToSend: ConfiguracaoUpdate = {
         ...formData,
-        logo_base64: null,
       }
+
+      if (type === 'logo') dataToSend.logo_base64 = null
+      if (type === 'politica') dataToSend.arquivo_politica_privacidade = null
+      if (type === 'termos') dataToSend.arquivo_termos_uso = null
 
       const updated = await configuracoesService.update(
         getTenantSchema(),
@@ -132,18 +191,27 @@ const ConfiguracoesPage = () => {
       )
 
       setConfiguracao(updated)
-      setLogoPreview(null)
-      setLogoFile(null)
+
+      if (type === 'logo') {
+        setLogoPreview(null)
+        setLogoFile(null)
+      } else if (type === 'politica') {
+        setPoliticaNome(null)
+        setPoliticaFile(null)
+      } else {
+        setTermosNome(null)
+        setTermosFile(null)
+      }
 
       setToast({
         open: true,
-        message: 'Logo excluída com sucesso',
+        message: 'Arquivo excluído com sucesso',
       })
     } catch (err: any) {
       console.error(err)
       setToast({
         open: true,
-        message: err.message || 'Erro ao excluir logo',
+        message: err.message || 'Erro ao excluir arquivo',
       })
     } finally {
       setSaving(false)
@@ -175,10 +243,12 @@ const ConfiguracoesPage = () => {
 
     try {
       setSaving(true)
-      
+
       // Atualiza com valores padrão e remove a logo
       const dataToSend: ConfiguracaoUpdate = {
         logo_base64: null, // Remove a logo
+        arquivo_politica_privacidade: null,
+        arquivo_termos_uso: null,
         ...DEFAULT_VALUES,
       }
 
@@ -193,6 +263,10 @@ const ConfiguracoesPage = () => {
       setFormData(DEFAULT_VALUES)
       setLogoPreview(null)
       setLogoFile(null)
+      setPoliticaFile(null)
+      setPoliticaNome(null)
+      setTermosFile(null)
+      setTermosNome(null)
 
       setToast({
         open: true,
@@ -226,6 +300,12 @@ const ConfiguracoesPage = () => {
       if (logoFile) {
         dataToSend.logo_base64 = logoFile
       }
+      if (politicaFile) {
+        dataToSend.arquivo_politica_privacidade = politicaFile
+      }
+      if (termosFile) {
+        dataToSend.arquivo_termos_uso = termosFile
+      }
 
       let updated: ConfiguracaoGlobal
 
@@ -241,6 +321,8 @@ const ConfiguracoesPage = () => {
           cor_texto_botao: dataToSend.cor_texto_botao || DEFAULT_VALUES.cor_texto_botao,
           fonte_titulos: dataToSend.fonte_titulos || DEFAULT_VALUES.fonte_titulos,
           fonte_textos: dataToSend.fonte_textos || DEFAULT_VALUES.fonte_textos,
+          arquivo_politica_privacidade: dataToSend.arquivo_politica_privacidade ?? undefined,
+          arquivo_termos_uso: dataToSend.arquivo_termos_uso ?? undefined,
           usu_cadastro: parseInt(user.id, 10),
         }
         updated = await configuracoesService.create(getTenantSchema(), createData)
@@ -262,6 +344,10 @@ const ConfiguracoesPage = () => {
         setLogoPreview(updated.logo_base64)
       }
       setLogoFile(null) // Limpar o arquivo após salvar
+      setPoliticaFile(null)
+      setTermosFile(null)
+      if (updated.arquivo_politica_privacidade) setPoliticaNome('Politica_de_Privacidade.pdf')
+      if (updated.arquivo_termos_uso) setTermosNome('Termos_de_Uso.pdf')
     } catch (err: any) {
       console.error(err)
       setToast({
@@ -661,6 +747,80 @@ const ConfiguracoesPage = () => {
                         </Typography>
                       </Box>
                     )}
+                  </Grid>
+                </Grid>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* Documentos */}
+          <Grid size={{ xs: 12 }}>
+            <Card>
+              <CardHeader
+                avatar={<Description />}
+                title="Documentos Legais"
+                subheader="Envie os arquivos PDF para Termos de Uso e Política de Privacidade"
+              />
+              <CardContent>
+                <Grid container spacing={3}>
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <Typography variant="subtitle2" sx={{ mb: 1 }}>Política de Privacidade (PDF)</Typography>
+                    {politicaNome && (
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2, p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
+                        <Description color="action" />
+                        <Typography variant="body2" sx={{ flexGrow: 1 }}>{politicaNome}</Typography>
+                        <Button size="small" color="error" onClick={() => handleDeleteFile('politica')} disabled={saving}>
+                          Remover
+                        </Button>
+                      </Box>
+                    )}
+                    <label htmlFor="politica-upload">
+                      <input
+                        id="politica-upload"
+                        type="file"
+                        accept="application/pdf"
+                        onChange={(e) => handlePdfChange(e, 'politica')}
+                        style={{ display: 'none' }}
+                      />
+                      <Button
+                        variant="outlined"
+                        component="span"
+                        startIcon={<Upload />}
+                        fullWidth
+                      >
+                        Selecionar PDF
+                      </Button>
+                    </label>
+                  </Grid>
+
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <Typography variant="subtitle2" sx={{ mb: 1 }}>Termos de Uso (PDF)</Typography>
+                    {termosNome && (
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2, p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
+                        <Description color="action" />
+                        <Typography variant="body2" sx={{ flexGrow: 1 }}>{termosNome}</Typography>
+                        <Button size="small" color="error" onClick={() => handleDeleteFile('termos')} disabled={saving}>
+                          Remover
+                        </Button>
+                      </Box>
+                    )}
+                    <label htmlFor="termos-upload">
+                      <input
+                        id="termos-upload"
+                        type="file"
+                        accept="application/pdf"
+                        onChange={(e) => handlePdfChange(e, 'termos')}
+                        style={{ display: 'none' }}
+                      />
+                      <Button
+                        variant="outlined"
+                        component="span"
+                        startIcon={<Upload />}
+                        fullWidth
+                      >
+                        Selecionar PDF
+                      </Button>
+                    </label>
                   </Grid>
                 </Grid>
               </CardContent>
