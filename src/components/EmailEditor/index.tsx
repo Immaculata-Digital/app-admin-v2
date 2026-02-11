@@ -51,7 +51,7 @@ import './style.css'
 
 // Variáveis disponíveis do objeto cliente
 const CLIENTE_VARIABLES = [
-  { label: 'Nome Completo', value: '{{cliente.nome_completo}}' },
+  { label: 'Nome Completo', value: '{{nome_cliente}}' },
   { label: 'Email', value: '{{cliente.email}}' },
   { label: 'WhatsApp', value: '{{cliente.whatsapp}}' },
   { label: 'Saldo de Pontos', value: '{{cliente.saldo}}' },
@@ -421,7 +421,7 @@ const ElementEditor = ({
                 setEditedElement({ ...editedElement, content: e.target.value } as EmailElement)
               }
               inputRef={setTextFieldRef}
-              helperText="Use os botões acima para inserir variáveis do cliente (ex: {{cliente.nome_completo}})"
+              helperText="Use os botões acima para inserir variáveis do cliente (ex: {{nome_cliente}})"
             />
             <Box sx={{ display: 'flex', gap: 2 }}>
               <TextField
