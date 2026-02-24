@@ -403,96 +403,118 @@ const CampanhasDisparoPage = () => {
         renderInput: ({ value, onChange, disabled, formValues, setFieldValue }) => {
           const tipoEnvio = formValues?.tipo_envio || 'manual'
           // Não mostrar destinatários para tipos automáticos
-          const tiposAutomaticos = ['boas_vindas', 'atualizacao_pontos', 'resgate', 'reset_senha', 'resgate_nao_retirar_loja']
+          const tiposAutomaticos = ['boas_vindas', 'atualizacao_pontos', 'res gate', 'reset_senha', 'resgate_nao_retirar_loja']
           if (tiposAutomaticos.includes(tipoEnvio as string)) {
             return null
           }
 
           const tipoDestinatario = value || 'todos'
           return (
-            <Box>
-              <FormControl fullWidth disabled={disabled} required>
-                <InputLabel required>Destinatários</InputLabel>
-                <Select
-                  value={tipoDestinatario}
-                  onChange={(e) => {
-                    onChange(e.target.value)
-                    // Limpar seleções quando mudar o tipo
-                    if (e.target.value !== 'lojas_especificas') {
-                      setFieldValue('lojas_ids', null)
-                    }
-                    if (e.target.value !== 'clientes_especificos') {
-                      setFieldValue('clientes_ids', null)
-                    }
-                  }}
-                  label="Destinatários"
-                >
-                  <MenuItem value="todos">Todos os clientes</MenuItem>
-                  <MenuItem value="lojas_especificas">Clientes de lojas específicas</MenuItem>
-                  <MenuItem value="clientes_especificos">Clientes específicos</MenuItem>
-                </Select>
-              </FormControl>
+            <FormControl fullWidth disabled={disabled} required>
+              <InputLabel required>Destinatários</InputLabel>
+              <Select
+                value={tipoDestinatario}
+                onChange={(e) => {
+                  onChange(e.target.value)
+                  // Limpar seleções quando mudar o tipo
+                  if (e.target.value !== 'lojas_especificas') {
+                    setFieldValue('lojas_ids', null)
+                  }
+                  if (e.target.value !== 'clientes_especificos') {
+                    setFieldValue('clientes_ids', null)
+                  }
+                }}
+                label="Destinatários"
+              >
+                <MenuItem value="todos">Todos os clientes</MenuItem>
+                <MenuItem value="lojas_especificas">Clientes de lojas específicas</MenuItem>
+                <MenuItem value="clientes_especificos">Clientes específicos</MenuItem>
+              </Select>
+            </FormControl>
+          )
+        },
+      },
+      {
+        key: 'lojas_ids',
+        label: 'Lojas Específicas',
+        renderInput: ({ value, disabled, formValues, setFieldValue }) => {
+          const tipoEnvio = formValues?.tipo_envio || 'manual'
+          const tiposAutomaticos = ['boas_vindas', 'atualizacao_pontos', 'resgate', 'reset_senha', 'resgate_nao_retirar_loja']
+          if (tiposAutomaticos.includes(tipoEnvio as string)) return null
 
-              {tipoDestinatario === 'lojas_especificas' && (
-                <Box sx={{ mt: 2 }}>
-                  <MultiSelectPicker
-                    label="Selecione as Lojas"
-                    value={
-                      formValues?.lojas_ids
-                        ? Array.isArray(formValues.lojas_ids)
-                          ? formValues.lojas_ids
-                          : typeof formValues.lojas_ids === 'string'
-                          ? formValues.lojas_ids
-                              .split(',')
-                              .map((id) => parseInt(id.trim(), 10))
-                              .filter((id) => !isNaN(id))
-                          : []
-                        : []
-                    }
-                    onChange={(selectedIds) => {
-                      const idsString = selectedIds.length > 0 ? selectedIds.join(',') : null
-                      setFieldValue('lojas_ids', idsString)
-                    }}
-                    options={lojas.map(loja => ({ value: loja.id, label: loja.label }))}
-                    fullWidth
-                    disabled={disabled}
-                    placeholder="Selecione as lojas"
-                  />
-                </Box>
-              )}
+          const tipoDestinatario = formValues?.tipo_destinatario || 'todos'
+          if (tipoDestinatario !== 'lojas_especificas') return null
 
-              {tipoDestinatario === 'clientes_especificos' && (
-                <Box sx={{ mt: 2 }}>
-                  <MultiSelectPicker
-                    label="Selecione os Clientes"
-                    value={
-                      formValues?.clientes_ids
-                        ? Array.isArray(formValues.clientes_ids)
-                          ? formValues.clientes_ids
-                          : typeof formValues.clientes_ids === 'string'
-                          ? formValues.clientes_ids
-                              .split(',')
-                              .map((id) => parseInt(id.trim(), 10))
-                              .filter((id) => !isNaN(id))
-                          : []
-                        : []
-                    }
-                    onChange={(selectedIds) => {
-                      const idsString = selectedIds.length > 0 ? selectedIds.join(',') : null
-                      setFieldValue('clientes_ids', idsString)
-                    }}
-                    options={clientes.map(cliente => ({ value: cliente.id, label: cliente.label }))}
-                    fullWidth
-                    disabled={disabled}
-                    placeholder="Selecione os clientes"
-                    searchable
-                  />
-                </Box>
-              )}
+          return (
+            <Box sx={{ mt: 2 }}>
+              <MultiSelectPicker
+                label="Selecione as Lojas"
+                value={
+                  value
+                    ? Array.isArray(value)
+                      ? value
+                      : typeof value === 'string'
+                      ? value
+                          .split(',')
+                          .map((id) => parseInt(id.trim(), 10))
+                          .filter((id) => !isNaN(id))
+                      : []
+                    : []
+                }
+                onChange={(selectedIds) => {
+                  const idsString = selectedIds.length > 0 ? selectedIds.join(',') : null
+                  setFieldValue('lojas_ids', idsString)
+                }}
+                options={lojas.map((loja) => ({ value: loja.id, label: loja.label }))}
+                fullWidth
+                disabled={disabled}
+                placeholder="Selecione as lojas"
+              />
             </Box>
           )
         },
       },
+      {
+        key: 'clientes_ids',
+        label: 'Clientes Específicos',
+        renderInput: ({ value, disabled, formValues, setFieldValue }) => {
+          const tipoEnvio = formValues?.tipo_envio || 'manual'
+          const tiposAutomaticos = ['boas_vindas', 'atualizacao_pontos', 'resgate', 'reset_senha', 'resgate_nao_retirar_loja']
+          if (tiposAutomaticos.includes(tipoEnvio as string)) return null
+
+          const tipoDestinatario = formValues?.tipo_destinatario || 'todos'
+          if (tipoDestinatario !== 'clientes_especificos') return null
+
+          return (
+            <Box sx={{ mt: 2 }}>
+              <MultiSelectPicker
+                label="Selecione os Clientes"
+                value={
+                  value
+                    ? Array.isArray(value)
+                      ? value
+                      : typeof value === 'string'
+                      ? value
+                          .split(',')
+                          .map((id) => parseInt(id.trim(), 10))
+                          .filter((id) => !isNaN(id))
+                      : []
+                    : []
+                }
+                onChange={(selectedIds) => {
+                  const idsString = selectedIds.length > 0 ? selectedIds.join(',') : null
+                  setFieldValue('clientes_ids', idsString)
+                }}
+                options={clientes.map((cliente) => ({ value: cliente.id, label: cliente.label }))}
+                fullWidth
+                disabled={disabled}
+                placeholder="Selecione os clientes"
+                searchable
+              />
+            </Box>
+          )
+        },
+      }
     ],
     [remetentes, lojas, clientes]
   )
