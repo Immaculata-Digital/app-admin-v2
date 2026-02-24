@@ -133,7 +133,7 @@ const MultiSelectPicker = ({
       : filteredOptions
     return (
       optionsToCheck.length > 0 &&
-      optionsToCheck.every((option) => value.includes(option.value))
+      optionsToCheck.every((option) => value.some((v) => String(v) === String(option.value)))
     )
   }, [filteredOptions, filteredGroupedOptions, groupedOptions, value])
 
@@ -143,21 +143,21 @@ const MultiSelectPicker = ({
       ? Object.values(filteredGroupedOptions || {}).flat()
       : filteredOptions
     return (
-      optionsToCheck.some((option) => value.includes(option.value)) &&
+      optionsToCheck.some((option) => value.some((v) => String(v) === String(option.value))) &&
       !allFilteredSelected
     )
   }, [filteredOptions, filteredGroupedOptions, groupedOptions, value, allFilteredSelected])
 
   // Verificar se uma opção está selecionada
   const isSelected = (optionValue: string | number): boolean => {
-    return value.includes(optionValue)
+    return value.some((v) => String(v) === String(optionValue))
   }
 
   // Obter labels das opções selecionadas
   const getSelectedLabels = () => {
     return value
       .map((val) => {
-        const option = options.find((opt) => opt.value === val)
+        const option = options.find((opt) => String(opt.value) === String(val))
         return option ? { value: val, label: option.label } : null
       })
       .filter(Boolean) as { value: string | number; label: string }[]
@@ -197,8 +197,8 @@ const MultiSelectPicker = ({
 
   // Lidar com seleção/deseleção de opção
   const handleToggle = (optionValue: string | number) => {
-    if (value.includes(optionValue)) {
-      onChange(value.filter((v) => v !== optionValue))
+    if (isSelected(optionValue)) {
+      onChange(value.filter((v) => String(v) !== String(optionValue)))
     } else {
       onChange([...value, optionValue])
     }
@@ -210,16 +210,19 @@ const MultiSelectPicker = ({
       ? Object.values(filteredGroupedOptions || {}).flat()
       : filteredOptions
 
-    const allValues = optionsToSelect.map((opt) => opt.value)
-    const allSelected = allValues.every((val) => value.includes(val))
+    const allValues = optionsToSelect.map((opt) => String(opt.value))
+    const allSelected = allValues.every((val) => value.some((v) => String(v) === val))
 
     if (allSelected) {
       // Deselecionar todos os filtrados
-      onChange(value.filter((val) => !allValues.includes(val)))
+      onChange(value.filter((val) => !allValues.includes(String(val))))
     } else {
       // Selecionar todos os filtrados (sem duplicatas)
-      const newValues = [...new Set([...value, ...allValues])]
-      onChange(newValues)
+      const currentStringValues = value.map(v => String(v))
+      const newValuesToAdd = optionsToSelect
+        .filter(opt => !currentStringValues.includes(String(opt.value)))
+        .map(opt => opt.value)
+      onChange([...value, ...newValuesToAdd])
     }
   }
 

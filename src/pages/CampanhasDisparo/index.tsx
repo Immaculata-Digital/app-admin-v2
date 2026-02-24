@@ -437,7 +437,18 @@ const CampanhasDisparoPage = () => {
                 <Box sx={{ mt: 2 }}>
                   <MultiSelectPicker
                     label="Selecione as Lojas"
-                    value={formValues?.lojas_ids ? (typeof formValues.lojas_ids === 'string' ? formValues.lojas_ids.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id)) : []) : []}
+                    value={
+                      formValues?.lojas_ids
+                        ? Array.isArray(formValues.lojas_ids)
+                          ? formValues.lojas_ids
+                          : typeof formValues.lojas_ids === 'string'
+                          ? formValues.lojas_ids
+                              .split(',')
+                              .map((id) => parseInt(id.trim(), 10))
+                              .filter((id) => !isNaN(id))
+                          : []
+                        : []
+                    }
                     onChange={(selectedIds) => {
                       const idsString = selectedIds.length > 0 ? selectedIds.join(',') : null
                       setFieldValue('lojas_ids', idsString)
@@ -454,7 +465,18 @@ const CampanhasDisparoPage = () => {
                 <Box sx={{ mt: 2 }}>
                   <MultiSelectPicker
                     label="Selecione os Clientes"
-                    value={formValues?.clientes_ids ? (typeof formValues.clientes_ids === 'string' ? formValues.clientes_ids.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id)) : []) : []}
+                    value={
+                      formValues?.clientes_ids
+                        ? Array.isArray(formValues.clientes_ids)
+                          ? formValues.clientes_ids
+                          : typeof formValues.clientes_ids === 'string'
+                          ? formValues.clientes_ids
+                              .split(',')
+                              .map((id) => parseInt(id.trim(), 10))
+                              .filter((id) => !isNaN(id))
+                          : []
+                        : []
+                    }
                     onChange={(selectedIds) => {
                       const idsString = selectedIds.length > 0 ? selectedIds.join(',') : null
                       setFieldValue('clientes_ids', idsString)
