@@ -41,13 +41,13 @@ const DashboardPage = () => {
   const schema = getTenantSchema()
   const { lojasGestoras, isAdmLoja } = useUserLojasGestoras()
   const { permissions } = useAuth()
-  
+
   const hasPermission = (permission: string) => permissions.includes(permission)
-  
+
   const [data, setData] = useState<DashboardResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  
+
   // Estados para busca de código
   const [codigoBusca, setCodigoBusca] = useState('')
   const [isBuscandoCodigo, setIsBuscandoCodigo] = useState(false)
@@ -73,12 +73,12 @@ const DashboardPage = () => {
     try {
       setLoading(true)
       setError(null)
-      
+
       // Se o usuário for ADM-LOJA e tiver lojas gestoras, filtrar por todas as lojas
-      const lojaIds = isAdmLoja && lojasGestoras && lojasGestoras.length > 0 
-        ? lojasGestoras 
+      const lojaIds = isAdmLoja && lojasGestoras && lojasGestoras.length > 0
+        ? lojasGestoras
         : undefined
-      
+
       const dashboardData = await dashboardService.getDashboard(schema, lojaIds)
       setData(dashboardData)
     } catch (err: any) {
@@ -120,7 +120,7 @@ const DashboardPage = () => {
     setIsBuscandoCodigo(true)
     try {
       const resultado = await clienteService.buscarCodigoResgate(schema, codigoBusca.trim())
-      
+
       if (resultado.resgate_utilizado) {
         setToast({ open: true, message: 'Este código já foi utilizado', severity: 'error' })
         return
@@ -176,9 +176,9 @@ const DashboardPage = () => {
         codigoResgate.trim(),
         idLoja
       )
-      
+
       setToast({ open: true, message: 'Código marcado como utilizado com sucesso!', severity: 'success' })
-      
+
       setIsDebitModalOpen(false)
       setCodigoResgate('')
       setCodigoBusca('')
@@ -234,20 +234,26 @@ const DashboardPage = () => {
 
   const handleBuscarCliente = async () => {
     if (!codigoClienteBusca.trim()) {
-      setToast({ open: true, message: 'Informe o código do cliente (ex: CLI-123)', severity: 'error' })
+      setToast({ open: true, message: 'Informe o código do cliente ou celular', severity: 'error' })
       return
     }
 
     setIsBuscandoCliente(true)
     try {
-      const codigoFormatado = `CLI-${codigoClienteBusca}`
-      const cliente = await clienteService.getByCodigo(schema, codigoFormatado)
+      let parametro = codigoClienteBusca.trim()
+      const apenasNumeros = parametro.replace(/\D/g, '')
+      // Se digitou apenas números e tem menos de 10 dígitos, assume que é o ID (CLI-)
+      if (apenasNumeros === parametro && parametro.length > 0 && parametro.length < 10) {
+        parametro = `CLI-${parametro}`
+      }
+
+      const cliente = await clienteService.getByCodigo(schema, parametro)
       setClienteParaCredito(cliente)
       setCreditData({ valor_reais: 0, valor_display: '' })
       setIsCreditModalOpen(true)
     } catch (error: any) {
       if (error?.status === 404) {
-        setToast({ open: true, message: 'Cliente não encontrado. Verifique se o código CLI está correto.', severity: 'error' })
+        setToast({ open: true, message: 'Cliente não encontrado. Verifique se o código ou celular está correto.', severity: 'error' })
       } else {
         setToast({ open: true, message: error?.message || 'Não foi possível buscar o cliente', severity: 'error' })
       }
@@ -287,45 +293,42 @@ const DashboardPage = () => {
                       Acrescentar pontos ao Cliente
                     </Typography>
                   </Box>
-                <Box>
-                  <TextField
-                    value={`CLI-${codigoClienteBusca}`}
-                    onChange={(e) => {
-                      const digits = e.target.value.replace(/[^0-9]/g, '').slice(0, 9)
-                      setCodigoClienteBusca(digits)
-                    }}
-                    fullWidth
-                    placeholder="CLI-000000000"
-                    disabled={isBuscandoCliente}
-                    onKeyDown={(event) => {
-                      if (event.key === 'Enter') {
-                        event.preventDefault()
-                        handleBuscarCliente()
-                      }
-                    }}
-                    sx={{
-                      '& .MuiInputBase-input': {
-                        textAlign: 'center',
-                        fontSize: '1.125rem',
-                        fontFamily: 'monospace',
-                        letterSpacing: '0.1em',
-                      },
-                    }}
-                  />
-                  <Button
-                    onClick={handleBuscarCliente}
-                    disabled={!codigoClienteBusca || isBuscandoCliente}
-                    fullWidth
-                    variant="contained"
-                    sx={{
-                      mt: 1,
-                      bgcolor: 'success.main',
-                      '&:hover': { bgcolor: 'success.dark' },
-                    }}
-                  >
-                    {isBuscandoCliente ? 'Consultando...' : 'Acrescentar Pontos'}
-                  </Button>
-                </Box>
+                  <Box>
+                    <TextField
+                      value={codigoClienteBusca}
+                      onChange={(e) => setCodigoClienteBusca(e.target.value)}
+                      fullWidth
+                      placeholder="CLI-123 ou (41) 99999-9999"
+                      disabled={isBuscandoCliente}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter') {
+                          event.preventDefault()
+                          handleBuscarCliente()
+                        }
+                      }}
+                      sx={{
+                        '& .MuiInputBase-input': {
+                          textAlign: 'center',
+                          fontSize: '1.125rem',
+                          fontFamily: 'monospace',
+                          letterSpacing: '0.05em',
+                        },
+                      }}
+                    />
+                    <Button
+                      onClick={handleBuscarCliente}
+                      disabled={!codigoClienteBusca || isBuscandoCliente}
+                      fullWidth
+                      variant="contained"
+                      sx={{
+                        mt: 1,
+                        bgcolor: 'success.main',
+                        '&:hover': { bgcolor: 'success.dark' },
+                      }}
+                    >
+                      {isBuscandoCliente ? 'Consultando...' : 'Acrescentar Pontos'}
+                    </Button>
+                  </Box>
                 </Box>
               </CardContent>
             </Card>
@@ -342,46 +345,46 @@ const DashboardPage = () => {
                       Consultar Código de Resgate
                     </Typography>
                   </Box>
-                <Box>
-                  <TextField
-                    value={codigoBusca}
-                    onChange={(e) => {
-                      const value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 5)
-                      setCodigoBusca(value)
-                    }}
-                    fullWidth
-                    placeholder="Digite o código"
-                    inputProps={{ maxLength: 5 }}
-                    disabled={isBuscandoCodigo}
-                    onKeyDown={(event) => {
-                      if (event.key === 'Enter') {
-                        event.preventDefault()
-                        handleBuscarCodigo()
-                      }
-                    }}
-                    sx={{
-                      '& .MuiInputBase-input': {
-                        textAlign: 'center',
-                        fontSize: '1.125rem',
-                        fontFamily: 'monospace',
-                        letterSpacing: '0.1em',
-                      },
-                    }}
-                  />
-                  <Button
-                    onClick={handleBuscarCodigo}
-                    disabled={!codigoBusca || codigoBusca.length !== 5 || isBuscandoCodigo}
-                    fullWidth
-                    variant="contained"
-                    sx={{
-                      mt: 1,
-                      bgcolor: 'error.main',
-                      '&:hover': { bgcolor: 'error.dark' },
-                    }}
-                  >
-                    {isBuscandoCodigo ? 'Consultando...' : 'Utilizar Pontos'}
-                  </Button>
-                </Box>
+                  <Box>
+                    <TextField
+                      value={codigoBusca}
+                      onChange={(e) => {
+                        const value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 5)
+                        setCodigoBusca(value)
+                      }}
+                      fullWidth
+                      placeholder="Digite o código"
+                      inputProps={{ maxLength: 5 }}
+                      disabled={isBuscandoCodigo}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter') {
+                          event.preventDefault()
+                          handleBuscarCodigo()
+                        }
+                      }}
+                      sx={{
+                        '& .MuiInputBase-input': {
+                          textAlign: 'center',
+                          fontSize: '1.125rem',
+                          fontFamily: 'monospace',
+                          letterSpacing: '0.1em',
+                        },
+                      }}
+                    />
+                    <Button
+                      onClick={handleBuscarCodigo}
+                      disabled={!codigoBusca || codigoBusca.length !== 5 || isBuscandoCodigo}
+                      fullWidth
+                      variant="contained"
+                      sx={{
+                        mt: 1,
+                        bgcolor: 'error.main',
+                        '&:hover': { bgcolor: 'error.dark' },
+                      }}
+                    >
+                      {isBuscandoCodigo ? 'Consultando...' : 'Utilizar Pontos'}
+                    </Button>
+                  </Box>
                 </Box>
               </CardContent>
             </Card>
@@ -403,7 +406,7 @@ const DashboardPage = () => {
             />
           </Grid>
         )}
-        
+
         {hasPermission('erp:dashboard:card-novos-clientes') && (
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <KPICard
@@ -417,7 +420,7 @@ const DashboardPage = () => {
             />
           </Grid>
         )}
-        
+
         {hasPermission('erp:dashboard:card-pontos-creditados') && (
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <KPICard
@@ -429,7 +432,7 @@ const DashboardPage = () => {
             />
           </Grid>
         )}
-        
+
         {hasPermission('erp:dashboard:card-pontos-resgatados') && (
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <KPICard
@@ -450,55 +453,55 @@ const DashboardPage = () => {
             <SimpleTable
               title="Novos Clientes (7 dias)"
               data={data?.novos_clientes_7d || []}
-            columns={[
-              {
-                key: 'nome',
-                label: 'Nome',
-                render: (value) => (
-                  <Typography variant="body2" fontWeight={500}>
-                    {value}
-                  </Typography>
-                ),
-              },
-              {
-                key: 'whatsapp',
-                label: 'WhatsApp',
-                render: (value) =>
-                  value ? (
-                    <Typography
-                      component="a"
-                      href={getWhatsAppLink(value)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      variant="body2"
-                      sx={{
-                        color: 'primary.main',
-                        textDecoration: 'underline',
-                        '&:hover': { color: 'primary.dark' },
-                      }}
-                    >
-                      {formatTelefoneWhatsApp(value)}
-                    </Typography>
-                  ) : (
-                    <Typography variant="body2" color="text.secondary">
-                      —
+              columns={[
+                {
+                  key: 'nome',
+                  label: 'Nome',
+                  render: (value) => (
+                    <Typography variant="body2" fontWeight={500}>
+                      {value}
                     </Typography>
                   ),
-              },
-              {
-                key: 'dt_cadastro',
-                label: 'Cadastro',
-                render: (value) => (
-                  <Typography variant="body2" color="text.secondary">
-                    {format(new Date(value), 'dd/MM/yy', { locale: ptBR })}
-                  </Typography>
-                ),
-              },
-            ]}
-            actions={{
-              label: 'Ver',
-              onClick: (item) => navigate(`/clientes/${item.id_cliente}`),
-            }}
+                },
+                {
+                  key: 'whatsapp',
+                  label: 'WhatsApp',
+                  render: (value) =>
+                    value ? (
+                      <Typography
+                        component="a"
+                        href={getWhatsAppLink(value)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        variant="body2"
+                        sx={{
+                          color: 'primary.main',
+                          textDecoration: 'underline',
+                          '&:hover': { color: 'primary.dark' },
+                        }}
+                      >
+                        {formatTelefoneWhatsApp(value)}
+                      </Typography>
+                    ) : (
+                      <Typography variant="body2" color="text.secondary">
+                        —
+                      </Typography>
+                    ),
+                },
+                {
+                  key: 'dt_cadastro',
+                  label: 'Cadastro',
+                  render: (value) => (
+                    <Typography variant="body2" color="text.secondary">
+                      {format(new Date(value), 'dd/MM/yy', { locale: ptBR })}
+                    </Typography>
+                  ),
+                },
+              ]}
+              actions={{
+                label: 'Ver',
+                onClick: (item) => navigate(`/clientes/${item.id_cliente}`),
+              }}
               emptyMessage="Nenhum cliente cadastrado no período."
               loading={loading}
             />
@@ -510,67 +513,67 @@ const DashboardPage = () => {
             <SimpleTable
               title="Últimos Resgates"
               data={(data?.ultimos_resgates || []).slice(0, 3)}
-            columns={[
-              {
-                key: 'cliente_nome',
-                label: 'Cliente',
-                render: (value) => (
-                  <Typography variant="body2" fontWeight={500}>
-                    {value}
-                  </Typography>
-                ),
-              },
-              {
-                key: 'item_nome',
-                label: 'Item',
-                render: (value) => (
-                  <Typography variant="body2" color="text.secondary">
-                    {value}
-                  </Typography>
-                ),
-              },
-              {
-                key: 'pontos',
-                label: 'Pontos',
-                render: (value) => (
-                  <Typography variant="body2" fontWeight={600} color="primary.main">
-                    {value}
-                  </Typography>
-                ),
-              },
-              {
-                key: 'status',
-                label: 'Status',
-                render: (value) => {
-                  const statusMap: Record<string, { color: 'success' | 'info' | 'error' | 'warning' | 'default'; label: string }> = {
-                    pendente: { color: 'warning', label: 'Pendente' },
-                    aprovado: { color: 'info', label: 'Aprovado' },
-                    entregue: { color: 'success', label: 'Entregue' },
-                    rejeitado: { color: 'error', label: 'Rejeitado' },
-                  }
-                  const status = statusMap[value as string] || { color: 'default' as const, label: value as string }
-                  return (
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        px: 1,
-                        py: 0.5,
-                        borderRadius: 1,
-                        bgcolor: `${status.color}.light`,
-                        color: `${status.color}.main`,
-                        fontWeight: 500,
-                      }}
-                    >
-                      {status.label}
+              columns={[
+                {
+                  key: 'cliente_nome',
+                  label: 'Cliente',
+                  render: (value) => (
+                    <Typography variant="body2" fontWeight={500}>
+                      {value}
                     </Typography>
-                  )
+                  ),
                 },
-              },
-            ]}
-            actions={{
-              label: 'Ver',
-              onClick: (item) => navigate(`/resgates/${item.id_resgate}`),
-            }}
+                {
+                  key: 'item_nome',
+                  label: 'Item',
+                  render: (value) => (
+                    <Typography variant="body2" color="text.secondary">
+                      {value}
+                    </Typography>
+                  ),
+                },
+                {
+                  key: 'pontos',
+                  label: 'Pontos',
+                  render: (value) => (
+                    <Typography variant="body2" fontWeight={600} color="primary.main">
+                      {value}
+                    </Typography>
+                  ),
+                },
+                {
+                  key: 'status',
+                  label: 'Status',
+                  render: (value) => {
+                    const statusMap: Record<string, { color: 'success' | 'info' | 'error' | 'warning' | 'default'; label: string }> = {
+                      pendente: { color: 'warning', label: 'Pendente' },
+                      aprovado: { color: 'info', label: 'Aprovado' },
+                      entregue: { color: 'success', label: 'Entregue' },
+                      rejeitado: { color: 'error', label: 'Rejeitado' },
+                    }
+                    const status = statusMap[value as string] || { color: 'default' as const, label: value as string }
+                    return (
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          px: 1,
+                          py: 0.5,
+                          borderRadius: 1,
+                          bgcolor: `${status.color}.light`,
+                          color: `${status.color}.main`,
+                          fontWeight: 500,
+                        }}
+                      >
+                        {status.label}
+                      </Typography>
+                    )
+                  },
+                },
+              ]}
+              actions={{
+                label: 'Ver',
+                onClick: (item) => navigate(`/resgates/${item.id_resgate}`),
+              }}
               emptyMessage="Nenhum resgate no período."
               loading={loading}
             />

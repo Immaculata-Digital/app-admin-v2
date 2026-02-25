@@ -15,7 +15,7 @@ const getClientesV1ApiUrl = () => {
   // A diferença está apenas nas rotas
   const envUrlV1 = import.meta.env.VITE_API_CLIENTES_URL
   if (envUrlV1) return envUrlV1
-  
+
   // Fallback: usar a mesma porta da API de clientes v2
   // A API v1 e v2 compartilham a mesma base URL
   return 'http://localhost:7773/api'
@@ -261,10 +261,14 @@ export const clienteService = {
     })
   },
 
-  // Buscar cliente por código (CLI-123)
+  // Buscar cliente por código (CLI-123) ou celular
   getByCodigo: async (schema: string, codigo: string): Promise<Cliente> => {
-    const clienteId = normalizeClienteId(codigo)
-    const clienteDTO = await request<ClienteDTO>(`/clientes/${schema}/${clienteId}`)
+    // Verifica se é celular (pelo menos 10 números e não contém CLI)
+    const apenasNumeros = codigo.replace(/\D/g, '')
+    const isCelular = apenasNumeros.length >= 10 && !codigo.toUpperCase().includes('CLI')
+
+    const parametroBusca = isCelular ? apenasNumeros : normalizeClienteId(codigo)
+    const clienteDTO = await request<ClienteDTO>(`/clientes/${schema}/${parametroBusca}`)
 
     return {
       id_cliente: clienteDTO.id_cliente,
