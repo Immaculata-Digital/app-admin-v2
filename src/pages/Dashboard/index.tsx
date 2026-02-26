@@ -34,6 +34,7 @@ import { getTenantSchema } from '../../utils/schema'
 import { useUserLojasGestoras } from '../../hooks/useUserLojasGestoras'
 import { useAuth } from '../../context/AuthContext'
 import { authService } from '../../services/auth'
+import { DashboardChartModal } from '../../components/dashboard/DashboardChartModal'
 import './style.css'
 
 const DashboardPage = () => {
@@ -47,6 +48,15 @@ const DashboardPage = () => {
   const [data, setData] = useState<DashboardResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  // Estados para o modal de gráfico
+  const [isChartModalOpen, setIsChartModalOpen] = useState(false)
+  const [selectedKpi, setSelectedKpi] = useState<{ kpi: string, title: string }>({ kpi: '', title: '' })
+
+  const openChartModal = (kpi: string, title: string) => {
+    setSelectedKpi({ kpi, title })
+    setIsChartModalOpen(true)
+  }
 
   // Estados para busca de código
   const [codigoBusca, setCodigoBusca] = useState('')
@@ -401,6 +411,7 @@ const DashboardPage = () => {
               value={data?.itens_resgatados_7d.toLocaleString('pt-BR') || '0'}
               subtitle="Últimos 7 dias"
               loading={loading}
+              onClick={() => openChartModal('itens-resgatados', 'Ranking de Itens Resgatados')}
               icon={<CardGiftcard sx={{ fontSize: 24 }} />}
             />
           </Grid>
@@ -413,7 +424,7 @@ const DashboardPage = () => {
               value={data?.clientes_7d || 0}
               subtitle="Últimos 7 dias"
               variacao={data?.clientes_7d_variacao}
-              onClick={() => navigate('/clientes')}
+              onClick={() => openChartModal('novos-clientes', 'Histórico de Novos Clientes')}
               loading={loading}
               icon={<TrendingUp sx={{ fontSize: 24 }} />}
             />
@@ -427,6 +438,7 @@ const DashboardPage = () => {
               value={data?.pontos_creditados_7d.toLocaleString('pt-BR') || '0'}
               subtitle="Últimos 7 dias"
               loading={loading}
+              onClick={() => openChartModal('pontos-creditados', 'Pontos Creditados por Período')}
               icon={<CardGiftcard sx={{ fontSize: 24 }} />}
             />
           </Grid>
@@ -439,6 +451,7 @@ const DashboardPage = () => {
               value={data?.pontos_resgatados_7d.toLocaleString('pt-BR') || '0'}
               subtitle="Últimos 7 dias"
               loading={loading}
+              onClick={() => openChartModal('pontos-resgatados', 'Pontos Resgatados por Período')}
               icon={<CardGiftcard sx={{ fontSize: 24 }} />}
             />
           </Grid>
@@ -690,6 +703,15 @@ const DashboardPage = () => {
           {toast.message}
         </Alert>
       </Snackbar>
+
+      <DashboardChartModal
+        open={isChartModalOpen}
+        onClose={() => setIsChartModalOpen(false)}
+        title={selectedKpi.title}
+        kpi={selectedKpi.kpi}
+        schema={schema}
+        lojaIds={isAdmLoja && lojasGestoras && lojasGestoras.length > 0 ? lojasGestoras : undefined}
+      />
     </Box>
   )
 }

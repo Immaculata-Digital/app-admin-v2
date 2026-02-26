@@ -39,7 +39,16 @@ const getDashboard = (schema: string, lojaIds?: number[]) => {
   return adminApi.get<DashboardResponse>(`/${schema}/dashboard${params}`)
 }
 
+const getChartData = (schema: string, kpi: string, periodDays: number, lojaIds?: number[]) => {
+  let params = `?kpi=${kpi}&period=${periodDays}`
+  if (lojaIds && lojaIds.length > 0) {
+    params += `&idLoja=${lojaIds.join(',')}`
+  }
+  return adminApi.get<any[]>(`/${schema}/dashboard/charts${params}`)
+}
+
 export const dashboardService = {
   getDashboard,
+  getChartData,
 }
 
