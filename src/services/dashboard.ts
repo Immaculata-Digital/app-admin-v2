@@ -19,6 +19,13 @@ export type DashboardResgate = {
   status: 'pendente' | 'aprovado' | 'rejeitado' | 'entregue'
 }
 
+export type LojaRankingClientes = {
+  id_loja: number
+  nome_loja: string
+  quantidade: number
+  posicao: number
+}
+
 export type DashboardResponse = {
   clientes_total: number
   clientes_7d: number
@@ -26,7 +33,7 @@ export type DashboardResponse = {
   pontos_creditados_7d: number
   pontos_resgatados_7d: number
   itens_resgatados_7d: number
-  novos_clientes_7d: DashboardCliente[]
+  lojas_ranking_novos_clientes: LojaRankingClientes[]
   ultimos_resgates: DashboardResgate[]
 }
 

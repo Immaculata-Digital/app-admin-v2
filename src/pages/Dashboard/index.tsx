@@ -22,12 +22,9 @@ import {
   Error as ErrorIcon,
   QrCode,
 } from '@mui/icons-material'
-import { format } from 'date-fns'
-import { ptBR } from 'date-fns/locale'
 import { KPICard } from '../../components/dashboard/KPICard'
 import { SimpleTable } from '../../components/dashboard/SimpleTable'
 import { RewardItemsCarousel } from '../../components/dashboard/RewardItemsCarousel'
-import { formatTelefoneWhatsApp, getWhatsAppLink } from '../../utils/masks'
 import { dashboardService, type DashboardResponse } from '../../services/dashboard'
 import { clienteService, type Cliente, type CodigoResgateResponse } from '../../services/clientes'
 import { getTenantSchema } from '../../utils/schema'
@@ -51,6 +48,7 @@ const DashboardPage = () => {
 
   // Estados para o modal de gráfico
   const [isChartModalOpen, setIsChartModalOpen] = useState(false)
+  const [isRankingModalOpen, setIsRankingModalOpen] = useState(false)
   const [selectedKpi, setSelectedKpi] = useState<{ kpi: string, title: string }>({ kpi: '', title: '' })
 
   const openChartModal = (kpi: string, title: string) => {
@@ -404,19 +402,6 @@ const DashboardPage = () => {
 
       {/* KPIs Grid */}
       <Grid container spacing={3} sx={{ mb: 3 }}>
-        {hasPermission('erp:dashboard:card-total-clientes') && (
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-            <KPICard
-              title="Itens Resgatados"
-              value={data?.itens_resgatados_7d.toLocaleString('pt-BR') || '0'}
-              subtitle="Últimos 7 dias"
-              loading={loading}
-              onClick={() => openChartModal('itens-resgatados', 'Ranking de Itens Resgatados')}
-              icon={<CardGiftcard sx={{ fontSize: 24 }} />}
-            />
-          </Grid>
-        )}
-
         {hasPermission('erp:dashboard:card-novos-clientes') && (
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <KPICard
@@ -456,67 +441,185 @@ const DashboardPage = () => {
             />
           </Grid>
         )}
+
+        {hasPermission('erp:dashboard:card-total-clientes') && (
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            <KPICard
+              title="Itens Resgatados"
+              value={data?.itens_resgatados_7d.toLocaleString('pt-BR') || '0'}
+              subtitle="Últimos 7 dias"
+              loading={loading}
+              onClick={() => openChartModal('itens-resgatados', 'Ranking de Itens Resgatados')}
+              icon={<CardGiftcard sx={{ fontSize: 24 }} />}
+            />
+          </Grid>
+        )}
       </Grid>
 
       {/* Listas Rápidas */}
       <Grid container spacing={3}>
         {hasPermission('erp:dashboard:tabela-novos-clientes') && (
           <Grid size={{ xs: 12, lg: 6 }}>
-            <SimpleTable
-              title="Novos Clientes (7 dias)"
-              data={data?.novos_clientes_7d || []}
-              columns={[
-                {
-                  key: 'nome',
-                  label: 'Nome',
-                  render: (value) => (
-                    <Typography variant="body2" fontWeight={500}>
-                      {value}
+            <Card className="glass-effect" sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+              <CardContent sx={{ flexGrow: 1 }}>
+                <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+                  <Box display="flex" alignItems="center" gap={1}>
+                    <TrendingUp sx={{ color: 'primary.main' }} />
+                    <Typography variant="h6" fontWeight={600}>
+                      Ranking Novos Clientes (7 dias)
                     </Typography>
-                  ),
-                },
-                {
-                  key: 'whatsapp',
-                  label: 'WhatsApp',
-                  render: (value) =>
-                    value ? (
-                      <Typography
-                        component="a"
-                        href={getWhatsAppLink(value)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        variant="body2"
+                  </Box>
+                  <Button
+                    variant="text"
+                    size="small"
+                    onClick={() => setIsRankingModalOpen(true)}
+                    disabled={!data?.lojas_ranking_novos_clientes?.length}
+                  >
+                    Exibir Mais
+                  </Button>
+                </Box>
+
+                {loading ? (
+                  <Box display="flex" justifyContent="center" p={3}>
+                    <Typography color="text.secondary">Carregando...</Typography>
+                  </Box>
+                ) : data?.lojas_ranking_novos_clientes && data.lojas_ranking_novos_clientes.length > 0 ? (
+                  <Box display="flex" flexDirection="column" gap={1.5}>
+                    {data.lojas_ranking_novos_clientes.slice(0, 3).map((loja) => (
+                      <Box
+                        key={loja.id_loja}
                         sx={{
-                          color: 'primary.main',
-                          textDecoration: 'underline',
-                          '&:hover': { color: 'primary.dark' },
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          p: 1.5,
+                          borderRadius: 2,
+                          bgcolor: loja.posicao === 1 ? 'rgba(255, 215, 0, 0.1)' :
+                            loja.posicao === 2 ? 'rgba(192, 192, 192, 0.1)' :
+                              loja.posicao === 3 ? 'rgba(205, 127, 50, 0.1)' : 'background.paper',
+                          border: '1px solid',
+                          borderColor: loja.posicao === 1 ? 'rgba(255, 215, 0, 0.3)' :
+                            loja.posicao === 2 ? 'rgba(192, 192, 192, 0.3)' :
+                              loja.posicao === 3 ? 'rgba(205, 127, 50, 0.3)' : 'divider',
                         }}
                       >
-                        {formatTelefoneWhatsApp(value)}
-                      </Typography>
-                    ) : (
-                      <Typography variant="body2" color="text.secondary">
-                        —
-                      </Typography>
-                    ),
-                },
-                {
-                  key: 'dt_cadastro',
-                  label: 'Cadastro',
-                  render: (value) => (
-                    <Typography variant="body2" color="text.secondary">
-                      {format(new Date(value), 'dd/MM/yy', { locale: ptBR })}
-                    </Typography>
-                  ),
-                },
-              ]}
-              actions={{
-                label: 'Ver',
-                onClick: (item) => navigate(`/clientes/${item.id_cliente}`),
-              }}
-              emptyMessage="Nenhum cliente cadastrado no período."
-              loading={loading}
-            />
+                        <Box display="flex" alignItems="center" gap={2}>
+                          <Box
+                            sx={{
+                              width: 32,
+                              height: 32,
+                              borderRadius: '50%',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              bgcolor: loja.posicao === 1 ? '#FFD700' :
+                                loja.posicao === 2 ? '#C0C0C0' :
+                                  loja.posicao === 3 ? '#cd7f32' : 'transparent',
+                              color: loja.posicao <= 3 ? '#fff' : 'text.secondary',
+                              fontWeight: 'bold',
+                              fontSize: '0.875rem',
+                              boxShadow: loja.posicao <= 3 ? 2 : 0,
+                            }}
+                          >
+                            {loja.posicao}º
+                          </Box>
+                          <Typography variant="body2" fontWeight={500}>
+                            {loja.nome_loja}
+                            {(() => {
+                              const user = authService.getUser()
+                              const isCurrLoja = user?.id_loja === loja.id_loja
+                              const belongsToUser = isCurrLoja || (lojasGestoras?.includes(loja.id_loja))
+                              return belongsToUser ? (
+                                <Typography component="span" variant="caption" sx={{ ml: 1, color: 'primary.main', fontWeight: 600 }}>
+                                  (Sua Loja)
+                                </Typography>
+                              ) : null
+                            })()}
+                          </Typography>
+                        </Box>
+                        <Box display="flex" alignItems="baseline" gap={0.5}>
+                          <Typography variant="h6" fontWeight={700} color="primary.main">
+                            {loja.quantidade}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            clientes
+                          </Typography>
+                        </Box>
+                      </Box>
+                    ))}
+
+                    {/* Mostrar a(s) loja(s) do usuário atual se não estiver(em) no top 3 */}
+                    {(() => {
+                      const user = authService.getUser()
+                      const currLojaId = user?.id_loja
+                      const lojasDoUsuario = data.lojas_ranking_novos_clientes.filter((l: any) =>
+                        (l.id_loja === currLojaId || lojasGestoras?.includes(l.id_loja)) && l.posicao > 3
+                      )
+
+                      if (lojasDoUsuario && lojasDoUsuario.length > 0) {
+                        return (
+                          <>
+                            <Box display="flex" justifyContent="center">
+                              <Typography variant="body2" color="text.secondary">...</Typography>
+                            </Box>
+                            {lojasDoUsuario.map((lojaUsuario: any) => (
+                              <Box
+                                key={`user-store-${lojaUsuario.id_loja}`}
+                                sx={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'space-between',
+                                  p: 1.5,
+                                  mb: 1,
+                                  borderRadius: 2,
+                                  bgcolor: 'primary.light',
+                                  border: '1px solid',
+                                  borderColor: 'primary.main',
+                                }}
+                              >
+                                <Box display="flex" alignItems="center" gap={2}>
+                                  <Box
+                                    sx={{
+                                      width: 32,
+                                      height: 32,
+                                      borderRadius: '50%',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      color: 'primary.main',
+                                      fontWeight: 'bold',
+                                      fontSize: '0.875rem'
+                                    }}
+                                  >
+                                    {lojaUsuario.posicao}º
+                                  </Box>
+                                  <Typography variant="body2" fontWeight={600} color="primary.main">
+                                    {lojaUsuario.nome_loja} (Sua Loja)
+                                  </Typography>
+                                </Box>
+                                <Box display="flex" alignItems="baseline" gap={0.5}>
+                                  <Typography variant="h6" fontWeight={700} color="primary.main">
+                                    {lojaUsuario.quantidade}
+                                  </Typography>
+                                  <Typography variant="caption" color="text.secondary">
+                                    clientes
+                                  </Typography>
+                                </Box>
+                              </Box>
+                            ))}
+                          </>
+                        )
+                      }
+                      return null
+                    })()}
+                  </Box>
+                ) : (
+                  <Box display="flex" justifyContent="center" p={3}>
+                    <Typography color="text.secondary">Nenhuma loja teve novos clientes nesse período.</Typography>
+                  </Box>
+                )}
+              </CardContent>
+            </Card>
           </Grid>
         )}
 
@@ -712,6 +815,79 @@ const DashboardPage = () => {
         schema={schema}
         lojaIds={isAdmLoja && lojasGestoras && lojasGestoras.length > 0 ? lojasGestoras : undefined}
       />
+
+      {/* Modal de Ranking Completo */}
+      <Dialog open={isRankingModalOpen} onClose={() => setIsRankingModalOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Ranking Completo das Lojas (7 dias)</DialogTitle>
+        <DialogContent dividers>
+          <Box display="flex" flexDirection="column" gap={1.5}>
+            {data?.lojas_ranking_novos_clientes?.map((loja: any) => {
+              const user = authService.getUser()
+              const isCurrLoja = user?.id_loja === loja.id_loja
+              const belongsToUser = isCurrLoja || (lojasGestoras?.includes(loja.id_loja))
+
+              return (
+                <Box
+                  key={loja.id_loja}
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    p: 1.5,
+                    borderRadius: 2,
+                    bgcolor: belongsToUser ? 'primary.light' : 'background.paper',
+                    border: '1px solid',
+                    borderColor: belongsToUser ? 'primary.main' : 'divider',
+
+                    // Top 3 specific border
+                    ...(loja.posicao <= 3 && !belongsToUser ? {
+                      borderColor: loja.posicao === 1 ? 'rgba(255, 215, 0, 0.5)' :
+                        loja.posicao === 2 ? 'rgba(192, 192, 192, 0.5)' :
+                          'rgba(205, 127, 50, 0.5)',
+                    } : {}),
+                  }}
+                >
+                  <Box display="flex" alignItems="center" gap={2}>
+                    <Box
+                      sx={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: '50%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        bgcolor: loja.posicao === 1 ? '#FFD700' :
+                          loja.posicao === 2 ? '#C0C0C0' :
+                            loja.posicao === 3 ? '#cd7f32' : 'transparent',
+                        color: loja.posicao <= 3 ? '#fff' : (belongsToUser ? 'primary.main' : 'text.secondary'),
+                        fontWeight: 'bold',
+                        fontSize: '0.875rem',
+                        boxShadow: loja.posicao <= 3 ? 2 : 0,
+                      }}
+                    >
+                      {loja.posicao}º
+                    </Box>
+                    <Typography variant="body2" fontWeight={belongsToUser ? 700 : 500} color={belongsToUser ? 'primary.main' : 'text.primary'}>
+                      {loja.nome_loja} {belongsToUser && '(Sua Loja)'}
+                    </Typography>
+                  </Box>
+                  <Box display="flex" alignItems="baseline" gap={0.5}>
+                    <Typography variant="h6" fontWeight={700} color="primary.main">
+                      {loja.quantidade}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      clientes
+                    </Typography>
+                  </Box>
+                </Box>
+              )
+            })}
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setIsRankingModalOpen(false)}>Fechar</Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   )
 }
