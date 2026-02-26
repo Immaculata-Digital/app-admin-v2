@@ -25,6 +25,7 @@ export type DashboardResponse = {
   clientes_7d_variacao: number
   pontos_creditados_7d: number
   pontos_resgatados_7d: number
+  itens_resgatados_7d: number
   novos_clientes_7d: DashboardCliente[]
   ultimos_resgates: DashboardResgate[]
 }

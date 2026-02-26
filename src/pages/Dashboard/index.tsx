@@ -397,12 +397,11 @@ const DashboardPage = () => {
         {hasPermission('erp:dashboard:card-total-clientes') && (
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <KPICard
-              title="Total de Clientes"
-              value={data?.clientes_total.toLocaleString('pt-BR') || '0'}
-              subtitle="Todos os tempos"
-              onClick={() => navigate('/clientes')}
+              title="Itens Resgatados"
+              value={data?.itens_resgatados_7d.toLocaleString('pt-BR') || '0'}
+              subtitle="Últimos 7 dias"
               loading={loading}
-              icon={<People sx={{ fontSize: 24 }} />}
+              icon={<CardGiftcard sx={{ fontSize: 24 }} />}
             />
           </Grid>
         )}
