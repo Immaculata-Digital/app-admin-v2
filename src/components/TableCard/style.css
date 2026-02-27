@@ -397,7 +397,7 @@
 /* FAB (botão flutuante) */
 .table-card__fab {
   position: fixed !important;
-  bottom: 2rem !important;
+  bottom: 5.5rem !important;
   right: 2rem !important;
   z-index: 1000 !important;
   background-color: var(--color-primary) !important;
@@ -470,7 +470,7 @@
   }
 
   .table-card__fab {
-    bottom: 1.5rem;
+    bottom: 5rem;
     right: 1.5rem;
   }
 

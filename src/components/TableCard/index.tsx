@@ -26,6 +26,7 @@ import {
 } from '@mui/material'
 import { Add, DeleteOutline, MoreVert, ViewModule, TableChart, Edit } from '@mui/icons-material'
 import type { SelectChangeEvent } from '@mui/material/Select'
+import TablePagination from '@mui/material/TablePagination'
 import './style.css'
 
 export type TableCardColumn<T extends TableCardRow> = {
@@ -101,6 +102,13 @@ type TableCardProps<T extends TableCardRow> = {
   disableView?: boolean
   onRowClick?: (row: T) => void
   onValidationError?: (message: string) => void
+  // Server-side Pagination & Search Props
+  serverSideSearch?: boolean
+  page?: number
+  rowsPerPage?: number
+  totalCount?: number
+  onPageChange?: (event: unknown, newPage: number) => void
+  onRowsPerPageChange?: (event: React.ChangeEvent<HTMLInputElement>) => void
 }
 
 type DialogState<T extends TableCardRow> =
@@ -125,6 +133,12 @@ function TableCard<T extends TableCardRow>({
   disableView = false,
   onRowClick,
   onValidationError,
+  serverSideSearch = false,
+  page,
+  rowsPerPage,
+  totalCount,
+  onPageChange,
+  onRowsPerPageChange,
 }: TableCardProps<T>) {
   const { query, selectedFilter } = useSearch()
   // const theme = useTheme()
@@ -132,7 +146,7 @@ function TableCard<T extends TableCardRow>({
   const [selectedIds, setSelectedIds] = useState<Array<T['id']>>([])
   const [viewMode, setViewMode] = useState<'card' | 'table'>(() => {
     if (typeof window === 'undefined') return 'card'
-    
+
     // Check local storage first (reset version)
     const stored = window.localStorage.getItem('concordia-table-view-mode-v2') as 'card' | 'table' | null
     if (stored) return stored
@@ -170,6 +184,7 @@ function TableCard<T extends TableCardRow>({
   const formSchema = formFields ?? columns
 
   const filteredRows = useMemo(() => {
+    if (serverSideSearch) return rows
     if (!query) return rows
     const lower = query.toLowerCase()
     return rows.filter((row) => {
@@ -184,7 +199,7 @@ function TableCard<T extends TableCardRow>({
         return String(value).toLowerCase().includes(lower)
       })
     })
-  }, [rows, columns, query, selectedFilter])
+  }, [rows, columns, query, selectedFilter, serverSideSearch])
 
   const allSelected =
     filteredRows.length > 0 &&
@@ -221,9 +236,9 @@ function TableCard<T extends TableCardRow>({
       if (row) {
         const existingValue = row[field.key]
         // Se o campo for de senha (type password), não preencher na edição
-        const isPasswordField = formField.inputType === 'password' || 
+        const isPasswordField = formField.inputType === 'password' ||
           (formField.renderInput && String(field.key).toLowerCase().includes('senha'))
-        
+
         if (isMultiSelect) {
           acc[field.key] = (Array.isArray(existingValue)
             ? existingValue
@@ -291,7 +306,7 @@ function TableCard<T extends TableCardRow>({
       const errorStatus = error?.status || (error?.response?.status) || (error?.statusCode)
       if (errorStatus === 422) {
         const validationErrors: Record<string, string[]> = {}
-        
+
         // Adicionar erros do backend se existirem
         if (error?.details) {
           const details = error.details as { fieldErrors?: Record<string, string[]> }
@@ -299,21 +314,21 @@ function TableCard<T extends TableCardRow>({
             Object.assign(validationErrors, details.fieldErrors)
           }
         }
-        
+
         // Verificar campos obrigatórios vazios (exceto senha)
         if (formFields) {
           formFields.forEach((field) => {
             const fieldKey = String(field.key)
-            const isPasswordField = fieldKey.toLowerCase().includes('senha') || 
+            const isPasswordField = fieldKey.toLowerCase().includes('senha') ||
               fieldKey.toLowerCase().includes('password') ||
               field.inputType === 'password'
-            
+
             // Se o campo é obrigatório e não é senha
             if (field.required && !isPasswordField) {
               const value = formValues[field.key]
-              const isEmpty = value === '' || value === null || value === undefined || 
+              const isEmpty = value === '' || value === null || value === undefined ||
                 (Array.isArray(value) && value.length === 0)
-              
+
               // Se estiver vazio e não tiver erro já definido, adicionar erro
               if (isEmpty && !validationErrors[fieldKey]) {
                 validationErrors[fieldKey] = [`O campo ${field.label} é obrigatório`]
@@ -321,14 +336,14 @@ function TableCard<T extends TableCardRow>({
             }
           })
         }
-        
+
         setFieldErrors(validationErrors)
-        
+
         // Mostrar mensagem de erro
         if (onValidationError) {
           onValidationError('Campos inválidos. Verifique os campos obrigatórios.')
         }
-        
+
         // Não fechar a modal
         return
       }
@@ -376,16 +391,16 @@ function TableCard<T extends TableCardRow>({
     const fieldKey = String(field.key)
     const fieldErrorMessages = fieldErrors[fieldKey] || []
     const hasBackendError = fieldErrorMessages.length > 0
-    
+
     // Verificar se o campo está vazio
-    const isEmpty = value === '' || value === null || value === undefined || 
+    const isEmpty = value === '' || value === null || value === undefined ||
       (Array.isArray(value) && value.length === 0)
-    const isPasswordField = inputType === 'password' || 
+    const isPasswordField = inputType === 'password' ||
       (fieldKey.toLowerCase().includes('senha') || fieldKey.toLowerCase().includes('password'))
-    
+
     // Verificar se é obrigatório
     const isRequired = 'required' in field && field.required === true
-    
+
     // Mostrar erro se:
     // 1. Tem erro do backend E (é senha não vazia OU não é senha e está vazio)
     // 2. OU é obrigatório, não é senha, está vazio E há erros de validação (indicando que houve tentativa de submit)
@@ -530,7 +545,7 @@ function TableCard<T extends TableCardRow>({
             : inputType === 'date'
               ? 'date'
               : 'text'
-    const isPasswordFieldText = inputType === 'password' || 
+    const isPasswordFieldText = inputType === 'password' ||
       fieldKey.toLowerCase().includes('senha') || fieldKey.toLowerCase().includes('password')
     const isRequiredText = 'required' in field && field.required === true
     const hasValidationErrorsText = Object.keys(fieldErrors).length > 0
@@ -630,11 +645,11 @@ function TableCard<T extends TableCardRow>({
                     className={`table-card__gmail-card ${isSelected ? 'table-card__gmail-card--selected' : ''}`}
                     onClick={() => {
                       if (!isSelected) {
-                         if (onRowClick) {
-                           onRowClick(row)
-                         } else if (!disableView) {
-                           openDialog('edit', row)
-                         }
+                        if (onRowClick) {
+                          onRowClick(row)
+                        } else if (!disableView) {
+                          openDialog('edit', row)
+                        }
                       }
                     }}
                   >
@@ -734,9 +749,9 @@ function TableCard<T extends TableCardRow>({
                       onClick={() => {
                         if (!selectedIds.includes(row.id)) {
                           if (onRowClick) {
-                             onRowClick(row)
+                            onRowClick(row)
                           } else if (!disableView) {
-                             openDialog('edit', row)
+                            openDialog('edit', row)
                           }
                         }
                       }}
@@ -782,16 +797,28 @@ function TableCard<T extends TableCardRow>({
             </Box>
           </Box>
         )}
+        {page !== undefined && rowsPerPage !== undefined && totalCount !== undefined && onPageChange && onRowsPerPageChange && (
+          <TablePagination
+            component="div"
+            count={totalCount}
+            page={page}
+            onPageChange={onPageChange}
+            rowsPerPage={rowsPerPage}
+            onRowsPerPageChange={onRowsPerPageChange}
+            labelRowsPerPage="Linhas por página:"
+            labelDisplayedRows={({ from, to, count }) => `${from}-${to} de ${count !== -1 ? count : `mais de ${to}`}`}
+          />
+        )}
       </Stack>
 
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleCloseMenu}>
         {menuRow && (() => {
           const actions = typeof rowActions === 'function' ? rowActions(menuRow) : rowActions || []
           return actions.map((action) => {
-            const isDisabled = typeof action.disabled === 'function' 
+            const isDisabled = typeof action.disabled === 'function'
               ? action.disabled(menuRow)
               : action.disabled || false
-            
+
             return (
               <MenuItem
                 key={action.label}
@@ -826,8 +853,8 @@ function TableCard<T extends TableCardRow>({
           </MenuItem>
         )}
         {onDelete && (
-          <MenuItem 
-            onClick={handleDeleteRow} 
+          <MenuItem
+            onClick={handleDeleteRow}
             disabled={disableDelete || (menuRow && canDeleteRow ? !canDeleteRow(menuRow) : false)}
           >
             <DeleteOutline fontSize="small" style={{ marginRight: 8 }} />
@@ -836,10 +863,10 @@ function TableCard<T extends TableCardRow>({
         )}
       </Menu>
 
-      <Dialog 
-        open={dialog.open} 
-        onClose={closeDialog} 
-        fullWidth 
+      <Dialog
+        open={dialog.open}
+        onClose={closeDialog}
+        fullWidth
         maxWidth="sm"
         className="table-card__form-dialog"
         PaperProps={{

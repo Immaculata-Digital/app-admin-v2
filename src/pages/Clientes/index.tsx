@@ -42,7 +42,14 @@ const ClientesPage = () => {
   const [loading, setLoading] = useState(true)
   const [toast, setToast] = useState<{ open: boolean; message: string; severity?: 'success' | 'error' | 'info' }>({ open: false, message: '', severity: 'info' })
   const [_error, setError] = useState<string | null>(null)
-  
+
+  // Pagination & Search States
+  const [page, setPage] = useState(0)
+  const [rowsPerPage, setRowsPerPage] = useState(10)
+  const [totalCount, setTotalCount] = useState(0)
+  const { query, setFilters, setPlaceholder } = useSearch()
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('')
+
   // Point Modal States
   const [selectedCliente, setSelectedCliente] = useState<ClienteRow | null>(null)
   const [isCreditModalOpen, setIsCreditModalOpen] = useState(false)
@@ -51,7 +58,6 @@ const ClientesPage = () => {
   const [codigoResgate, setCodigoResgate] = useState('')
   const [isProcessingPoints, setIsProcessingPoints] = useState(false)
 
-  const { setFilters, setPlaceholder } = useSearch()
   const { permissions } = useAuth()
   const schema = getTenantSchema()
   const { lojasGestoras, isAdmLoja } = useUserLojasGestoras()
@@ -75,6 +81,17 @@ const ClientesPage = () => {
   }, [setFilters, setPlaceholder])
 
   useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearchQuery(query)
+      setPage(0) // Reset to first page when search changes
+    }, 500)
+
+    return () => {
+      clearTimeout(handler)
+    }
+  }, [query])
+
+  useEffect(() => {
     const loadLojas = async () => {
       try {
         const response = await lojaService.list(schema, { limit: 200, offset: 0 })
@@ -89,18 +106,20 @@ const ClientesPage = () => {
   const loadClientes = useCallback(async () => {
     try {
       setLoading(true)
-      
+
       // Se o usuário for ADM-LOJA e tiver lojas gestoras, filtrar por todas as lojas
-      const idLoja = isAdmLoja && lojasGestoras && lojasGestoras.length > 0 
+      const idLoja = isAdmLoja && lojasGestoras && lojasGestoras.length > 0
         ? (lojasGestoras.length === 1 ? lojasGestoras[0] : lojasGestoras)
         : undefined
-      
-      const response = await clienteService.list(schema, { 
-        limit: 200, 
-        offset: 0,
-        id_loja: idLoja
+
+      const response = await clienteService.list(schema, {
+        limit: rowsPerPage,
+        offset: page * rowsPerPage,
+        id_loja: idLoja,
+        search: debouncedSearchQuery || undefined
       })
       setClientes(response.data.map(mapClienteToRow))
+      setTotalCount(response.pagination.total)
     } catch (err: any) {
       console.error(err)
       setError('Não foi possível carregar os clientes')
@@ -108,11 +127,11 @@ const ClientesPage = () => {
     } finally {
       setLoading(false)
     }
-  }, [schema, isAdmLoja, lojasGestoras])
+  }, [schema, isAdmLoja, lojasGestoras, page, rowsPerPage, debouncedSearchQuery])
 
   useEffect(() => {
     loadClientes()
-  }, [loadClientes])
+  }, [loadClientes, page, rowsPerPage, debouncedSearchQuery])
 
   const mapClienteToRow = (cliente: ClienteDTO): ClienteRow => ({
     id: cliente.id_cliente,
@@ -189,23 +208,23 @@ const ClientesPage = () => {
     () => [
       { key: 'nome_completo', label: 'Nome Completo' },
       { key: 'email', label: 'Email' },
-      { 
-        key: 'whatsapp', 
+      {
+        key: 'whatsapp',
         label: 'WhatsApp',
         render: (value) => formatTelefoneBR(value)
       },
-      { 
-        key: 'id_loja', 
+      {
+        key: 'id_loja',
         label: 'Loja',
         render: (_value, row) => getNomeLoja(row.id_loja)
       },
-      { 
-        key: 'saldo', 
+      {
+        key: 'saldo',
         label: 'Saldo de Pontos',
         render: (value) => value?.toLocaleString('pt-BR') || '0'
       },
-      { 
-        key: 'dt_cadastro', 
+      {
+        key: 'dt_cadastro',
         label: 'Data Cadastro',
         render: (value) => value ? new Date(value).toLocaleDateString('pt-BR') : ''
       },
@@ -327,7 +346,7 @@ const ClientesPage = () => {
         aceite_termos: true,
         senha: '123456',
       }
-      
+
       try {
         await clienteService.create(schema, payload)
         setToast({ open: true, message: 'Cliente criado com sucesso!', severity: 'success' })
@@ -358,7 +377,7 @@ const ClientesPage = () => {
         cep: formData.cep,
         sexo: formData.sexo as 'M' | 'F' | undefined,
       }
-      
+
       try {
         await clienteService.update(schema, Number(id), payload)
         setToast({ open: true, message: 'Cliente atualizado com sucesso!', severity: 'success' })
@@ -410,15 +429,15 @@ const ClientesPage = () => {
   // Custom row actions
   const rowActions: TableCardRowAction<ClienteRow>[] = useMemo(() => {
     const actions: TableCardRowAction<ClienteRow>[] = []
-    
+
     // Add Points Action
     actions.push({
       label: 'Acrescentar Pontos',
       icon: <AddCircleOutline fontSize="small" />,
       onClick: (row) => {
-         setSelectedCliente(row)
-         setCreditData({ valor_reais: 0, valor_display: '' })
-         setIsCreditModalOpen(true)
+        setSelectedCliente(row)
+        setCreditData({ valor_reais: 0, valor_display: '' })
+        setIsCreditModalOpen(true)
       }
     })
 
@@ -427,9 +446,9 @@ const ClientesPage = () => {
       label: 'Debitar Pontos',
       icon: <RemoveCircleOutline fontSize="small" />,
       onClick: (row) => {
-         setSelectedCliente(row)
-         setCodigoResgate('')
-         setIsDebitModalOpen(true)
+        setSelectedCliente(row)
+        setCodigoResgate('')
+        setIsDebitModalOpen(true)
       }
     })
 
@@ -466,6 +485,15 @@ const ClientesPage = () => {
           rowActions={rowActions}
           onRowClick={(row) => navigate(`/clientes/${row.id}`)}
           onValidationError={(message) => setToast({ open: true, message, severity: 'error' })}
+          serverSideSearch={true}
+          page={page}
+          rowsPerPage={rowsPerPage}
+          totalCount={totalCount}
+          onPageChange={(_, newPage) => setPage(newPage)}
+          onRowsPerPageChange={(event) => {
+            setRowsPerPage(parseInt(event.target.value, 10))
+            setPage(0)
+          }}
         />
       )}
 
