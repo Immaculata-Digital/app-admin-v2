@@ -100,6 +100,8 @@ type TableCardProps<T extends TableCardRow> = {
   canDeleteRow?: (row: T) => boolean
   disableEdit?: boolean
   disableView?: boolean
+  disableActionsColumn?: boolean
+  disableSelection?: boolean
   onRowClick?: (row: T) => void
   onValidationError?: (message: string) => void
   // Server-side Pagination & Search Props
@@ -131,6 +133,8 @@ function TableCard<T extends TableCardRow>({
   canDeleteRow,
   disableEdit = false,
   disableView = false,
+  disableActionsColumn = false,
+  disableSelection = false,
   onRowClick,
   onValidationError,
   serverSideSearch = false,
@@ -654,12 +658,14 @@ function TableCard<T extends TableCardRow>({
                     }}
                   >
                     <Box className="table-card__gmail-card-content">
-                      <Checkbox
-                        checked={isSelected}
-                        onChange={() => handleToggleSelectRow(row.id)}
-                        onClick={(event) => event.stopPropagation()}
-                        className="table-card__checkbox"
-                      />
+                      {!disableSelection && (
+                        <Checkbox
+                          checked={isSelected}
+                          onChange={() => handleToggleSelectRow(row.id)}
+                          onClick={(event) => event.stopPropagation()}
+                          className="table-card__checkbox"
+                        />
+                      )}
 
                       <Box className="table-card__gmail-card-main" flex={1}>
                         <Box className="table-card__gmail-card-header">
@@ -674,16 +680,18 @@ function TableCard<T extends TableCardRow>({
                             </Typography>
                           )}
 
-                          <IconButton
-                            className="table-card__gmail-actions"
-                            onClick={(event) => {
-                              event.stopPropagation()
-                              handleOpenMenu(event, row)
-                            }}
-                            size="small"
-                          >
-                            <MoreVert fontSize="small" />
-                          </IconButton>
+                          {!disableActionsColumn && (
+                            <IconButton
+                              className="table-card__gmail-actions"
+                              onClick={(event) => {
+                                event.stopPropagation()
+                                handleOpenMenu(event, row)
+                              }}
+                              size="small"
+                            >
+                              <MoreVert fontSize="small" />
+                            </IconButton>
+                          )}
                         </Box>
 
                         {secondaryColumns.length > 0 && (
@@ -725,19 +733,21 @@ function TableCard<T extends TableCardRow>({
               <Table size="small">
                 <TableHead>
                   <TableRow>
-                    <TableCell padding="checkbox">
-                      <Checkbox
-                        checked={allSelected}
-                        onChange={handleToggleSelectAll}
-                        indeterminate={
-                          selectedIds.length > 0 && !allSelected && filteredRows.length > 0
-                        }
-                      />
-                    </TableCell>
+                    {!disableSelection && (
+                      <TableCell padding="checkbox">
+                        <Checkbox
+                          checked={allSelected}
+                          onChange={handleToggleSelectAll}
+                          indeterminate={
+                            selectedIds.length > 0 && !allSelected && filteredRows.length > 0
+                          }
+                        />
+                      </TableCell>
+                    )}
                     {columns.map((column) => (
                       <TableCell key={String(column.key)}>{column.label}</TableCell>
                     ))}
-                    <TableCell align="right">Ações</TableCell>
+                    {!disableActionsColumn && <TableCell align="right">Ações</TableCell>}
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -756,31 +766,35 @@ function TableCard<T extends TableCardRow>({
                         }
                       }}
                     >
-                      <TableCell
-                        padding="checkbox"
-                        onClick={(event) => event.stopPropagation()}
-                      >
-                        <Checkbox
-                          checked={selectedIds.includes(row.id)}
-                          onChange={() => handleToggleSelectRow(row.id)}
-                        />
-                      </TableCell>
+                      {!disableSelection && (
+                        <TableCell
+                          padding="checkbox"
+                          onClick={(event) => event.stopPropagation()}
+                        >
+                          <Checkbox
+                            checked={selectedIds.includes(row.id)}
+                            onChange={() => handleToggleSelectRow(row.id)}
+                          />
+                        </TableCell>
+                      )}
                       {columns.map((column) => (
                         <TableCell key={String(column.key)}>
                           {renderCell(row, column)}
                         </TableCell>
                       ))}
-                      <TableCell align="right" onClick={(event) => event.stopPropagation()}>
-                        <IconButton
-                          onClick={(event) => {
-                            event.stopPropagation()
-                            handleOpenMenu(event, row)
-                          }}
-                          size="small"
-                        >
-                          <MoreVert fontSize="small" />
-                        </IconButton>
-                      </TableCell>
+                      {!disableActionsColumn && (
+                        <TableCell align="right" onClick={(event) => event.stopPropagation()}>
+                          <IconButton
+                            onClick={(event) => {
+                              event.stopPropagation()
+                              handleOpenMenu(event, row)
+                            }}
+                            size="small"
+                          >
+                            <MoreVert fontSize="small" />
+                          </IconButton>
+                        </TableCell>
+                      )}
                     </TableRow>
                   ))}
                   {filteredRows.length === 0 && (

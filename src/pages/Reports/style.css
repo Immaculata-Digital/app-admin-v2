@@ -1,0 +1,15 @@
+/* Standard Reports Page Styles */
+.reports-page {
+    padding: var(--spacing-lg);
+}
+
+/* Back button for report results */
+.reports-page__back-button {
+    margin-top: var(--spacing-md);
+}
+
+/* Ensure report result columns do not break lines and maintain a comfortable reading width */
+.report-result-container th,
+.report-result-container td {
+    white-space: nowrap;
+}

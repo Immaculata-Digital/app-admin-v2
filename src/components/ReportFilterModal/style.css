@@ -1,0 +1,50 @@
+.report-modal .MuiDialog-paper {
+    background: var(--glass-background) !important;
+    backdrop-filter: var(--glass-backdrop) !important;
+    -webkit-backdrop-filter: var(--glass-backdrop) !important;
+    border: 1px solid var(--glass-border) !important;
+    box-shadow: var(--glass-shadow) !important;
+}
+
+.report-modal__title {
+    font-weight: 700 !important;
+    color: var(--color-text) !important;
+    padding-bottom: var(--spacing-sm) !important;
+}
+
+.report-modal__subtitle {
+    color: var(--color-text-secondary) !important;
+    font-size: 0.9rem !important;
+}
+
+.report-modal__field-container {
+    padding-top: var(--spacing-md) !important;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+.report-modal__actions {
+    padding: var(--spacing-lg) !important;
+}
+
+.report-modal__btn-cancel {
+    color: var(--color-text-secondary) !important;
+    text-transform: none !important;
+    font-weight: 600 !important;
+}
+
+.report-modal__btn-confirm {
+    background: var(--brand-gradient) !important;
+    border-radius: var(--radius-full) !important;
+    padding: 8px 24px !important;
+    box-shadow: 0 4px 12px rgba(var(--color-primary-rgb), 0.2) !important;
+}
+
+.report-modal__loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: var(--spacing-xl);
+    gap: var(--spacing-md);
+}

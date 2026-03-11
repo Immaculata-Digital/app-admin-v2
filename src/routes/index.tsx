@@ -14,6 +14,7 @@ import SetPasswordPage from '../pages/SetPassword'
 import ConfiguracoesPage from '../pages/Configuracoes'
 import RemetentesSmtpPage from '../pages/RemetentesSmtp'
 import CampanhasDisparoPage from '../pages/CampanhasDisparo'
+import ReportsPage from '../pages/Reports'
 import MainLayout from '../components/MainLayout'
 import { ProtectedRoute } from '../components/ProtectedRoute'
 import { useAuth } from '../context/AuthContext'
@@ -22,13 +23,13 @@ import { useAuth } from '../context/AuthContext'
 const RootRedirect = () => {
   const { isAuthenticated, loading } = useAuth()
   const navigate = useNavigate()
-  
+
   useEffect(() => {
     if (!loading && isAuthenticated) {
       navigate('/dashboard', { replace: true })
     }
   }, [isAuthenticated, loading, navigate])
-  
+
   // if (loading) {
   //   return (
   //     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
@@ -36,11 +37,11 @@ const RootRedirect = () => {
   //     </div>
   //   )
   // }
-  
+
   if (isAuthenticated) {
     return null // Será redirecionado pelo useEffect
   }
-  
+
   return <LoginPage />
 }
 
@@ -68,6 +69,7 @@ const AppRoutes = () => (
         <Route path="/configuracoes" element={<ConfiguracoesPage />} />
         <Route path="/remetentes-smtp" element={<RemetentesSmtpPage />} />
         <Route path="/campanhas-disparo" element={<CampanhasDisparoPage />} />
+        <Route path="/relatorios" element={<ReportsPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
