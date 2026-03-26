@@ -15,6 +15,9 @@ import ConfiguracoesPage from '../pages/Configuracoes'
 import RemetentesSmtpPage from '../pages/RemetentesSmtp'
 import CampanhasDisparoPage from '../pages/CampanhasDisparo'
 import ReportsPage from '../pages/Reports'
+import FidelidadeKPIPage from '../pages/KPIs/Fidelidade'
+import ClientesKPIPage from '../pages/KPIs/Clientes'
+import MapaKPIPage from '../pages/KPIs/Mapa'
 import MainLayout from '../components/MainLayout'
 import { ProtectedRoute } from '../components/ProtectedRoute'
 import { useAuth } from '../context/AuthContext'
@@ -70,6 +73,9 @@ const AppRoutes = () => (
         <Route path="/remetentes-smtp" element={<RemetentesSmtpPage />} />
         <Route path="/campanhas-disparo" element={<CampanhasDisparoPage />} />
         <Route path="/relatorios" element={<ReportsPage />} />
+        <Route path="/kpis/fidelidade" element={<FidelidadeKPIPage />} />
+        <Route path="/kpis/clientes" element={<ClientesKPIPage />} />
+        <Route path="/kpis/mapa" element={<MapaKPIPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

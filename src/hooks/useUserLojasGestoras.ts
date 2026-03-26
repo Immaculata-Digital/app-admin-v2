@@ -26,15 +26,27 @@ export const useUserLojasGestoras = () => {
         // Buscar dados completos do usuário
         const userData = await userService.getById(user.id)
         
-        // Buscar grupos para verificar se tem ADM-LOJA
+        // Buscar grupos para verificar se tem ADM-LOJA ou Administrador de Loja
         const groups = await accessGroupService.list()
-        const admLojaGroup = groups.find(g => g.code === 'ADM-LOJA')
         
-        if (admLojaGroup && userData.groupIds.includes(admLojaGroup.id)) {
+        // Critério flexível para identificar ADM-LOJA (mesma lógica das telas de KPI)
+        const isLojaAdmin = groups.some(g => 
+          userData.groupIds.includes(g.id) && 
+          (g.code === 'ADM-LOJA' || g.name.toUpperCase().includes('LOJA') || g.code.includes('LOJA'))
+        )
+        
+        if (isLojaAdmin) {
           setIsAdmLoja(true)
-          // Buscar lojas gestoras do usuário
-          const lojas = userData.lojasGestoras || []
-          setLojasGestoras(Array.isArray(lojas) && lojas.length > 0 ? lojas : null)
+          
+          let ids: number[] = []
+          if (Array.isArray(userData.lojasGestoras) && userData.lojasGestoras.length > 0) {
+            ids = userData.lojasGestoras
+          } else if (user.id_loja) {
+            // Se não tem lojasGestoras mas tem id_loja vinculada, usar a id_loja
+            ids = [user.id_loja]
+          }
+          
+          setLojasGestoras(ids.length > 0 ? ids : null)
         } else {
           setIsAdmLoja(false)
           setLojasGestoras(null)

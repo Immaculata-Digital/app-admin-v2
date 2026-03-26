@@ -83,9 +83,11 @@ const DashboardPage = () => {
       setError(null)
 
       // Se o usuário for ADM-LOJA e tiver lojas gestoras, filtrar por todas as lojas
-      const lojaIds = isAdmLoja && lojasGestoras && lojasGestoras.length > 0
-        ? lojasGestoras
-        : undefined
+      // Caso contrário, se for ADM-LOJA mas não tiver lojas vinculadas, usar [-1] para não ver nada (e não TUDO)
+      let lojaIds: number[] | undefined = undefined
+      if (isAdmLoja) {
+        lojaIds = (lojasGestoras && lojasGestoras.length > 0) ? lojasGestoras : [-1]
+      }
 
       const dashboardData = await dashboardService.getDashboard(schema, lojaIds)
       setData(dashboardData)

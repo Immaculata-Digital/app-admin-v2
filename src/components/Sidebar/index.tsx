@@ -11,6 +11,7 @@ import {
   useTheme,
   Box,
   Tooltip,
+  Collapse,
 } from '@mui/material'
 import {
   Inventory2Outlined,
@@ -27,6 +28,10 @@ import {
   StoreOutlined,
   BusinessOutlined,
   Settings,
+  DashboardOutlined,
+  MapOutlined,
+  ExpandLess,
+  ExpandMore,
 } from '@mui/icons-material'
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import React, { useEffect, useState, useMemo } from 'react'
@@ -70,6 +75,8 @@ const iconMapping: Record<string, React.ReactElement> = {
   CardGiftcard: <StarsOutlined />, // Mapeamento para compatibilidade
   Settings: <Settings />,
   SettingsMail: <SettingsMailIcon />,
+  Dashboard: <DashboardOutlined />,
+  Map: <MapOutlined />,
 }
 
 const getIcon = (iconName: string) => {
@@ -127,7 +134,7 @@ const Sidebar = ({ open, onToggle }: SidebarProps) => {
 
   const menuStructure = useMemo(() => {
     // Processar menus hierárquicos da API v2
-    const result: Array<{ title: string; items: Array<{ label: string; icon: React.ReactElement; path: string }> }> = []
+    const result: Array<{ title: string; icon: React.ReactElement; key: string; items: Array<{ label: string; icon: React.ReactElement; path: string }> }> = []
     
     allMenus.forEach((menu) => {
       // Se o menu tem filhos, processar os filhos
@@ -158,6 +165,8 @@ const Sidebar = ({ open, onToggle }: SidebarProps) => {
         if (children.length > 0) {
           result.push({
             title: menu.name,
+            icon: getIcon(menu.icon),
+            key: menu.key,
             items: children,
           })
         }
@@ -166,7 +175,9 @@ const Sidebar = ({ open, onToggle }: SidebarProps) => {
         const hasPermission = permissions.some(p => p.toLowerCase() === menu.key.toLowerCase())
         if (hasPermission) {
           result.push({
-            title: menu.category,
+            title: menu.name,
+            icon: getIcon(menu.icon),
+            key: menu.key,
             items: [{
               label: menu.name,
               icon: getIcon(menu.icon),
@@ -179,6 +190,23 @@ const Sidebar = ({ open, onToggle }: SidebarProps) => {
 
     return result
   }, [allMenus, permissions])
+
+  const [expandedSection, setExpandedSection] = useState<string | null>(null)
+
+  const handleToggleSection = (sectionKey: string) => {
+    setExpandedSection(prev => (prev === sectionKey ? null : sectionKey))
+  }
+
+  // Auto-expand section containing current path
+  useEffect(() => {
+    const currentPath = location.pathname
+    const activeSection = menuStructure.find(section => 
+      section.items.some(item => currentPath.startsWith(item.path))
+    )
+    if (activeSection) {
+      setExpandedSection(activeSection.key)
+    }
+  }, [location.pathname, menuStructure])
 
 
 
@@ -264,45 +292,96 @@ const Sidebar = ({ open, onToggle }: SidebarProps) => {
             </Typography>
           </Box>
         ) : (
-          menuStructure.map((section) => (
-            <div key={section.title} className="sidebar-section">
-              {open && (
-                <Typography 
-                  variant="caption" 
-                  className="sidebar-section__title" 
-                  sx={{ 
-                    color: '#ffffff !important',
-                    fontWeight: 700,
-                    fontSize: '0.75rem',
-                    letterSpacing: '0.05em',
-                    opacity: 1,
-                    textTransform: 'uppercase',
-                    mb: 1,
-                    pl: 1.5
-                  }}
-                >
-                  {section.title}
-                </Typography>
-              )}
-              <List disablePadding className="sidebar-list">
-                {section.items.map((item) => (
-                  <Tooltip key={item.label} title={!open ? item.label : ''} placement="right">
+          menuStructure.map((section) => {
+            const isExpanded = expandedSection === section.key
+            const isSingleItem = section.items.length === 1 && section.items[0].path !== '#'
+
+            return (
+              <div key={section.key} className="sidebar-section">
+                {isSingleItem ? (
+                  // Item único (sem filhos) - Renderizar link direto
+                  <Tooltip title={!open ? section.items[0].label : ''} placement="right">
                     <ListItemButton
                       component={NavLink}
-                      to={item.path}
-                      className={`sidebar-link ${location.pathname.startsWith(item.path) ? 'active' : ''}`}
+                      to={section.items[0].path}
+                      className={`sidebar-link ${location.pathname.startsWith(section.items[0].path) ? 'active' : ''}`}
                       onClick={() => isMobile && onToggle()}
                     >
                       <ListItemIcon className="sidebar-link__icon" sx={{ color: '#ffffff !important' }}>
-                        {item.icon}
+                        {section.items[0].icon}
                       </ListItemIcon>
-                      {open && <ListItemText primary={item.label} sx={{ color: '#ffffff !important', '& .MuiTypography-root': { fontWeight: 500 } }} />}
+                      {open && <ListItemText primary={section.items[0].label} sx={{ color: '#ffffff !important', '& .MuiTypography-root': { fontWeight: 500 } }} />}
                     </ListItemButton>
                   </Tooltip>
-                ))}
-              </List>
-            </div>
-          ))
+                ) : (
+                  // Menu com filhos - Renderizar acordeão
+                  <>
+                    <Tooltip title={!open ? section.title : ''} placement="right">
+                      <ListItemButton
+                        onClick={() => handleToggleSection(section.key)}
+                        className={`sidebar-link ${isExpanded ? 'active-section' : ''}`}
+                        sx={{ mb: 0.5 }}
+                      >
+                        <ListItemIcon className="sidebar-link__icon" sx={{ color: '#ffffff !important' }}>
+                          {section.icon}
+                        </ListItemIcon>
+                        {open && (
+                          <>
+                            <ListItemText 
+                              primary={section.title} 
+                              sx={{ color: '#ffffff !important', '& .MuiTypography-root': { fontWeight: 600, fontSize: '0.85rem' } }} 
+                            />
+                            {isExpanded ? <ExpandLess sx={{ color: 'white', fontSize: 20 }} /> : <ExpandMore sx={{ color: 'white', fontSize: 20 }} />}
+                          </>
+                        )}
+                      </ListItemButton>
+                    </Tooltip>
+                    
+                    <Collapse in={isExpanded && open} timeout="auto" unmountOnExit>
+                      <List disablePadding className="sidebar-list" sx={{ pl: open ? 2 : 0 }}>
+                        {section.items.map((item) => (
+                          <Tooltip key={item.label} title={!open ? item.label : ''} placement="right">
+                            <ListItemButton
+                              component={NavLink}
+                              to={item.path}
+                              className={`sidebar-link ${location.pathname.startsWith(item.path) ? 'active' : ''}`}
+                              onClick={() => isMobile && onToggle()}
+                              sx={{ 
+                                py: 0.5, 
+                                minHeight: 36,
+                                '&.active': {
+                                  bgcolor: 'rgba(255, 255, 255, 0.15)',
+                                }
+                              }}
+                            >
+                              <ListItemIcon 
+                                className="sidebar-link__icon" 
+                                sx={{ 
+                                  color: '#ffffff !important',
+                                  '& .MuiSvgIcon-root': { fontSize: 18 }
+                                }}
+                              >
+                                {item.icon}
+                              </ListItemIcon>
+                              {open && (
+                                <ListItemText 
+                                  primary={item.label} 
+                                  sx={{ 
+                                    color: '#ffffff !important', 
+                                    '& .MuiTypography-root': { fontSize: '0.8rem', fontWeight: 400 } 
+                                  }} 
+                                />
+                              )}
+                            </ListItemButton>
+                          </Tooltip>
+                        ))}
+                      </List>
+                    </Collapse>
+                  </>
+                )}
+              </div>
+            )
+          })
         )}
       </nav>
 

@@ -54,8 +54,60 @@ const getChartData = (schema: string, kpi: string, periodDays: number, lojaIds?:
   return adminApi.get<any[]>(`/${schema}/dashboard/charts${params}`)
 }
 
+const getFidelidadeKPIs = (schema: string, periodDays: number = 30, lojaIds?: number[], startDate?: string, endDate?: string) => {
+  let params = `?period=${periodDays}`
+  if (lojaIds && lojaIds.length > 0) {
+    params += `&idLoja=${lojaIds.join(',')}`
+  }
+  if (startDate && endDate) {
+    params += `&startDate=${startDate}&endDate=${endDate}`
+  }
+  return adminApi.get<any>(`/${schema}/dashboard/fidelidade${params}`)
+}
+
+const getFidelidadeStoresData = (schema: string, kpi: string, periodDays: number = 0, lojaIds?: number[], startDate?: string, endDate?: string) => {
+  let params = `?kpi=${kpi}&period=${periodDays}`
+  if (lojaIds && lojaIds.length > 0) {
+    params += `&idLoja=${lojaIds.join(',')}`
+  }
+  if (startDate && endDate) {
+    params += `&startDate=${startDate}&endDate=${endDate}`
+  }
+  return adminApi.get<any[]>(`/${schema}/dashboard/fidelidade/stores${params}`)
+}
+
 export const dashboardService = {
   getDashboard,
   getChartData,
+  getFidelidadeKPIs,
+  getFidelidadeStoresData,
+  getClienteKPIs: (schema: string, periodDays: number = 30, lojaIds?: number[] | string[], startDate?: string, endDate?: string) => {
+    const lojas = Array.isArray(lojaIds) ? lojaIds.join(',') : lojaIds
+    let params = `?period=${periodDays}`
+    if (lojas) {
+      params += `&idLoja=${lojas}`
+    }
+    if (startDate && endDate) {
+      params += `&startDate=${startDate}&endDate=${endDate}`
+    }
+    return adminApi.get<any>(`/${schema}/dashboard/clientes${params}`)
+  },
+  getClienteStoresData: (schema: string, kpi: string, periodDays: number = 0, lojaIds?: number[] | string[], startDate?: string, endDate?: string) => {
+    const lojas = Array.isArray(lojaIds) ? lojaIds.join(',') : lojaIds
+    let params = `?kpi=${kpi}&period=${periodDays}`
+    if (lojas) {
+      params += `&idLoja=${lojas}`
+    }
+    if (startDate && endDate) {
+      params += `&startDate=${startDate}&endDate=${endDate}`
+    }
+    return adminApi.get<any[]>(`/${schema}/dashboard/clientes/stores${params}`)
+  },
+  getMapData: (schema: string, lojaIds: number[]) => {
+    return adminApi.get<{
+      lojas: { id_loja: number; nome_loja: string; endereco_completo: string }[]
+      clientes: { cep: string; total: number }[]
+    }>(`/${schema}/dashboard/mapa?idLoja=${lojaIds.join(',')}`)
+  },
 }
 
