@@ -603,16 +603,7 @@ const FidelidadeKPIPage = () => {
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={theme.palette.divider} />
                   <XAxis 
                     dataKey="label" 
-                    angle={0} 
-                    textAnchor="middle" 
-                    height={40} 
-                    interval={0}
-                    tick={{ 
-                      fontSize: 12, 
-                      fontWeight: 700, 
-                      fill: theme.palette.text.primary,
-                      fontFamily: 'inherit'
-                    }}
+                    hide
                   />
                   <YAxis 
                     tick={{ fontSize: 13, fontWeight: 500, fill: theme.palette.text.secondary }} 
@@ -639,7 +630,35 @@ const FidelidadeKPIPage = () => {
                     radius={[10, 10, 0, 0]}
                     barSize={isMobile ? 40 : 80}
                   >
-                     <LabelList 
+                    <LabelList 
+                      dataKey="label" 
+                      content={(props: any) => {
+                        const { x, y, width, value } = props;
+                        if (!value) return null;
+                        return (
+                          <g transform={`translate(${x + width / 2}, ${y + 15})`}>
+                            <text
+                              x={0}
+                              y={0}
+                              fill="#FFFFFF"
+                              textAnchor="start"
+                              transform="rotate(90)"
+                              style={{ 
+                                fontSize: 11, 
+                                fontWeight: 900, 
+                                fontFamily: 'Outfit, sans-serif',
+                                textTransform: 'uppercase',
+                                pointerEvents: 'none',
+                                filter: 'drop-shadow(0px 1px 2px rgba(0,0,0,0.3))'
+                              }}
+                            >
+                              {value}
+                            </text>
+                          </g>
+                        );
+                      }}
+                    />
+                    <LabelList 
                       dataKey="value" 
                       position="top" 
                       formatter={(val: any) => selectedKPI?.id === 'ticket_medio' ? `R$ ${Number(val).toFixed(2)}` : val}
