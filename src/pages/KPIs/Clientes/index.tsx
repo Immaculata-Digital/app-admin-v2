@@ -556,7 +556,7 @@ const ClienteKPIPage = () => {
                     barGap={0}
                   >
                     <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="rgba(0,0,0,0.05)" />
-                    <XAxis type="number" hide domain={[0, 100]} />
+                    <XAxis type="number" hide domain={selectedKPI?.id === 'sexo' || selectedKPI?.id === 'faixa_etaria' ? [0, 100] : ['auto', 'auto']} />
                     <YAxis 
                       dataKey="label" 
                       type="category" 
@@ -574,7 +574,10 @@ const ClienteKPIPage = () => {
                         padding: '12px 20px',
                         fontWeight: 700
                       }}
-                      formatter={(val: any, name: string | undefined) => [`${val}%`, name || '']}
+                      formatter={(val: any, name: string | undefined) => {
+                        const isPercent = selectedKPI?.id === 'sexo' || selectedKPI?.id === 'faixa_etaria';
+                        return [`${val}${isPercent ? '%' : ''}`, name || ''];
+                      }}
                     />
                     <Legend 
                       verticalAlign="top" 
@@ -622,7 +625,7 @@ const ClienteKPIPage = () => {
                                 dataKey="value" 
                                 position="right" 
                                 style={{ fill: theme.palette.text.primary, fontWeight: 900, fontSize: 14 }}
-                                formatter={(val: any) => Number(val || 0).toLocaleString()}
+                                formatter={(val: any) => val}
                               />
                             )}
                           </Bar>
