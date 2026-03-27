@@ -412,6 +412,7 @@ const MultiSelectPicker = ({
                   const query = e.target.value
                   setSearchQuery(query)
                   setFocusedIndex(-1)
+                  console.log('[MultiSelectPicker] TextField onChange, query:', query, 'onSearch exists?', !!onSearch)
                   if (onSearch) {
                     onSearch(query)
                   }

@@ -141,7 +141,8 @@ const CampanhasDisparoPage = () => {
 
   const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null)
 
-  const handleSearchClientes = async (query: string) => {
+  const handleSearchClientes = useCallback(async (query: string) => {
+    console.log('[CampanhasDisparo] handleSearchClientes called with query:', query)
     // Se tiver um timeout pendente, cancela
     if (searchTimeout) {
       clearTimeout(searchTimeout)
@@ -153,6 +154,7 @@ const CampanhasDisparoPage = () => {
         setLoadingClientes(true)
         const schema = getTenantSchema()
         
+        console.log('[CampanhasDisparo] Searching for:', query)
         // Busca paged com filtro de nome
         const response = await clienteService.list(schema, { 
           limit: 100, 
@@ -164,6 +166,8 @@ const CampanhasDisparoPage = () => {
           id: cliente.id_cliente, 
           label: cliente.nome_completo 
         }))
+
+        console.log('[CampanhasDisparo] Results found:', searchedClientes.length)
 
         // Importante: Manter os clientes já selecionados na lista para evitar que sumam os labels no MultiSelectPicker
         setClientes(prev => {
@@ -186,7 +190,7 @@ const CampanhasDisparoPage = () => {
     }, 500)
 
     setSearchTimeout(timeout)
-  }
+  }, [searchTimeout])
 
   useEffect(() => {
     return () => {
@@ -574,7 +578,7 @@ const CampanhasDisparoPage = () => {
         },
       }
     ],
-    [remetentes, lojas, clientes, loadingClientes]
+    [remetentes, lojas, clientes, loadingClientes, handleSearchClientes]
   )
 
   const handleCreate = useCallback(
