@@ -105,8 +105,14 @@ export const dashboardService = {
   },
   getMapData: (schema: string, lojaIds: number[]) => {
     return adminApi.get<{
-      lojas: { id_loja: number; nome_loja: string; endereco_completo: string }[]
-      clientes: { cep: string; total: number }[]
+      lojas: { id_loja: number; nome_loja: string; endereco_completo: string; latitude: number | null; longitude: number | null }[]
+      clientes: { 
+        cep: string; 
+        total: number; 
+        latitude: number | null; 
+        longitude: number | null;
+        listagem_clientes: { nome: string; saldo: number }[]
+      }[]
     }>(`/${schema}/dashboard/mapa?idLoja=${lojaIds.join(',')}`)
   },
 }

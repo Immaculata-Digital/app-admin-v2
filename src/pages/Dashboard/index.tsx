@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
 import {
   Box,
   Card,
@@ -32,10 +31,10 @@ import { useUserLojasGestoras } from '../../hooks/useUserLojasGestoras'
 import { useAuth } from '../../context/AuthContext'
 import { authService } from '../../services/auth'
 import { DashboardChartModal } from '../../components/dashboard/DashboardChartModal'
+import { ResgateDetailModal } from '../../components/dashboard/ResgateDetailModal'
 import './style.css'
 
 const DashboardPage = () => {
-  const navigate = useNavigate()
   const schema = getTenantSchema()
   const { lojasGestoras, isAdmLoja } = useUserLojasGestoras()
   const { permissions } = useAuth()
@@ -50,6 +49,9 @@ const DashboardPage = () => {
   const [isChartModalOpen, setIsChartModalOpen] = useState(false)
   const [isRankingModalOpen, setIsRankingModalOpen] = useState(false)
   const [selectedKpi, setSelectedKpi] = useState<{ kpi: string, title: string }>({ kpi: '', title: '' })
+
+  const [resgateDetailOpen, setResgateDetailOpen] = useState(false)
+  const [selectedResgateId, setSelectedResgateId] = useState<number | null>(null)
 
   const openChartModal = (kpi: string, title: string) => {
     setSelectedKpi({ kpi, title })
@@ -689,7 +691,10 @@ const DashboardPage = () => {
               ]}
               actions={{
                 label: 'Ver',
-                onClick: (item) => navigate(`/resgates/${item.id_resgate}`),
+                onClick: (item) => {
+                  setSelectedResgateId(Number(item.id_resgate))
+                  setResgateDetailOpen(true)
+                },
               }}
               emptyMessage="Nenhum resgate no período."
               loading={loading}
@@ -890,6 +895,13 @@ const DashboardPage = () => {
           <Button onClick={() => setIsRankingModalOpen(false)}>Fechar</Button>
         </DialogActions>
       </Dialog>
+
+      <ResgateDetailModal 
+        open={resgateDetailOpen} 
+        onClose={() => setResgateDetailOpen(false)} 
+        resgateId={selectedResgateId} 
+        schema={getTenantSchema()} 
+      />
     </Box>
   )
 }

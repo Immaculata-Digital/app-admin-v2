@@ -41,6 +41,7 @@ interface MarkerData {
   subtitle?: string
   type: 'loja' | 'cliente'
   total?: number
+  listagem_clientes?: { nome: string; saldo: number }[]
 }
 
 const MapaKPIPage = () => {
@@ -149,41 +150,6 @@ const MapaKPIPage = () => {
     L.control.zoom({ position: 'bottomright' }).addTo(mapInstance.current)
   }, [mapLoaded])
 
-  // Função para Geocodificação de Endereço Completo (via Nominatim)
-  const geocodeAddress = async (address: string): Promise<{ lat: number; lng: number } | null> => {
-    try {
-      const resp = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address)}&format=json&limit=1`)
-      const data = await resp.json()
-      if (data && data.length > 0) {
-        return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) }
-      }
-    } catch (error) {
-      console.error(`Erro Geocoding Endereço via Nominatim:`, error)
-    }
-    return null
-  }
-
-  // Função para Geocodificação de CEP (via AwesomeAPI ou fallback)
-  const geocodeCep = async (cep: string): Promise<{ lat: number; lng: number } | null> => {
-    const cleanCep = cep.replace(/\D/g, '')
-    if (cleanCep.length !== 8) return null
-
-    try {
-      // AwesomeAPI é gratuita e excelente para CEPs no Brasil
-      const response = await fetch(`https://cep.awesomeapi.com.br/json/${cleanCep}`)
-      if (response.ok) {
-        const data = await response.json()
-        if (data.lat && data.lng) {
-          return { lat: parseFloat(data.lat), lng: parseFloat(data.lng) }
-        }
-      }
-    } catch (error) {
-      console.warn(`Erro Geocoding CEP ${cep} via AwesomeAPI:`, error)
-    }
-
-    // Fallback: Nominatim
-    return geocodeAddress(cleanCep + ', Brazil')
-  }
 
   const handleSearch = async () => {
     if (isAuthLoading || selectedLojas.length === 0 || !mapInstance.current) return
@@ -211,49 +177,32 @@ const MapaKPIPage = () => {
       const response = await dashboardService.getMapData(tenantSchema, idsToSend)
       const newMarkers: MarkerData[] = []
 
-      // 1. Geocodificar Lojas
+      // 1. Processar Lojas
       for (const loja of response.lojas) {
-        const coordsLoja = await geocodeAddress(loja.endereco_completo)
-        if (coordsLoja) {
+        if (loja.latitude && loja.longitude) {
           newMarkers.push({
-            ...coordsLoja,
+            lat: Number(loja.latitude),
+            lng: Number(loja.longitude),
             type: 'loja',
             title: loja.nome_loja,
             subtitle: loja.endereco_completo
           })
-        } else {
-          const lojaCep = loja.endereco_completo.match(/\d{5}-?\d{3}/)?.[0]
-          if (lojaCep) {
-            const coords = await geocodeCep(lojaCep)
-            if (coords) {
-              newMarkers.push({
-                ...coords,
-                type: 'loja',
-                title: loja.nome_loja,
-                subtitle: loja.endereco_completo
-              })
-            }
-          }
         }
       }
 
-      // 2. Geocodificar Clientes (lote limitado por performance e rate limit)
-      const clientsWithCep = response.clientes.filter(c => c.cep && c.cep.length >= 8)
-      const maxClients = 70
-      for (let i = 0; i < Math.min(clientsWithCep.length, maxClients); i++) {
-        const c = clientsWithCep[i]
-        const coords = await geocodeCep(c.cep)
-        if (coords) {
+      // 2. Processar Clientes
+      for (const c of response.clientes) {
+        if (c.latitude && c.longitude) {
           newMarkers.push({
-            ...coords,
+            lat: Number(c.latitude),
+            lng: Number(c.longitude),
             type: 'cliente',
             title: `CEP: ${c.cep}`,
             subtitle: `${c.total} cliente(s)`,
-            total: c.total
+            total: c.total,
+            listagem_clientes: c.listagem_clientes
           })
         }
-        // Pequena pausa para respeitar APIs públicas
-        if (i % 5 === 0) await new Promise(r => setTimeout(r, 200))
       }
 
       setMarkers(newMarkers)
@@ -301,13 +250,30 @@ const MapaKPIPage = () => {
       }).addTo(mapInstance.current)
 
       marker.bindPopup(`
-        <div style="font-family: Outfit, sans-serif; padding: 5px;">
-          <strong style="color: ${m.type === 'loja' ? '#8b5cf6' : '#10b981'}; font-size: 14px;">
-            ${m.type === 'loja' ? '📍 Loja: ' : '👥 Clientes: '}${m.title}
+        <div style="font-family: Outfit, sans-serif; padding: 5px; min-width: 200px;">
+          <strong style="color: ${m.type === 'loja' ? '#8b5cf6' : '#10b981'}; font-size: 14px; display: block; margin-bottom: 5px;">
+            ${m.type === 'loja' ? '📍 Loja: ' : '👥 '}${m.title}
           </strong>
-          <p style="margin: 5px 0 0; color: #666; font-size: 12px;">${m.subtitle}</p>
+          <p style="margin: 0; color: #666; font-size: 12px; font-weight: 500;">${m.subtitle}</p>
+          ${m.listagem_clientes && m.listagem_clientes.length > 0 ? `
+            <div style="margin-top: 10px; padding-top: 8px; border-top: 1px solid #eee;">
+              <p style="margin: 0 0 5px; font-size: 11px; font-weight: bold; color: #333 text-transform: uppercase; letter-spacing: 0.5px;">Clientes neste CEP:</p>
+              <ul style="margin: 0; padding: 0 0 0 0; list-style: none; max-height: 150px; overflow-y: auto;">
+                ${m.listagem_clientes.map(cli => `
+                  <li style="margin-bottom: 4px; display: flex; justify-content: space-between; font-size: 12px;">
+                    <span style="color: #444;">${cli.nome}</span>
+                    <span style="background: ${cli.saldo > 0 ? '#ecfdf5' : '#fef2f2'}; color: ${cli.saldo > 0 ? '#065f46' : '#991b1b'}; padding: 1px 6px; border-radius: 10px; font-weight: bold; font-size: 10px; margin-left: 8px;">
+                      ${cli.saldo} pts
+                    </span>
+                  </li>
+                `).join('')}
+              </ul>
+            </div>
+          ` : ''}
         </div>
-      `)
+      `, {
+        maxWidth: 300
+      })
 
       markersRef.current.push(marker)
       group.addLayer(marker)

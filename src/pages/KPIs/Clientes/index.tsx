@@ -520,16 +520,18 @@ const ClienteKPIPage = () => {
           </Toolbar>
         </AppBar>
         
-        <DialogContent sx={{ p: { xs: 2, md: 6 }, display: 'flex', flexDirection: 'column' }}>
+        <DialogContent sx={{ p: { xs: 2, md: 4 }, bgcolor: 'background.default', overflowY: 'auto' }}>
           <Box sx={{ 
             bgcolor: 'background.paper', 
             borderRadius: 6, 
             p: { xs: 2, md: 5 }, 
-            flex: 1,
+            minHeight: '100%',
             boxShadow: '0 20px 50px rgba(0,0,0,0.08)',
             display: 'flex',
             flexDirection: 'column',
-            border: `1px solid ${theme.palette.divider}`
+            border: `1px solid ${theme.palette.divider}`,
+            maxWidth: 1200,
+            margin: '0 auto'
           }}>
             <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 6 }}>
               <Box>
@@ -543,16 +545,16 @@ const ClienteKPIPage = () => {
             </Stack>
 
             {chartLoading ? (
-              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flex: 1 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 10 }}>
                 <CircularProgress size={60} thickness={5} sx={{ color: selectedKPI?.color }} />
               </Box>
             ) : chartData.length > 0 ? (
-              <Box sx={{ flex: 1, minHeight: 0 }}>
+              <Box sx={{ height: Math.max(chartData.length * 40, 400), width: '100%' }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     data={chartData}
                     layout="vertical"
-                    margin={{ top: 20, right: 30, left: isMobile ? 80 : 150, bottom: 20 }}
+                    margin={{ top: 10, right: 80, left: isMobile ? 100 : 180, bottom: 10 }}
                     barGap={0}
                   >
                     <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="rgba(0,0,0,0.05)" />
@@ -560,7 +562,7 @@ const ClienteKPIPage = () => {
                     <YAxis 
                       dataKey="label" 
                       type="category" 
-                      width={isMobile ? 80 : 150}
+                      width={isMobile ? 100 : 180}
                       axisLine={false}
                       tickLine={false}
                       tick={{ fill: theme.palette.text.primary, fontSize: 13, fontWeight: 700 }}
@@ -595,8 +597,8 @@ const ClienteKPIPage = () => {
                             dataKey={key === 'value' ? 'value' : key}
                             stackId={isDemographic ? "a" : undefined}
                             fill={(AGE_COLORS as any)[key] || (GENDER_COLORS as any)[key] || selectedKPI?.color}
-                            barSize={40}
-                            radius={0}
+                            barSize={20}
+                            radius={isDemographic ? 0 : [0, 10, 10, 0]}
                           >
                             {isDemographic && (
                               <LabelList 
@@ -612,7 +614,7 @@ const ClienteKPIPage = () => {
                                       fill="#fff" 
                                       textAnchor="middle" 
                                       dominantBaseline="middle" 
-                                      style={{ fontSize: 13, fontWeight: 900, fontFamily: 'Outfit, sans-serif' }}
+                                      style={{ fontSize: 12, fontWeight: 900, fontFamily: 'Outfit, sans-serif' }}
                                     >
                                       {value}%
                                     </text>
@@ -624,7 +626,8 @@ const ClienteKPIPage = () => {
                               <LabelList 
                                 dataKey="value" 
                                 position="right" 
-                                style={{ fill: theme.palette.text.primary, fontWeight: 900, fontSize: 14 }}
+                                offset={10}
+                                style={{ fill: theme.palette.text.primary, fontWeight: 900, fontSize: 13, fontFamily: 'Outfit, sans-serif' }}
                                 formatter={(val: any) => val}
                               />
                             )}

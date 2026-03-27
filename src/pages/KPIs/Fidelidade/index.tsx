@@ -58,6 +58,7 @@ import { getTenantSchema } from '../../../utils/schema'
 import { userService } from '../../../services/users'
 import { accessGroupService } from '../../../services/accessGroups'
 import { useAuth } from '../../../context/AuthContext'
+import { ResgateDetailModal } from '../../../components/dashboard/ResgateDetailModal'
 
 const Transition = React.forwardRef(function Transition(
   props: TransitionProps & {
@@ -74,7 +75,7 @@ interface Resgate {
   cliente_nome: string
   item_nome: string
   pontos: number
-  data: string
+  dt_resgate: string
   loja_nome: string
 }
 
@@ -117,6 +118,9 @@ const FidelidadeKPIPage = () => {
   
   // Real filters applied to the data fetching
   const [appliedFilters, setAppliedFilters] = useState({ lojaIds: ['all'], period: 0, startDate: '', endDate: '' })
+
+  const [resgateDetailOpen, setResgateDetailOpen] = useState(false)
+  const [selectedResgateId, setSelectedResgateId] = useState<number | null>(null)
 
   // Modal states
   const [modalOpen, setModalOpen] = useState(false)
@@ -315,9 +319,9 @@ const FidelidadeKPIPage = () => {
       ),
     },
     {
-      key: 'data',
-      label: 'DATA',
-      render: (value) => value ? new Date(String(value)).toLocaleDateString('pt-BR') : '--',
+      key: 'dt_resgate',
+      label: 'DATA / HORA',
+      render: (value) => value ? new Date(String(value)).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '--',
     },
     {
       key: 'loja_nome',
@@ -566,7 +570,10 @@ const FidelidadeKPIPage = () => {
             columns={columns}
             disableActionsColumn
             disableSelection
-            disableView
+            onRowClick={(row) => {
+              setSelectedResgateId(Number(row.id_resgate))
+              setResgateDetailOpen(true)
+            }}
           />
         </CardContent>
       </Card>
@@ -593,83 +600,66 @@ const FidelidadeKPIPage = () => {
             </Typography>
           </Toolbar>
         </AppBar>
-        <DialogContent sx={{ p: { xs: 2, md: 8 }, bgcolor: 'background.default', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <Box sx={{ width: '100%', maxWidth: 1200, flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <DialogContent sx={{ p: { xs: 2, md: 4 }, bgcolor: 'background.default', overflowY: 'auto' }}>
+          <Box sx={{ width: '100%', maxWidth: 1200, margin: '0 auto' }}>
             {chartLoading ? (
-              <CircularProgress size={60} />
+              <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}>
+                <CircularProgress size={60} />
+              </Box>
             ) : chartData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={500}>
-                <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 80 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={theme.palette.divider} />
-                  <XAxis 
-                    dataKey="label" 
-                    hide
-                  />
-                  <YAxis 
-                    tick={{ fontSize: 13, fontWeight: 500, fill: theme.palette.text.secondary }} 
-                    tickFormatter={(val) => selectedKPI?.id === 'ticket_medio' ? `R$${val}` : String(val)}
-                  />
-                  <Tooltip 
-                    cursor={{ fill: 'rgba(0,0,0,0.03)' }}
-                    contentStyle={{ 
-                      borderRadius: 16, 
-                      border: 'none', 
-                      boxShadow: theme.shadows[8],
-                      fontWeight: 700,
-                      padding: '12px 16px'
-                    }}
-                    formatter={(val: any) => [
-                      selectedKPI?.id === 'ticket_medio' 
-                        ? formatCurrency(Number(val)) 
-                        : Number(val).toLocaleString(), 
-                      'Total'
-                    ]}
-                  />
-                  <Bar 
-                    dataKey="value" 
-                    radius={[10, 10, 0, 0]}
-                    barSize={isMobile ? 40 : 80}
-                  >
-                    <LabelList 
+              <Box sx={{ height: Math.max(chartData.length * 40, 400), width: '100%' }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={chartData} layout="vertical" margin={{ top: 10, right: 80, left: isMobile ? 100 : 180, bottom: 10 }}>
+                    <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="rgba(0,0,0,0.05)" />
+                    <XAxis type="number" hide />
+                    <YAxis 
                       dataKey="label" 
-                      content={(props: any) => {
-                        const { x, y, width, value } = props;
-                        if (!value) return null;
-                        return (
-                          <g transform={`translate(${x + width / 2}, ${y + 15})`}>
-                            <text
-                              x={0}
-                              y={0}
-                              fill="#FFFFFF"
-                              textAnchor="start"
-                              transform="rotate(90)"
-                              style={{ 
-                                fontSize: 11, 
-                                fontWeight: 900, 
-                                fontFamily: 'Outfit, sans-serif',
-                                textTransform: 'uppercase',
-                                pointerEvents: 'none',
-                                filter: 'drop-shadow(0px 1px 2px rgba(0,0,0,0.3))'
-                              }}
-                            >
-                              {value}
-                            </text>
-                          </g>
-                        );
+                      type="category" 
+                      width={isMobile ? 100 : 180}
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ 
+                        fontSize: 13, 
+                        fontWeight: 700, 
+                        fill: theme.palette.text.primary,
+                        fontFamily: 'inherit'
                       }}
                     />
-                    <LabelList 
-                      dataKey="value" 
-                      position="top" 
-                      formatter={(val: any) => selectedKPI?.id === 'ticket_medio' ? `R$ ${Number(val).toFixed(2)}` : val}
-                      style={{ fill: theme.palette.text.primary, fontWeight: 700, fontSize: 14 }}
+                    <Tooltip 
+                      cursor={{ fill: 'rgba(0,0,0,0.03)' }}
+                      contentStyle={{ 
+                        borderRadius: 16, 
+                        border: 'none', 
+                        boxShadow: theme.shadows[8],
+                        fontWeight: 700,
+                        padding: '12px 16px'
+                      }}
+                      formatter={(val: any) => [
+                        selectedKPI?.id === 'ticket_medio' 
+                          ? formatCurrency(Number(val)) 
+                          : Number(val).toLocaleString(), 
+                        'Total'
+                      ]}
                     />
-                    {chartData.map((_, index) => (
-                      <Cell key={`cell-${index}`} fill={selectedKPI?.color || theme.palette.primary.main} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+                    <Bar 
+                      dataKey="value" 
+                      radius={[0, 10, 10, 0]}
+                      barSize={20}
+                    >
+                      <LabelList 
+                        dataKey="value" 
+                        position="right" 
+                        offset={10}
+                        formatter={(val: any) => selectedKPI?.id === 'ticket_medio' ? `R$ ${Number(val).toFixed(2)}` : val}
+                        style={{ fill: theme.palette.text.primary, fontWeight: 900, fontSize: 13, fontFamily: 'Outfit, sans-serif' }}
+                      />
+                      {chartData.map((_, index) => (
+                        <Cell key={`cell-${index}`} fill={selectedKPI?.color || theme.palette.primary.main} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </Box>
             ) : (
               <Typography variant="h6" color="text.secondary">
                 Nenhum dado encontrado para as lojas selecionadas.
@@ -728,6 +718,13 @@ const FidelidadeKPIPage = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <ResgateDetailModal 
+        open={resgateDetailOpen} 
+        onClose={() => setResgateDetailOpen(false)} 
+        resgateId={selectedResgateId} 
+        schema={tenantSchema || getTenantSchema()} 
+      />
     </Box>
   )
 }
