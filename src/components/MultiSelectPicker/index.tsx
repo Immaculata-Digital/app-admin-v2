@@ -11,6 +11,7 @@ import {
   Checkbox,
   Chip,
   Paper,
+  CircularProgress,
 } from '@mui/material'
 import {
   ExpandMore,
@@ -46,6 +47,8 @@ type MultiSelectPickerProps = {
   groupBy?: boolean
   chipVariant?: 'filled' | 'outlined'
   chipDisplay?: 'inline' | 'summary' | 'block'
+  onSearch?: (query: string) => void
+  loading?: boolean
 }
 
 const MultiSelectPicker = ({
@@ -68,6 +71,8 @@ const MultiSelectPicker = ({
   groupBy = false,
   chipVariant = 'filled',
   chipDisplay = 'inline',
+  onSearch,
+  loading = false,
 }: MultiSelectPickerProps) => {
   const [anchorEl, setAnchorEl] = useState<HTMLDivElement | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
@@ -95,7 +100,7 @@ const MultiSelectPicker = ({
 
   // Filtrar opções baseado na busca
   const filteredOptions = useMemo(() => {
-    if (!searchQuery) return options
+    if (!searchQuery || onSearch) return options
 
     const query = searchQuery.toLowerCase()
     return options.filter(
@@ -103,7 +108,7 @@ const MultiSelectPicker = ({
         option.label.toLowerCase().includes(query) ||
         String(option.value).toLowerCase().includes(query)
     )
-  }, [options, searchQuery])
+  }, [options, searchQuery, onSearch])
 
   // Opções agrupadas filtradas
   const filteredGroupedOptions = useMemo(() => {
@@ -404,8 +409,12 @@ const MultiSelectPicker = ({
                 placeholder={searchPlaceholder}
                 value={searchQuery}
                 onChange={(e) => {
-                  setSearchQuery(e.target.value)
+                  const query = e.target.value
+                  setSearchQuery(query)
                   setFocusedIndex(-1)
+                  if (onSearch) {
+                    onSearch(query)
+                  }
                 }}
                 size="small"
                 fullWidth
@@ -415,6 +424,11 @@ const MultiSelectPicker = ({
                       <Search fontSize="small" />
                     </InputAdornment>
                   ),
+                  endAdornment: loading ? (
+                    <InputAdornment position="end">
+                      <CircularProgress size={20} />
+                    </InputAdornment>
+                  ) : undefined,
                 }}
                 className="multi-select-picker__search"
               />
