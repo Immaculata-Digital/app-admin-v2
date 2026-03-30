@@ -131,72 +131,21 @@ const CampanhasDisparoPage = () => {
 
   const loadClientes = async () => {
     try {
+      setLoadingClientes(true)
       const schema = getTenantSchema()
-      const response = await clienteService.list(schema, { limit: 500, offset: 0 })
+      // Busca uma quantidade grande de clientes para suportar busca local no MultiSelectPicker
+      const response = await clienteService.list(schema, { limit: 100000, offset: 0 })
       setClientes(response.data.map((cliente) => ({ id: cliente.id_cliente, label: cliente.nome_completo })))
     } catch (err: any) {
       console.error('Erro ao carregar clientes:', err)
+    } finally {
+      setLoadingClientes(false)
     }
   }
 
-  const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null)
+  // Removida busca debounced no servidor para usar busca local no MultiSelectPicker
+  // conforme solicitado: "trazer TODOS os clientes, sem páginação" e realizar a busca localmente.
 
-  const handleSearchClientes = useCallback(async (query: string) => {
-    console.log('[CampanhasDisparo] handleSearchClientes called with query:', query)
-    // Se tiver um timeout pendente, cancela
-    if (searchTimeout) {
-      clearTimeout(searchTimeout)
-    }
-
-    // Define um novo timeout para fazer a busca após 500ms
-    const timeout = setTimeout(async () => {
-      try {
-        setLoadingClientes(true)
-        const schema = getTenantSchema()
-        
-        console.log('[CampanhasDisparo] Searching for:', query)
-        // Busca paged com filtro de nome
-        const response = await clienteService.list(schema, { 
-          limit: 100, 
-          offset: 0, 
-          search: query 
-        })
-        
-        const searchedClientes = response.data.map((cliente) => ({ 
-          id: cliente.id_cliente, 
-          label: cliente.nome_completo 
-        }))
-
-        console.log('[CampanhasDisparo] Results found:', searchedClientes.length)
-
-        // Importante: Manter os clientes já selecionados na lista para evitar que sumam os labels no MultiSelectPicker
-        setClientes(prev => {
-          // Criar um mapa de clientes únicos por ID
-          const allOptions = new Map<number, { id: number; label: string }>()
-          
-          // Adicionar os que já estavam na lista (preserva labels de selecionados)
-          prev.forEach(c => allOptions.set(c.id, c))
-          
-          // Adicionar os novos da busca (pode sobrescrever se já existia, o que é ok)
-          searchedClientes.forEach(c => allOptions.set(c.id, c))
-          
-          return Array.from(allOptions.values())
-        })
-      } catch (err: any) {
-        console.error('Erro ao buscar clientes:', err)
-      } finally {
-        setLoadingClientes(false)
-      }
-    }, 500)
-
-    setSearchTimeout(timeout)
-  }, [searchTimeout])
-
-  useEffect(() => {
-    return () => {
-      if (searchTimeout) clearTimeout(searchTimeout)
-    }
-  }, [searchTimeout])
 
   useEffect(() => {
     if (canList) {
@@ -568,9 +517,7 @@ const CampanhasDisparoPage = () => {
                 options={clientes.map((cliente) => ({ value: cliente.id, label: cliente.label }))}
                 fullWidth
                 disabled={disabled}
-                placeholder="Selecione os clientes"
                 searchable
-                onSearch={handleSearchClientes}
                 loading={loadingClientes}
               />
             </Box>
@@ -578,7 +525,7 @@ const CampanhasDisparoPage = () => {
         },
       }
     ],
-    [remetentes, lojas, clientes, loadingClientes, handleSearchClientes]
+    [remetentes, lojas, clientes, loadingClientes]
   )
 
   const handleCreate = useCallback(
